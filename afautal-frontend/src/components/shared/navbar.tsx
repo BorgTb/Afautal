@@ -15,7 +15,7 @@ const navLinks: NavLink[] = [
   { name: "Inicio", href: "/" },
   { name: "Nosotros", href: "/nosotros" },
   { name: "Directiva", href: "/directiva" },
-  { name: "Noticias", href: "/noticias" },
+  { name: "Noticias", href: "/news" },
   { name: "Documentos", href: "/documentos" },
 ];
 
@@ -45,14 +45,15 @@ export default function Navbar() {
 
       lastScrollY.current = currentScrollY;
     };
-
+    //border-b backdrop-blur-xl shadow-sm
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isOpen]);
 
   return (
+
     <nav
-      className={`sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm transition-transform duration-300 ease-out ${
+      className={`sticky top-0 z-50 w-full  border-slate-200 bg-white/95  transition-transform duration-300 ease-out ${
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >

@@ -430,12 +430,12 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiAboutUsAboutUs extends Struct.SingleTypeSchema {
-  collectionName: 'about';
+export interface ApiHeroNoticiaHeroNoticia extends Struct.SingleTypeSchema {
+  collectionName: 'hero_noticias';
   info: {
-    displayName: 'Qui\u00E9nes Somos';
-    pluralName: 'about';
-    singularName: 'about-us';
+    displayName: 'Hero Noticia';
+    pluralName: 'hero-noticias';
+    singularName: 'hero-noticia';
   };
   options: {
     draftAndPublish: true;
@@ -451,11 +451,42 @@ export interface ApiAboutUsAboutUs extends Struct.SingleTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::about-us.about-us'
+      'api::hero-noticia.hero-noticia'
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    texto: Schema.Attribute.Text;
+    resumen: Schema.Attribute.Text;
+    titulo: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiNosotrosNosotros extends Struct.SingleTypeSchema {
+  collectionName: 'quienes_somos';
+  info: {
+    displayName: 'Quienes somos';
+    pluralName: 'quienes-somos';
+    singularName: 'nosotros';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descripcion: Schema.Attribute.Text;
+    foto: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    imagen: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::nosotros.nosotros'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
     titulo: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -974,7 +1005,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::about-us.about-us': ApiAboutUsAboutUs;
+      'api::hero-noticia.hero-noticia': ApiHeroNoticiaHeroNoticia;
+      'api::nosotros.nosotros': ApiNosotrosNosotros;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
