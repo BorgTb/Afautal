@@ -1,0 +1,31 @@
+{
+  "kind": "singleType",
+  "collectionName": "hero_noticias",
+  "info": {
+    "singularName": "hero-noticia",
+    "pluralName": "hero-noticias",
+    "displayName": "Hero Noticia"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string"
+    },
+    "resumen": {
+      "type": "text"
+    },
+    "imagen": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}
