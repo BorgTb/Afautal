@@ -8,7 +8,7 @@ interface LogoProps {
 export default function Logo({ className = "", priority = false }: LogoProps) {
     return (
         <Image
-            src="/Logo Afautal.svg"
+            src="/Logo AFAUTAL.svg"
             alt="Afautal Logo"
             width={220}
             height={74}
