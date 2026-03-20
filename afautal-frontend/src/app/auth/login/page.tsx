@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -7,13 +9,13 @@ export default function LoginPage() {
                         Iniciar Sesión
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
-                        ¿No tienes una cuenta?{' '}
-                        <a
-                            href="#"
+                        ¿No tienes una cuenta?{" "}
+                        <Link
+                            href="/auth/register"
                             className="font-medium text-[#BF0F0F] hover:text-[#A61B26]"
                         >
                             Regístrate aquí
-                        </a>
+                        </Link>
                     </p>
                 </div>
                 <form className="mt-8 space-y-6" action="#" method="POST">
@@ -88,4 +90,4 @@ export default function LoginPage() {
             </div>
         </div>
     );
-}       
+}

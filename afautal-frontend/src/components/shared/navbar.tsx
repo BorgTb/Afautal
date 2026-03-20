@@ -95,7 +95,7 @@ export default function Navbar() {
             */}
             
             <Link 
-              href="/registro" 
+              href="/auth/register" 
               className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D0D] hover:shadow-md"
             >
               <UserPlus size={16} />
@@ -105,7 +105,7 @@ export default function Navbar() {
             <div className="h-8 w-px bg-slate-200" />
 
             <Link 
-              href="/login" 
+              href="/auth/login" 
               className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200"
             >
               <User size={16} />
@@ -146,10 +146,10 @@ export default function Navbar() {
             <Link href="/vales-gas" className="flex justify-center items-center gap-2 rounded-xl bg-orange-500 py-4 text-white font-black">
               <Flame size={20} /> Comprar Gas
             </Link>
-            <Link href="/registro" className="flex justify-center items-center gap-2 rounded-xl bg-emerald-600 py-4 text-white font-black">
+            <Link href="/auth/register" className="flex justify-center items-center gap-2 rounded-xl bg-emerald-600 py-4 text-white font-black">
               <UserPlus size={20} /> Ser Socio
             </Link>
-            <Link href="/login" className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black">
+            <Link href="/auth/login" className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black">
               <User size={20} /> Entrar al Portal
             </Link>
           </div>
