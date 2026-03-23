@@ -22,6 +22,7 @@ const navLinks: NavLink[] = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [lineExpanded, setLineExpanded] = useState(false);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -49,6 +50,16 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isOpen]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLineExpanded(true);
+    }, 120);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   return (
 
@@ -155,6 +166,18 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
+        <span
+          aria-hidden="true"
+          className="bg-slate-300/80 shadow-[0_0_8px_rgba(148,163,184,0.3)] transition-all duration-700 ease-out"
+          style={{
+            width: lineExpanded ? "100%" : "10px",
+            height: lineExpanded ? "1px" : "10px",
+            borderRadius: "9999px",
+          }}
+        />
+      </div>
     </nav>
   );
 }

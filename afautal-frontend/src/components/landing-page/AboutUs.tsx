@@ -1,3 +1,9 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 interface StrapiMedia {
     url?: string;
     alternativeText?: string | null;
@@ -71,6 +77,51 @@ function buildMediaUrl(url?: string): string {
 }
 
 export default function AboutUs({ data }: AboutUsProps) {
+    const sectionRef = useRef<HTMLElement | null>(null);
+    const imageRef = useRef<HTMLDivElement | null>(null);
+    const textRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const section = sectionRef.current;
+        const image = imageRef.current;
+        const text = textRef.current;
+
+        if (!section || !image || !text) return;
+
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        if (mediaQuery.matches) return;
+
+        const textItems = text.querySelectorAll("[data-about-text]");
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        const ctx = gsap.context(() => {
+            const timeline = gsap.timeline({
+                defaults: { ease: "power3.out", duration: 0.9 },
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top 80%",
+                    end: "bottom 20%",
+                    toggleActions: "play none none none",
+                    once: true,
+                },
+            });
+
+            timeline
+                .fromTo(image, { x: -70, autoAlpha: 0 }, { x: 0, autoAlpha: 1 })
+                .fromTo(
+                    textItems,
+                    { x: 60, autoAlpha: 0 },
+                    { x: 0, autoAlpha: 1, stagger: 0.12, duration: 0.75 },
+                    "-=0.5"
+                );
+        }, section);
+
+        return () => {
+            ctx.revert();
+        };
+    }, []);
+
     const content = normalizeContent(data);
 
     const title = content?.titulo ?? "Quiénes Somos";
@@ -84,8 +135,11 @@ export default function AboutUs({ data }: AboutUsProps) {
     const imageAlt = image?.alternativeText || "Equipo de la organización";
 
     return (
-        <section className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-10">
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
+        <section
+            ref={sectionRef}
+            className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-10"
+        >
+            <div ref={imageRef} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
                 <img
                     src={imageUrl}
                     alt={imageAlt}
@@ -93,10 +147,10 @@ export default function AboutUs({ data }: AboutUsProps) {
                 />
             </div>
 
-            <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">AFAUTAL</p>
-                <h2 className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">{title}</h2>
-                <p className="mt-6 text-base leading-relaxed text-slate-600 sm:text-lg">{description}</p>
+            <div ref={textRef}>
+                <p data-about-text className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">AFAUTAL</p>
+                <h2 data-about-text className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">{title}</h2>
+                <p data-about-text className="mt-6 text-base leading-relaxed text-slate-600 sm:text-lg">{description}</p>
             </div>
         </section>
     );
