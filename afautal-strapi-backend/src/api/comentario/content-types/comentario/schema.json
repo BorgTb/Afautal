@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "comentarios",
+  "info": {
+    "singularName": "comentario",
+    "pluralName": "comentarios",
+    "displayName": "Comentarios"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "autor": {
+      "type": "string"
+    },
+    "opinion": {
+      "type": "text"
+    },
+    "foto_autor": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}

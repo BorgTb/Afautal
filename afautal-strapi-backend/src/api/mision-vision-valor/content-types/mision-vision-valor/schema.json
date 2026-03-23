@@ -1,0 +1,24 @@
+{
+  "kind": "singleType",
+  "collectionName": "mision_vision_valores",
+  "info": {
+    "singularName": "mision-vision-valor",
+    "pluralName": "mision-vision-valores",
+    "displayName": "MisionVisionValores"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "mision": {
+      "type": "text"
+    },
+    "vision": {
+      "type": "text"
+    },
+    "valores": {
+      "type": "text"
+    }
+  }
+}

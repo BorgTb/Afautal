@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "documentos",
+  "info": {
+    "singularName": "documento",
+    "pluralName": "documentos",
+    "displayName": "Documentos"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre_doc": {
+      "type": "string"
+    },
+    "categoria": {
+      "type": "enumeration",
+      "enum": [
+        "Documento oficial",
+        "Dictamenes"
+      ]
+    },
+    "archivo": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "fecha_de_carga": {
+      "type": "datetime"
+    },
+    "descripcion": {
+      "type": "richtext"
+    }
+  }
+}
