@@ -462,6 +462,37 @@ export interface ApiComentarioComentario extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiContactoContacto extends Struct.SingleTypeSchema {
+  collectionName: 'contactos';
+  info: {
+    displayName: 'Contacto';
+    pluralName: 'contactos';
+    singularName: 'contacto';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::contacto.contacto'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    telefono: Schema.Attribute.Integer;
+    ubicacion: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    url_instagram: Schema.Attribute.String;
+  };
+}
+
 export interface ApiDetalleQuienesSomosDetalleQuienesSomos
   extends Struct.SingleTypeSchema {
   collectionName: 'detalles_quienes_somos';
@@ -1201,6 +1232,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::comentario.comentario': ApiComentarioComentario;
+      'api::contacto.contacto': ApiContactoContacto;
       'api::detalle-quienes-somos.detalle-quienes-somos': ApiDetalleQuienesSomosDetalleQuienesSomos;
       'api::directiva.directiva': ApiDirectivaDirectiva;
       'api::documento.documento': ApiDocumentoDocumento;

@@ -1,0 +1,27 @@
+{
+  "kind": "singleType",
+  "collectionName": "contactos",
+  "info": {
+    "singularName": "contacto",
+    "pluralName": "contactos",
+    "displayName": "Contacto"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ubicacion": {
+      "type": "string"
+    },
+    "telefono": {
+      "type": "integer"
+    },
+    "email": {
+      "type": "email"
+    },
+    "url_instagram": {
+      "type": "string"
+    }
+  }
+}

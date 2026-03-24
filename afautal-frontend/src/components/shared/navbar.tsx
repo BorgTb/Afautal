@@ -116,7 +116,7 @@ export default function Navbar() {
             <div className="h-8 w-px bg-slate-200" />
 
             <Link 
-              href="/auth/login" 
+              href="/auth/inicio-sesion" 
               className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200"
             >
               <User size={16} />
