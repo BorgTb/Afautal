@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -28,9 +29,25 @@ interface HeroImageField {
 type HeroImageValue = HeroImageField | HeroImageField[] | null | undefined;
 
 export interface HeroNewsData {
+  id?: string;
   titulo?: string;
   resumen?: string;
   imagen?: HeroImageValue;
+  autor?: string;
+  fechaPublicacion?: string;
+}
+
+function formatDate(value?: string): string {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("es-CO", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }
 
 function truncateText(value: string | undefined, maxLength: number): string {
@@ -115,6 +132,9 @@ export default function HeroNoticia({ data }: { data: HeroNewsData }) {
   const titulo = truncateText(data.titulo, 140);
   const resumen = truncateText(data.resumen, 320);
   const imagenUrl = getMediaUrlFromField(data.imagen) || "/hero-noticia.jpg";
+  const fechaPublicacion = formatDate(data.fechaPublicacion);
+  const metaInfo = [data.autor?.trim(), fechaPublicacion].filter(Boolean).join(" • ");
+  const detailHref = data.id ? `/news/${data.id}` : "/news";
 
   return (
     <section
@@ -122,15 +142,24 @@ export default function HeroNoticia({ data }: { data: HeroNewsData }) {
       className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-10"
     >
       <div ref={textRef} className="flex flex-col justify-center">
+        {metaInfo && (
+          <p data-hero-text className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            {metaInfo}
+          </p>
+        )}
         <h1 data-hero-text className="max-w-[20ch] text-3xl font-bold leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
           {titulo}
         </h1>
         <p data-hero-text className="mt-6 max-w-[60ch] text-base leading-relaxed text-slate-600 sm:text-lg">
           {resumen}
         </p>
-        <button data-hero-button className="mt-8 px-8 py-3 border-2 border-[#BF0F0F] text-[#BF0F0F] font-bold hover:bg-[#A61B26] hover:text-white transition-colors duration-300 uppercase tracking-widest text-sm">
+        <Link
+          data-hero-button
+          href={detailHref}
+          className="mt-8 inline-flex w-fit px-8 py-3 border-2 border-[#BF0F0F] text-[#BF0F0F] font-bold hover:bg-[#A61B26] hover:text-white transition-colors duration-300 uppercase tracking-widest text-sm"
+        >
           Ver Más →
-        </button>
+        </Link>
       </div>
       <div ref={imageRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-2xl">
         <img

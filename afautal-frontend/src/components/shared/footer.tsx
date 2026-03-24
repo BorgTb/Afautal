@@ -61,7 +61,7 @@ export default function Footer() {
 						<h3 className="text-sm font-bold uppercase tracking-[0.14em] text-slate-900">Siguenos</h3>
 						<div className="mt-4 flex items-center gap-3">
 							<a
-								href="https://www.instagram.com/"
+								href="https://www.instagram.com/afautal/"
 								target="_blank"
 								rel="noreferrer"
 								aria-label="Instagram AFAUTAL"

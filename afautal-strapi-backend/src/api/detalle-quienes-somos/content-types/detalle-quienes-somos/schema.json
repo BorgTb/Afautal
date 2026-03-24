@@ -1,0 +1,18 @@
+{
+  "kind": "singleType",
+  "collectionName": "detalles_quienes_somos",
+  "info": {
+    "singularName": "detalle-quienes-somos",
+    "pluralName": "detalles-quienes-somos",
+    "displayName": "Detalle quienes somos"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "descripcion": {
+      "type": "text"
+    }
+  }
+}

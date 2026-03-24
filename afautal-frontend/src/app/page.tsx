@@ -79,6 +79,45 @@ interface ComentarioPayload {
   };
 }
 
+interface NoticiaMediaAttributes {
+  url?: string;
+  alternativeText?: string | null;
+}
+
+interface NoticiaMediaField {
+  data?:
+    | {
+        attributes?: NoticiaMediaAttributes;
+        url?: string;
+      }
+    | Array<{
+        attributes?: NoticiaMediaAttributes;
+        url?: string;
+      }>
+    | null;
+  url?: string;
+  alternativeText?: string | null;
+}
+
+interface NoticiaPayload {
+  id?: number;
+  documentId?: string;
+  titulo_noticia?: string;
+  cuerpo_noticia?: string;
+  foto_noticia?: NoticiaMediaField;
+  autor_noticia?: string;
+  fecha_publicacion?: string;
+  noticia_principal?: boolean;
+  attributes?: {
+    titulo_noticia?: string;
+    cuerpo_noticia?: string;
+    foto_noticia?: NoticiaMediaField;
+    autor_noticia?: string;
+    fecha_publicacion?: string;
+    noticia_principal?: boolean;
+  };
+}
+
 interface DocumentPreviewCard {
   id: string;
   title: string;
@@ -123,9 +162,25 @@ function mapCommentToCard(comment: ComentarioPayload, index: number): CommentCar
   };
 }
 
+function mapNoticiaToHero(noticia: NoticiaPayload): HeroNewsData {
+  const source = noticia.attributes ?? noticia;
+
+  return {
+    id: String(noticia.documentId ?? noticia.id ?? ""),
+    titulo: source.titulo_noticia ?? "",
+    resumen: source.cuerpo_noticia ?? "",
+    imagen: source.foto_noticia,
+    autor: source.autor_noticia,
+    fechaPublicacion: source.fecha_publicacion,
+  };
+}
+
 export default async function Home() {
-  const [heroResult, aboutUsResult, misionVisionResult, comentariosResult, documentosResult] = await Promise.allSettled([
-    getSingleType<HeroNewsData>("hero-noticia", "populate=*"),
+  const [noticiasResult, aboutUsResult, misionVisionResult, comentariosResult, documentosResult] = await Promise.allSettled([
+    getCollectionType<NoticiaPayload>(
+      "noticias",
+      "populate=foto_noticia&sort=noticia_principal:desc&sort=fecha_publicacion:desc&pagination[limit]=20"
+    ),
     getSingleType<AboutUsPayload>("nosotros", "populate=*"),
     getSingleType<MisionVisionValoresPayload>("mision-vision-valor"),
     getCollectionType<ComentarioPayload>("comentarios", "populate=foto_autor"),
@@ -135,8 +190,15 @@ export default async function Home() {
     ),
   ]);
 
-  const heroData =
-    heroResult.status === "fulfilled" ? heroResult.value.data : null;
+  const selectedHeroNoticia =
+    noticiasResult.status === "fulfilled"
+      ? noticiasResult.value.data.find((item) => {
+          const source = item.attributes ?? item;
+          return source.noticia_principal === true;
+        }) ?? noticiasResult.value.data[0]
+      : null;
+
+  const heroData = selectedHeroNoticia ? mapNoticiaToHero(selectedHeroNoticia) : null;
   const aboutUsData =
     aboutUsResult.status === "fulfilled" ? aboutUsResult.value.data : null;
   const misionVisionData =

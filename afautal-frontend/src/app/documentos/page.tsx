@@ -1,4 +1,4 @@
-import Link from "next/link";
+import type { CSSProperties } from "react";
 import { getCollectionType, getStrapiMediaURL } from "@/lib/strapi";
 
 interface StrapiMediaItem {
@@ -96,16 +96,16 @@ export default async function DocumentsPage() {
 		<main className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
 			<section className="mx-auto w-full max-w-6xl">
 				<header className="mb-10">
-					<h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
+					<h1 className="news-reveal text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
 						Documentos
 					</h1>
-					<p className="mt-4 max-w-3xl text-base text-gray-600 sm:text-lg">
+					<p className="news-reveal news-delay-1 mt-4 max-w-3xl text-base text-gray-600 sm:text-lg">
 						Descarga los archivos publicados.
 					</p>
 				</header>
 
 				{documents.length === 0 ? (
-					<div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
+					<div className="news-reveal news-delay-2 rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
 						<p className="text-sm text-gray-600">
 							No hay documentos cargados todavía en Strapi.
 						</p>
@@ -125,7 +125,8 @@ export default async function DocumentsPage() {
 							return (
 								<article
 									key={String(item.id ?? `doc-${index}`)}
-									className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+									className="news-card-reveal rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+									style={{ "--stagger": `${index * 90}ms` } as CSSProperties}
 								>
 									<div className="flex items-center justify-between gap-3">
 										<h2 className="text-xl font-bold text-gray-900">{title}</h2>

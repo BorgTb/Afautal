@@ -14,9 +14,9 @@ interface NavLink {
 const navLinks: NavLink[] = [
   { name: "Inicio", href: "/" },
   { name: "Nosotros", href: "/nosotros" },
-  { name: "Directiva", href: "/directiva" },
   { name: "Noticias", href: "/news" },
   { name: "Documentos", href: "/documentos" },
+  { name: "Contacto", href: "/contacto" }
 ];
 
 export default function Navbar() {
@@ -106,7 +106,7 @@ export default function Navbar() {
             */}
             
             <Link 
-              href="/auth/register" 
+              href="/auth/registro" 
               className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D0D] hover:shadow-md"
             >
               <UserPlus size={16} />
