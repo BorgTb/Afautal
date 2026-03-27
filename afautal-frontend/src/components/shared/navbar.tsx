@@ -22,6 +22,7 @@ const navLinks: NavLink[] = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [hasShadow, setHasShadow] = useState(false);
   const [lineExpanded, setLineExpanded] = useState(false);
   const lastScrollY = useRef(0);
 
@@ -29,6 +30,7 @@ export default function Navbar() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastScrollY.current;
+      setHasShadow(currentScrollY > 8);
 
       if (isOpen) {
         setIsVisible(true);
@@ -66,7 +68,7 @@ export default function Navbar() {
     <nav
       className={`sticky top-0 z-50 w-full  border-slate-200 bg-white/95  transition-transform duration-300 ease-out ${
         isVisible ? "translate-y-0" : "-translate-y-full"
-      }`}
+      } ${hasShadow ? "shadow-[0_8px_24px_rgba(15,23,42,0.12)]" : "shadow-none"}`}
     >
       <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-0">
         <div className="flex h-[200px] items-center justify-between gap-4 lg:gap-8">
@@ -85,7 +87,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="relative text-[15px] font-semibold text-slate-600 transition-colors after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-red-700 after:transition-all hover:text-red-700 hover:after:w-full"
+                  className="relative text-[15px] font-semibold text-slate-600 transition-colors duration-200 ease-in-out after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-red-700 after:transition-all after:duration-200 hover:text-red-700 hover:after:w-full"
                 >
                   {link.name}
                 </Link>
@@ -107,7 +109,7 @@ export default function Navbar() {
             
             <Link 
               href="/auth/registro" 
-              className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D0D] hover:shadow-md"
+              className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-[#A50D0D] hover:shadow-md active:translate-y-0"
             >
               <UserPlus size={16} />
               Hazte Socio
@@ -117,7 +119,7 @@ export default function Navbar() {
 
             <Link 
               href="/auth/inicio-sesion" 
-              className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200"
+              className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
             >
               <User size={16} />
               Portal

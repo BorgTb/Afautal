@@ -93,10 +93,10 @@ export default function Comentaries({ comments }: ComentariesProps) {
 	if (!comments || comments.length === 0) return null;
 
 	return (
-		<section ref={sectionRef} className="mx-auto w-full max-w-[1280px] px-4 py-16 sm:px-6 lg:px-10">
+		<section ref={sectionRef} className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-10">
 			<div ref={headerRef} className="max-w-3xl">
 				<p data-comment-heading className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">Comunidad</p>
-				<h2 data-comment-heading className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">Comentarios</h2>
+				<h2 data-comment-heading className="section-title mt-3 text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-[36px]">Comentarios</h2>
 			</div>
 
 			<div ref={listRef} className="mt-8 space-y-5">
@@ -104,19 +104,30 @@ export default function Comentaries({ comments }: ComentariesProps) {
 					<article
 						data-comment-card
 						key={comment.id}
-						className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+						className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-md sm:p-6"
 					>
-						<p className="text-base italic leading-relaxed text-slate-600 sm:text-lg whitespace-pre-line">
-							"{comment.opinion}"
-						</p>
+						<div className="relative pl-8">
+							<span
+								aria-hidden="true"
+								className="pointer-events-none absolute -left-1 -top-5 text-7xl font-bold leading-none text-[#BF0F0F]/20"
+							>
+								"
+							</span>
+							<p className="text-base italic leading-relaxed text-slate-700 sm:text-lg whitespace-pre-line">
+								{comment.opinion}
+							</p>
+						</div>
 
 						<div className="mt-5 flex items-center gap-3">
 							<img
 								src={getAuthorPhotoUrl(comment.foto_autor)}
 								alt={getAuthorPhotoAlt(comment.foto_autor, comment.autor)}
-								className="h-12 w-12 rounded-full border border-slate-200 object-cover"
+								className="h-14 w-14 rounded-full border border-slate-200 object-cover sm:h-16 sm:w-16"
 							/>
-							<p className="text-base font-semibold text-slate-900">{comment.autor}</p>
+							<div>
+								<p className="text-base font-semibold text-slate-900 sm:text-lg">{comment.autor}</p>
+								<p className="text-sm font-medium text-slate-500">Asociado AFAUTAL</p>
+							</div>
 						</div>
 					</article>
 				))}

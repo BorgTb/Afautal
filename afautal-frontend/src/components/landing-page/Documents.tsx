@@ -96,14 +96,14 @@ export default function Documents({ cards }: DocumentsProps) {
 	}, []);
 
 	return (
-		<section ref={sectionRef} className="mx-auto w-full max-w-[1280px] px-4 py-16 sm:px-6 lg:px-10">
+		<section ref={sectionRef} className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-10">
 			<div className="overflow-hidden ">
 				<div className="space-y-8 p-6 sm:p-8 lg:p-12">
 					<div ref={contentRef} className="max-w-3xl">
 						<p data-doc-text className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">
 							Biblioteca
 						</p>
-						<h2 data-doc-text className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">
+						<h2 data-doc-text className="section-title mt-3 text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-[36px]">
 							Accede a nuestros documentos
 						</h2>
 						<p data-doc-text className="mt-5 text-base leading-relaxed text-slate-600 sm:text-lg">
@@ -113,7 +113,7 @@ export default function Documents({ cards }: DocumentsProps) {
 						<a
 							data-doc-cta
 							href="/documentos"
-							className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-red-700"
+							className="btn-animate mt-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 active:scale-[0.98]"
 						>
 							Ir a la vista de documentos
 							<span aria-hidden="true">→</span>

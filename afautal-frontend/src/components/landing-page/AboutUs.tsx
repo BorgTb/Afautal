@@ -137,7 +137,7 @@ export default function AboutUs({ data }: AboutUsProps) {
     return (
         <section
             ref={sectionRef}
-            className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-10"
+            className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-10"
         >
             <div ref={imageRef} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
                 <img
@@ -149,7 +149,7 @@ export default function AboutUs({ data }: AboutUsProps) {
 
             <div ref={textRef}>
                 <p data-about-text className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">AFAUTAL</p>
-                <h2 data-about-text className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">{title}</h2>
+                <h2 data-about-text className="section-title mt-3 text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-[36px]">{title}</h2>
                 <p data-about-text className="mt-6 text-base leading-relaxed text-slate-600 sm:text-lg">{description}</p>
             </div>
         </section>

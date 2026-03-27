@@ -209,11 +209,33 @@ export default async function Home() {
 
   return (
     <>
-      {heroData.length > 0 && <HeroNews data={heroData} autoplayInterval={5000} />}
-      {aboutUsData && <AboutUs data={aboutUsData} />}
-      {misionVisionData && <MisionAndValue data={misionVisionData} />}
-      {commentsData.length > 0 && <Comentaries comments={commentsData} />}
-      <Documents cards={documentsCards} />
+      {heroData.length > 0 && (
+        <div className="section-shell bg-white">
+          <HeroNews data={heroData} autoplayInterval={5000} />
+        </div>
+      )}
+      <div className="section-divider" aria-hidden="true" />
+      {aboutUsData && (
+        <div className="section-shell section-shell--alt">
+          <AboutUs data={aboutUsData} />
+        </div>
+      )}
+      <div className="section-divider" aria-hidden="true" />
+      {misionVisionData && (
+        <div className="section-shell bg-white">
+          <MisionAndValue data={misionVisionData} />
+        </div>
+      )}
+      <div className="section-divider" aria-hidden="true" />
+      {commentsData.length > 0 && (
+        <div className="section-shell section-shell--alt">
+          <Comentaries comments={commentsData} />
+        </div>
+      )}
+      <div className="section-divider" aria-hidden="true" />
+      <div className="section-shell bg-white">
+        <Documents cards={documentsCards} />
+      </div>
     </>
   );
 }
