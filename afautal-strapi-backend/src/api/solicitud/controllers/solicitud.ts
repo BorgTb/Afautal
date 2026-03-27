@@ -26,18 +26,17 @@ interface SolicitudWriteData {
 	correo_electronico: string;
 	unidad_academica: string | null;
 	fecha_nacimiento: string | null;
-	tipo_contrato: 'Planta_regular' | null;
+	tipo_contrato: 'Planta regular' | null; // Corregido: Sin guion bajo
 	jerarquia: 'Titular' | null;
 	region: string | null;
 	comuna: string | null;
 	ciudad: string | null;
 	direccion_particular: string | null;
 	acepta_descuento: boolean;
-	estado: 'aprobado';
 }
 
-const normalizeTipoContrato = (value?: string): 'Planta_regular' | null => {
-	if (value === 'Planta_regular') {
+const normalizeTipoContrato = (value?: string): 'Planta regular' | null => {
+	if (value === 'Planta regular') {
 		return value;
 	}
 
@@ -146,7 +145,6 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			ciudad: payload.ciudad?.trim() || null,
 			direccion_particular: payload.direccion_particular?.trim() || null,
 			acepta_descuento: Boolean(payload.acepta_descuento),
-			estado: 'aprobado',
 		};
 
 		let solicitudId: number | null = null;

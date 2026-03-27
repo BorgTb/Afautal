@@ -741,9 +741,6 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     direccion_particular: Schema.Attribute.String;
-    estado: Schema.Attribute.Enumeration<
-      ['pendiente', 'aprobado', 'rechazado']
-    >;
     fecha_nacimiento: Schema.Attribute.Date;
     jerarquia: Schema.Attribute.Enumeration<['Titular']>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1264,7 +1261,6 @@ export interface PluginUsersPermissionsUser
       'oneToOne',
       'api::solicitud.solicitud'
     >;
-    unidad_academica: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

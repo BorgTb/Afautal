@@ -6,6 +6,17 @@ export interface AuthUser {
   nombre_completo?: string;
   unidad_academica?: string;
   password_temporal?: boolean;
+  solicitud?: {
+    rut?: string;
+    fecha_nacimiento?: string;
+    unidad_academica?: string;
+    tipo_contrato?: string;
+    jerarquia?: string;
+    region?: string;
+    comuna?: string;
+    ciudad?: string;
+    direccion_particular?: string;
+  };
 }
 
 export interface LoginResponse {

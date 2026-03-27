@@ -55,14 +55,6 @@
     "direccion_particular": {
       "type": "string"
     },
-    "estado": {
-      "type": "enumeration",
-      "enum": [
-        "pendiente",
-        "aprobado",
-        "rechazado"
-      ]
-    },
     "acepta_descuento": {
       "type": "boolean"
     },

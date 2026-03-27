@@ -71,7 +71,11 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 
     const user = await strapi.db.query('plugin::users-permissions.user').findOne({
       where: { id: authUserId },
-      select: ['id', 'username', 'email', 'rut', 'nombre_completo', 'unidad_academica', 'password_temporal'],
+      // Eliminamos el 'select' restrictivo y agregamos 'populate'
+      // para que incluya toda la info de la solicitud en la respuesta
+      populate: {
+        solicitud: true,
+      },
     });
 
     if (!user) {
