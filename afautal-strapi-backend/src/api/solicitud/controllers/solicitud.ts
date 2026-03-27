@@ -162,9 +162,11 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 		}
 
 		if (!solicitudId) {
-			const solicitud = await strapi.documents('api::solicitud.solicitud').create({
-				status: 'published',
-				data: solicitudData,
+			const solicitud = await strapi.db.query('api::solicitud.solicitud').create({
+				data: {
+					...solicitudData,
+					publishedAt: new Date(),
+				},
 			});
 
 			solicitudId = solicitud.id as number;
@@ -236,10 +238,46 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			return ctx.throw(500, 'La contraseña temporal generada no pudo validarse.');
 		}
 
-		await strapi.db.query('api::solicitud.solicitud').update({
+		const persistedSolicitud = await strapi.db.query('api::solicitud.solicitud').findOne({
 			where: { id: solicitudId },
-			data: { usuario: userId },
+			select: ['id'],
 		});
+
+		if (!persistedSolicitud?.id) {
+			return ctx.throw(500, 'No fue posible persistir la solicitud de registro.');
+		}
+
+		const linkedUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+			where: { id: userId },
+			populate: { solicitud: true },
+		});
+
+		if (!linkedUser?.solicitud || linkedUser.solicitud.id !== solicitudId) {
+			await userService.edit(userId, {
+				solicitud: solicitudId,
+			});
+		}
+
+		const finalLinkedUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+			where: { id: userId },
+			populate: { solicitud: true },
+		});
+
+		if (!finalLinkedUser?.solicitud || finalLinkedUser.solicitud.id !== solicitudId) {
+			await strapi.db.query('plugin::users-permissions.user').update({
+				where: { id: userId },
+				data: { solicitud: solicitudId },
+			});
+
+			const fallbackLinkedUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+				where: { id: userId },
+				populate: { solicitud: true },
+			});
+
+			if (!fallbackLinkedUser?.solicitud || fallbackLinkedUser.solicitud.id !== solicitudId) {
+				return ctx.throw(500, 'No fue posible vincular la solicitud con el usuario.');
+			}
+		}
 
 		const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
@@ -265,6 +303,7 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			message: 'Solicitud registrada. Revisa tu correo para obtener la contraseña temporal.',
 			data: {
 				solicitudId,
+				userId,
 			},
 		});
 	},

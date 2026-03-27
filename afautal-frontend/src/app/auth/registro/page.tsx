@@ -1,18 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { submitSolicitudRegistro } from "@/lib/auth";
+import { fetchRegistroOptions, submitSolicitudRegistro } from "@/lib/auth";
 
 export default function RegisterPage() {
 	const [rut, setRut] = useState("");
 	const [nombreCompleto, setNombreCompleto] = useState("");
 	const [correo, setCorreo] = useState("");
 	const [unidadAcademica, setUnidadAcademica] = useState("");
+	const [fechaNacimiento, setFechaNacimiento] = useState("");
+	const [tipoContratoOptions, setTipoContratoOptions] = useState<string[]>(["Planta_regular"]);
+	const [jerarquiaOptions, setJerarquiaOptions] = useState<string[]>(["Titular"]);
+	const [tipoContrato, setTipoContrato] = useState("Planta_regular");
+	const [jerarquia, setJerarquia] = useState("Titular");
+	const [region, setRegion] = useState("");
+	const [comuna, setComuna] = useState("");
+	const [ciudad, setCiudad] = useState("");
+	const [direccionParticular, setDireccionParticular] = useState("");
+	const [aceptaDescuento, setAceptaDescuento] = useState(false);
 	const [aceptaTerminos, setAceptaTerminos] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+	useEffect(() => {
+		let active = true;
+
+		const loadRegistroOptions = async () => {
+			try {
+				const options = await fetchRegistroOptions();
+
+				if (!active) {
+					return;
+				}
+
+				if (options.tipo_contrato.length > 0) {
+					setTipoContratoOptions(options.tipo_contrato);
+					setTipoContrato(options.tipo_contrato[0]);
+				}
+
+				if (options.jerarquia.length > 0) {
+					setJerarquiaOptions(options.jerarquia);
+					setJerarquia(options.jerarquia[0]);
+				}
+			} catch {
+				// Keep fallback options when dynamic options cannot be loaded.
+			}
+		};
+
+		void loadRegistroOptions();
+
+		return () => {
+			active = false;
+		};
+	}, []);
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -32,6 +74,14 @@ export default function RegisterPage() {
 				nombre_completo: nombreCompleto,
 				correo_electronico: correo,
 				unidad_academica: unidadAcademica,
+				fecha_nacimiento: fechaNacimiento || undefined,
+				tipo_contrato: tipoContrato || undefined,
+				jerarquia: jerarquia || undefined,
+				region,
+				comuna,
+				ciudad,
+				direccion_particular: direccionParticular,
+				acepta_descuento: aceptaDescuento,
 			});
 
 			setSuccessMessage(
@@ -41,6 +91,14 @@ export default function RegisterPage() {
 			setNombreCompleto("");
 			setCorreo("");
 			setUnidadAcademica("");
+			setFechaNacimiento("");
+			setTipoContrato(tipoContratoOptions[0] || "");
+			setJerarquia(jerarquiaOptions[0] || "");
+			setRegion("");
+			setComuna("");
+			setCiudad("");
+			setDireccionParticular("");
+			setAceptaDescuento(false);
 			setAceptaTerminos(false);
 		} catch (submitError) {
 			const message = submitError instanceof Error ? submitError.message : "No fue posible crear la solicitud.";
@@ -125,10 +183,136 @@ export default function RegisterPage() {
 								type="text"
 								value={unidadAcademica}
 								onChange={(event) => setUnidadAcademica(event.target.value)}
-								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
 								placeholder="Unidad academica (opcional)"
 							/>
 						</div>
+
+						<div>
+							<label htmlFor="fecha-nacimiento" className="sr-only">
+								Fecha de nacimiento
+							</label>
+							<input
+								id="fecha-nacimiento"
+								name="fechaNacimiento"
+								type="date"
+								value={fechaNacimiento}
+								onChange={(event) => setFechaNacimiento(event.target.value)}
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+							/>
+						</div>
+
+						<div>
+							<label htmlFor="tipo-contrato" className="sr-only">
+								Tipo de contrato
+							</label>
+							<select
+								id="tipo-contrato"
+								name="tipoContrato"
+								value={tipoContrato}
+								onChange={(event) => setTipoContrato(event.target.value)}
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+							>
+								{tipoContratoOptions.map((option) => (
+									<option key={option} value={option}>
+										{option}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div>
+							<label htmlFor="jerarquia" className="sr-only">
+								Jerarquia
+							</label>
+							<select
+								id="jerarquia"
+								name="jerarquia"
+								value={jerarquia}
+								onChange={(event) => setJerarquia(event.target.value)}
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+							>
+								{jerarquiaOptions.map((option) => (
+									<option key={option} value={option}>
+										{option}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div>
+							<label htmlFor="region" className="sr-only">
+								Region
+							</label>
+							<input
+								id="region"
+								name="region"
+								type="text"
+								value={region}
+								onChange={(event) => setRegion(event.target.value)}
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+								placeholder="Region"
+							/>
+						</div>
+
+						<div>
+							<label htmlFor="comuna" className="sr-only">
+								Comuna
+							</label>
+							<input
+								id="comuna"
+								name="comuna"
+								type="text"
+								value={comuna}
+								onChange={(event) => setComuna(event.target.value)}
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+								placeholder="Comuna"
+							/>
+						</div>
+
+						<div>
+							<label htmlFor="ciudad" className="sr-only">
+								Ciudad
+							</label>
+							<input
+								id="ciudad"
+								name="ciudad"
+								type="text"
+								value={ciudad}
+								onChange={(event) => setCiudad(event.target.value)}
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+								placeholder="Ciudad"
+							/>
+						</div>
+
+						<div>
+							<label htmlFor="direccion-particular" className="sr-only">
+								Direccion particular
+							</label>
+							<input
+								id="direccion-particular"
+								name="direccionParticular"
+								type="text"
+								value={direccionParticular}
+								onChange={(event) => setDireccionParticular(event.target.value)}
+								className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-[#BF0F0F] focus:border-[#BF0F0F] focus:z-10 sm:text-sm"
+								placeholder="Direccion particular"
+							/>
+						</div>
+					</div>
+
+					<div className="flex items-center">
+						<input
+							id="acepta-descuento"
+							name="aceptaDescuento"
+							type="checkbox"
+							checked={aceptaDescuento}
+							onChange={(event) => setAceptaDescuento(event.target.checked)}
+							className="h-4 w-4 text-[#BF0F0F] focus:ring-[#BF0F0F] border-gray-300 rounded"
+						/>
+						<label htmlFor="acepta-descuento" className="ml-2 block text-sm text-gray-900">
+							Acepto descuento por planilla
+						</label>
 					</div>
 
 					<div className="flex items-center">

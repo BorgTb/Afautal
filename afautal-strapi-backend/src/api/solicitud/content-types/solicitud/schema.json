@@ -34,7 +34,7 @@
     "tipo_contrato": {
       "type": "enumeration",
       "enum": [
-        "Planta_regular"
+        "Planta regular"
       ]
     },
     "jerarquia": {

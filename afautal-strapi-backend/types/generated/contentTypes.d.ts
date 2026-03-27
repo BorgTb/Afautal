@@ -758,7 +758,7 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
     rut: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
-    tipo_contrato: Schema.Attribute.Enumeration<['Planta_regular']>;
+    tipo_contrato: Schema.Attribute.Enumeration<['Planta regular']>;
     unidad_academica: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
