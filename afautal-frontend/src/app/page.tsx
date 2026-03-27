@@ -190,15 +190,10 @@ export default async function Home() {
     ),
   ]);
 
-  const selectedHeroNoticia =
+  const heroData =
     noticiasResult.status === "fulfilled"
-      ? noticiasResult.value.data.find((item) => {
-          const source = item.attributes ?? item;
-          return source.noticia_principal === true;
-        }) ?? noticiasResult.value.data[0]
-      : null;
-
-  const heroData = selectedHeroNoticia ? mapNoticiaToHero(selectedHeroNoticia) : null;
+      ? noticiasResult.value.data.map(mapNoticiaToHero).filter((item) => item.id || item.titulo || item.resumen)
+      : [];
   const aboutUsData =
     aboutUsResult.status === "fulfilled" ? aboutUsResult.value.data : null;
   const misionVisionData =
@@ -214,7 +209,7 @@ export default async function Home() {
 
   return (
     <>
-      {heroData && <HeroNews data={heroData} />}
+      {heroData.length > 0 && <HeroNews data={heroData} autoplayInterval={5000} />}
       {aboutUsData && <AboutUs data={aboutUsData} />}
       {misionVisionData && <MisionAndValue data={misionVisionData} />}
       {commentsData.length > 0 && <Comentaries comments={commentsData} />}

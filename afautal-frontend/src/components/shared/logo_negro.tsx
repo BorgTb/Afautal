@@ -5,10 +5,10 @@ interface LogoProps {
     priority?: boolean;
 }
 
-export default function Logo({ className = "", priority = false }: LogoProps) {
+export default function LogoNegro({ className = "", priority = false }: LogoProps) {
     return (
         <Image
-            src="/AFAUTAL.svg"
+            src="/AFAUTAL_GRIS.svg"
             alt="Afautal Logo"
             width={220}
             height={74}

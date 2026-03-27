@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getStrapiMediaURL } from "@/lib/strapi";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HeroImageAttributes {
   url?: string;
@@ -35,6 +35,11 @@ export interface HeroNewsData {
   imagen?: HeroImageValue;
   autor?: string;
   fechaPublicacion?: string;
+}
+
+interface HeroNewsProps {
+  data: HeroNewsData[];
+  autoplayInterval?: number;
 }
 
 function formatDate(value?: string): string {
@@ -76,10 +81,38 @@ function getMediaUrlFromField(field: HeroImageValue): string {
   return getMediaUrlFromSingleField(field);
 }
 
-export default function HeroNoticia({ data }: { data: HeroNewsData }) {
+export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const textRef = useRef<HTMLDivElement | null>(null);
   const imageRef = useRef<HTMLDivElement | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const newsItems = useMemo(
+    () => data.filter((item) => item && (item.titulo || item.resumen || item.imagen)),
+    [data]
+  );
+
+  const hasManyItems = newsItems.length > 1;
+
+  useEffect(() => {
+    if (!hasManyItems || isHovering) return;
+
+    const timer = window.setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % newsItems.length);
+    }, autoplayInterval);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [autoplayInterval, hasManyItems, isHovering, newsItems.length]);
+
+  useEffect(() => {
+    setCurrentIndex((prev) => {
+      if (!newsItems.length) return 0;
+      return prev >= newsItems.length ? 0 : prev;
+    });
+  }, [newsItems.length]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -89,70 +122,108 @@ export default function HeroNoticia({ data }: { data: HeroNewsData }) {
     if (!section || !text || !image) return;
 
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mediaQuery.matches) return;
-
     const textItems = text.querySelectorAll("[data-hero-text]");
     const ctaButton = text.querySelector("[data-hero-button]");
 
-    gsap.registerPlugin(ScrollTrigger);
-
     const ctx = gsap.context(() => {
-      const timeline = gsap.timeline({
-        defaults: { ease: "power3.out", duration: 0.9 },
-        scrollTrigger: {
-          trigger: section,
-          start: "top 80%",
-          end: "bottom 20%",
-          toggleActions: "play none none none",
-          once: true,
-        },
-      });
+      if (mediaQuery.matches) {
+        gsap.set([image, textItems, ctaButton], { clearProps: "all" });
+        return;
+      }
+
+      const timeline = gsap.timeline({ defaults: { ease: "power3.out", duration: 0.65 } });
 
       timeline
-        .fromTo(image, { x: 70, autoAlpha: 0 }, { x: 0, autoAlpha: 1 })
+        .fromTo(image, { x: 36, autoAlpha: 0 }, { x: 0, autoAlpha: 1 })
         .fromTo(
           textItems,
-          { x: -60, autoAlpha: 0 },
-          { x: 0, autoAlpha: 1, stagger: 0.12, duration: 0.75 },
-          "-=0.5"
+          { x: -24, autoAlpha: 0 },
+          { x: 0, autoAlpha: 1, stagger: 0.08, duration: 0.45 },
+          "-=0.35"
         )
         .fromTo(
           ctaButton,
           { y: 16, scale: 0.96, autoAlpha: 0 },
-          { y: 0, scale: 1, autoAlpha: 1, duration: 0.5, ease: "back.out(1.4)" },
-          "-=0.2"
+          { y: 0, scale: 1, autoAlpha: 1, duration: 0.32, ease: "back.out(1.4)" },
+          "-=0.1"
         );
     }, section);
 
     return () => {
       ctx.revert();
     };
-  }, []);
+  }, [currentIndex]);
 
-  const titulo = truncateText(data.titulo, 140);
-  const resumen = truncateText(data.resumen, 320);
-  const imagenUrl = getMediaUrlFromField(data.imagen) || "/hero-noticia.jpg";
-  const fechaPublicacion = formatDate(data.fechaPublicacion);
-  const metaInfo = [data.autor?.trim(), fechaPublicacion].filter(Boolean).join(" • ");
-  const detailHref = data.id ? `/news/${data.id}` : "/news";
+  if (!newsItems.length) return null;
+
+  const currentItem = newsItems[currentIndex] ?? newsItems[0];
+  const title = truncateText(currentItem.titulo, 140);
+  const summary = truncateText(currentItem.resumen, 320);
+  const imageUrl = getMediaUrlFromField(currentItem.imagen) || "/hero-noticia.jpg";
+  const publicationDate = formatDate(currentItem.fechaPublicacion);
+  const metaInfo = [currentItem.autor?.trim(), publicationDate].filter(Boolean).join(" • ");
+  const detailHref = currentItem.id ? `/news/${currentItem.id}` : "/news";
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + newsItems.length) % newsItems.length);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % newsItems.length);
+  };
 
   return (
     <section
       ref={sectionRef}
-      className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-10"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      className="group relative mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-10"
     >
-      <div ref={textRef} className="flex flex-col justify-center">
-        {metaInfo && (
-          <p data-hero-text className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            {metaInfo}
+      {hasManyItems && (
+        <>
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Ver noticia anterior"
+            className="absolute left-1 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg transition-all duration-200 hover:border-slate-300 hover:text-[#BF0F0F] lg:left-0 lg:flex xl:-left-15"
+          >
+            <ChevronLeft className="h-8 w-8" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Ver siguiente noticia"
+            className="absolute right-1 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg transition-all duration-200 hover:border-slate-300 hover:text-[#BF0F0F] lg:right-0 lg:flex xl:-right-15"
+          >
+            <ChevronRight className="h-8 w-8" aria-hidden="true" />
+          </button>
+        </>
+      )}
+
+      <div
+        ref={textRef}
+        className="flex h-[260px] flex-col justify-between sm:h-[340px] lg:h-[420px]"
+      >
+        <div>
+          <p
+            data-hero-text
+            className="mb-4 min-h-[20px] text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
+          >
+            {metaInfo || <span className="invisible">-</span>}
           </p>
-        )}
-        <h1 data-hero-text className="max-w-[20ch] text-3xl font-bold leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
-          {titulo}
-        </h1>
-        <p data-hero-text className="mt-6 max-w-[60ch] text-base leading-relaxed text-slate-600 sm:text-lg">
-          {resumen}
-        </p>
+          <h1
+            data-hero-text
+            className="max-w-[20ch] min-h-[78px] text-3xl font-bold leading-tight text-slate-900 sm:min-h-[94px] sm:text-4xl lg:min-h-[120px] lg:text-5xl"
+          >
+            {title}
+          </h1>
+          <p
+            data-hero-text
+            className="mt-6 max-w-[60ch] min-h-[120px] text-base leading-relaxed text-slate-600 sm:min-h-[128px] sm:text-lg lg:min-h-[136px]"
+          >
+            {summary}
+          </p>
+        </div>
         <Link
           data-hero-button
           href={detailHref}
@@ -161,13 +232,36 @@ export default function HeroNoticia({ data }: { data: HeroNewsData }) {
           Ver Más →
         </Link>
       </div>
-      <div ref={imageRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-2xl">
+      <div
+        ref={imageRef}
+        className="h-[260px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:h-[340px] lg:h-[420px]"
+      >
         <img
-          src={imagenUrl}
+          src={imageUrl}
           alt="Noticia principal"
-          className="h-[260px] w-full object-cover sm:h-[340px] lg:h-full lg:min-h-[420px]"
+          className="h-full w-full bg-white object-contain"
         />
       </div>
+
+      {hasManyItems && (
+        <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 lg:bottom-5">
+          {newsItems.map((item, index) => {
+            const isActive = index === currentIndex;
+
+            return (
+              <button
+                key={item.id ?? `hero-dot-${index}`}
+                type="button"
+                onClick={() => setCurrentIndex(index)}
+                aria-label={`Ir a la noticia ${index + 1}`}
+                className={`h-2.5 rounded-full transition-all duration-200 ${
+                  isActive ? "w-7 bg-[#BF0F0F]" : "w-2.5 bg-slate-300 hover:bg-slate-400"
+                }`}
+              />
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
