@@ -65,7 +65,7 @@ export default function Footer() {
 								target="_blank"
 								rel="noreferrer"
 								aria-label="Instagram AFAUTAL"
-								className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-500 bg-slate-800 text-white visited:text-white transition-colors hover:border-red-300 hover:text-red-300"
+								className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white bg-black-800 text-white visited:text-white transition-colors hover:border-red-300 hover:text-red-300"
 							>
 								<Instagram className="h-5 w-5" />
 							</a>

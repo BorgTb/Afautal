@@ -720,6 +720,56 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
+  collectionName: 'solicitudes';
+  info: {
+    displayName: 'Solicitud';
+    pluralName: 'solicitudes';
+    singularName: 'solicitud';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    acepta_descuento: Schema.Attribute.Boolean;
+    ciudad: Schema.Attribute.String;
+    comuna: Schema.Attribute.String;
+    correo_electronico: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    direccion_particular: Schema.Attribute.String;
+    estado: Schema.Attribute.Enumeration<
+      ['pendiente', 'aprobado', 'rechazado']
+    >;
+    fecha_nacimiento: Schema.Attribute.Date;
+    jerarquia: Schema.Attribute.Enumeration<['Titular']>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::solicitud.solicitud'
+    > &
+      Schema.Attribute.Private;
+    nombre_completo: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    region: Schema.Attribute.String;
+    rut: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    tipo_contrato: Schema.Attribute.Enumeration<['Planta_regular']>;
+    unidad_academica: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usuario: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -1176,7 +1226,6 @@ export interface PluginUsersPermissionsUser
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -1196,11 +1245,13 @@ export interface PluginUsersPermissionsUser
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
+    nombre_completo: Schema.Attribute.String;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    password_temporal: Schema.Attribute.Boolean;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1208,6 +1259,12 @@ export interface PluginUsersPermissionsUser
       'manyToOne',
       'plugin::users-permissions.role'
     >;
+    rut: Schema.Attribute.String & Schema.Attribute.Unique;
+    solicitud: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::solicitud.solicitud'
+    >;
+    unidad_academica: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1240,6 +1297,7 @@ declare module '@strapi/strapi' {
       'api::mision-vision-valor.mision-vision-valor': ApiMisionVisionValorMisionVisionValor;
       'api::nosotros.nosotros': ApiNosotrosNosotros;
       'api::noticia.noticia': ApiNoticiaNoticia;
+      'api::solicitud.solicitud': ApiSolicitudSolicitud;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

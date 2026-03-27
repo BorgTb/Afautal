@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/shared/navbar";
 import Footer from "@/components/shared/footer";
+import AppAuthProvider from "@/components/shared/auth-provider";
+import AuthGate from "@/components/shared/auth-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,9 +39,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AppAuthProvider>
+          <AuthGate>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </AuthGate>
+        </AppAuthProvider>
       </body>
     </html>
   );

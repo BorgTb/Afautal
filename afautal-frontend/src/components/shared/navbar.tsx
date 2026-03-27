@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Menu, X, User, UserPlus, Flame } from "lucide-react";
+import { Clock3, Flame, HeartPulse, KeyRound, LogOut, Menu, User, UserPlus, X } from "lucide-react";
 import Logo from "./logo";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Tipado para los links
 interface NavLink {
@@ -20,6 +21,7 @@ const navLinks: NavLink[] = [
 ];
 
 export default function Navbar() {
+  const { isAuthenticated, isTemporaryPassword, loading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [hasShadow, setHasShadow] = useState(false);
@@ -81,8 +83,8 @@ export default function Navbar() {
           </div>
 
           {/* Navegación Desktop */}
-          <div className="hidden xl:flex flex-1 justify-center">
-            <div className="flex items-center gap-20">
+          <div className="hidden lg:flex flex-1 justify-center">
+            <div className="flex items-center gap-6 xl:gap-10 2xl:gap-16">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -95,35 +97,87 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Botones de Acción (Visibles para todos) */}
+          {/* Botones de Accion */}
           <div className="hidden lg:flex shrink-0 items-center gap-3 xl:gap-4">
-            {/*
-            <Link 
-              href="/vales-gas" 
-              className="flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-orange-600 hover:shadow-md"
-            >
-              <Flame size={16} />
-              Vales de Gas
-            </Link>
-            */}
-            
-            <Link 
-              href="/auth/registro" 
-              className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-[#A50D0D] hover:shadow-md active:translate-y-0"
-            >
-              <UserPlus size={16} />
-              Hazte Socio
-            </Link>
+            {!loading && !isAuthenticated && (
+              <>
+                <Link
+                  href="/auth/registro"
+                  className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-[#A50D0D] hover:shadow-md active:translate-y-0"
+                >
+                  <UserPlus size={16} />
+                  Hazte Socio
+                </Link>
 
-            <div className="h-8 w-px bg-slate-200" />
+                <div className="h-8 w-px bg-slate-200" />
 
-            <Link 
-              href="/auth/inicio-sesion" 
-              className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
-            >
-              <User size={16} />
-              Portal
-            </Link>
+                <Link
+                  href="/auth/inicio-sesion"
+                  className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
+                >
+                  <User size={16} />
+                  Portal
+                </Link>
+              </>
+            )}
+
+            {!loading && isAuthenticated && isTemporaryPassword && (
+              <>
+                <Link
+                  href="/auth/cambio-contrasena-inicial"
+                  className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-[#A50D0D] hover:shadow-md active:translate-y-0"
+                >
+                  <KeyRound size={16} />
+                  Cambiar Contrasena
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
+                >
+                  <LogOut size={16} />
+                  Cerrar sesion
+                </button>
+              </>
+            )}
+
+            {!loading && isAuthenticated && !isTemporaryPassword && (
+              <>
+                <Link
+                  href="/dashboard/horas-opticas"
+                  className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
+                >
+                  <Clock3 size={16} />
+                  Horas Opticas
+                </Link>
+
+                <Link
+                  href="/dashboard/gestion-gas"
+                  className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
+                >
+                  <Flame size={16} />
+                  Comprar vales
+                </Link>
+
+                <Link
+                  href="/dashboard/plan-complementario-salud"
+                  className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
+                >
+                  <HeartPulse size={16} />
+                  Plan salud
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-slate-200 active:translate-y-0"
+                >
+                  <LogOut size={16} />
+                  Cerrar sesion
+                </button>
+              </>
+            )}
           </div>
 
           {/* Menú Móvil Botón */}
@@ -156,15 +210,82 @@ export default function Navbar() {
           </div>
           <hr />
           <div className="flex flex-col gap-3 pb-4">
-            <Link href="/vales-gas" className="flex justify-center items-center gap-2 rounded-xl bg-orange-500 py-4 text-white font-black">
-              <Flame size={20} /> Comprar Gas
-            </Link>
-            <Link href="/auth/register" className="flex justify-center items-center gap-2 rounded-xl bg-emerald-600 py-4 text-white font-black">
-              <UserPlus size={20} /> Ser Socio
-            </Link>
-            <Link href="/auth/login" className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black">
-              <User size={20} /> Entrar al Portal
-            </Link>
+            {!loading && !isAuthenticated && (
+              <>
+                <Link
+                  href="/auth/registro"
+                  onClick={() => setIsOpen(false)}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-[#BF0F0F] py-4 text-white font-black"
+                >
+                  <UserPlus size={20} /> Hazte Socio
+                </Link>
+                <Link
+                  href="/auth/inicio-sesion"
+                  onClick={() => setIsOpen(false)}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black"
+                >
+                  <User size={20} /> Portal
+                </Link>
+              </>
+            )}
+
+            {!loading && isAuthenticated && isTemporaryPassword && (
+              <>
+                <Link
+                  href="/auth/cambio-contrasena-inicial"
+                  onClick={() => setIsOpen(false)}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-[#BF0F0F] py-4 text-white font-black"
+                >
+                  <KeyRound size={20} /> Cambiar Contrasena
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setIsOpen(false);
+                  }}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black"
+                >
+                  <LogOut size={20} /> Cerrar sesion
+                </button>
+              </>
+            )}
+
+            {!loading && isAuthenticated && !isTemporaryPassword && (
+              <>
+                <Link
+                  href="/dashboard/horas-opticas"
+                  onClick={() => setIsOpen(false)}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black"
+                >
+                  <Clock3 size={20} /> Horas Opticas
+                </Link>
+                <Link
+                  href="/dashboard/gestion-gas"
+                  onClick={() => setIsOpen(false)}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black"
+                >
+                  <Flame size={20} /> Comprar vales
+                </Link>
+                <Link
+                  href="/dashboard/plan-complementario-salud"
+                  onClick={() => setIsOpen(false)}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-slate-900 py-4 text-white font-black"
+                >
+                  <HeartPulse size={20} /> Plan salud
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setIsOpen(false);
+                  }}
+                  className="flex justify-center items-center gap-2 rounded-xl bg-[#BF0F0F] py-4 text-white font-black"
+                >
+                  <LogOut size={20} /> Cerrar sesion
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

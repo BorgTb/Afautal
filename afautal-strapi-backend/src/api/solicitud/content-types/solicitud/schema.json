@@ -1,0 +1,76 @@
+{
+  "kind": "collectionType",
+  "collectionName": "solicitudes",
+  "info": {
+    "singularName": "solicitud",
+    "pluralName": "solicitudes",
+    "displayName": "Solicitud"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "rut": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "nombre_completo": {
+      "type": "string",
+      "required": true
+    },
+    "fecha_nacimiento": {
+      "type": "date"
+    },
+    "correo_electronico": {
+      "type": "email",
+      "required": true,
+      "unique": true
+    },
+    "unidad_academica": {
+      "type": "string"
+    },
+    "tipo_contrato": {
+      "type": "enumeration",
+      "enum": [
+        "Planta_regular"
+      ]
+    },
+    "jerarquia": {
+      "type": "enumeration",
+      "enum": [
+        "Titular"
+      ]
+    },
+    "region": {
+      "type": "string"
+    },
+    "comuna": {
+      "type": "string"
+    },
+    "ciudad": {
+      "type": "string"
+    },
+    "direccion_particular": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": [
+        "pendiente",
+        "aprobado",
+        "rechazado"
+      ]
+    },
+    "acepta_descuento": {
+      "type": "boolean"
+    },
+    "usuario": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "solicitud"
+    }
+  }
+}

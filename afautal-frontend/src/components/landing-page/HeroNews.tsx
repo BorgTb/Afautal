@@ -85,6 +85,8 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
   const sectionRef = useRef<HTMLElement | null>(null);
   const textRef = useRef<HTMLDivElement | null>(null);
   const imageRef = useRef<HTMLDivElement | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchEndXRef = useRef<number | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -157,8 +159,8 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
   if (!newsItems.length) return null;
 
   const currentItem = newsItems[currentIndex] ?? newsItems[0];
-  const title = truncateText(currentItem.titulo, 140);
-  const summary = truncateText(currentItem.resumen, 320);
+  const title = truncateText(currentItem.titulo, 170);
+  const summary = truncateText(currentItem.resumen, 420);
   const imageUrl = getMediaUrlFromField(currentItem.imagen) || "/hero-noticia.jpg";
   const publicationDate = formatDate(currentItem.fechaPublicacion);
   const metaInfo = [currentItem.autor?.trim(), publicationDate].filter(Boolean).join(" • ");
@@ -172,12 +174,47 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
     setCurrentIndex((prev) => (prev + 1) % newsItems.length);
   };
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (!hasManyItems) return;
+    touchStartXRef.current = event.touches[0]?.clientX ?? null;
+    touchEndXRef.current = null;
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLElement>) => {
+    if (!hasManyItems) return;
+    touchEndXRef.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = () => {
+    if (!hasManyItems) return;
+
+    const startX = touchStartXRef.current;
+    const endX = touchEndXRef.current;
+
+    if (startX === null || endX === null) return;
+
+    const SWIPE_THRESHOLD = 42;
+    const deltaX = startX - endX;
+
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+
+    if (deltaX > 0) {
+      handleNext();
+      return;
+    }
+
+    handlePrev();
+  };
+
   return (
     <section
       ref={sectionRef}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className="group relative mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-10"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="group relative mx-auto grid w-[calc(100%-1rem)] max-w-none grid-cols-1 gap-8 px-4 py-16 sm:w-[calc(100%-2rem)] sm:px-6 lg:w-[calc(100%-3rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)] lg:gap-12 lg:px-10 xl:w-[calc(100%-4rem)] xl:px-14 2xl:px-20"
     >
       {hasManyItems && (
         <>
@@ -185,7 +222,7 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
             type="button"
             onClick={handlePrev}
             aria-label="Ver noticia anterior"
-            className="absolute left-1 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg transition-all duration-200 hover:border-slate-300 hover:text-[#BF0F0F] lg:left-0 lg:flex xl:-left-15"
+            className="absolute left-2 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg transition-all duration-200 hover:border-slate-300 hover:text-[#BF0F0F] lg:left-4 lg:flex lg:opacity-0 lg:pointer-events-none lg:group-hover:opacity-100 lg:group-hover:pointer-events-auto lg:focus-visible:opacity-100 lg:focus-visible:pointer-events-auto xl:left-6"
           >
             <ChevronLeft className="h-8 w-8" aria-hidden="true" />
           </button>
@@ -193,7 +230,7 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
             type="button"
             onClick={handleNext}
             aria-label="Ver siguiente noticia"
-            className="absolute right-1 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg transition-all duration-200 hover:border-slate-300 hover:text-[#BF0F0F] lg:right-0 lg:flex xl:-right-15"
+            className="absolute right-2 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg transition-all duration-200 hover:border-slate-300 hover:text-[#BF0F0F] lg:right-4 lg:flex lg:opacity-0 lg:pointer-events-none lg:group-hover:opacity-100 lg:group-hover:pointer-events-auto lg:focus-visible:opacity-100 lg:focus-visible:pointer-events-auto xl:right-6"
           >
             <ChevronRight className="h-8 w-8" aria-hidden="true" />
           </button>
@@ -202,7 +239,7 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
 
       <div
         ref={textRef}
-        className="flex h-[260px] flex-col justify-between sm:h-[340px] lg:h-[420px]"
+        className="flex h-auto flex-col justify-between gap-6 sm:h-[340px] sm:gap-0 lg:h-[420px]"
       >
         <div>
           <p
@@ -213,13 +250,13 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
           </p>
           <h1
             data-hero-text
-            className="max-w-[20ch] min-h-[78px] text-3xl font-bold leading-tight text-slate-900 sm:min-h-[94px] sm:text-4xl lg:min-h-[120px] lg:text-5xl"
+            className="max-w-[24ch] min-h-0 text-3xl font-bold leading-tight text-slate-900 sm:min-h-[94px] sm:text-4xl lg:min-h-[120px] lg:max-w-[30ch] lg:text-5xl"
           >
             {title}
           </h1>
           <p
             data-hero-text
-            className="mt-6 max-w-[60ch] min-h-[120px] text-base leading-relaxed text-slate-600 sm:min-h-[128px] sm:text-lg lg:min-h-[136px]"
+            className="mt-6 max-w-[68ch] min-h-0 text-base leading-relaxed text-slate-600 sm:min-h-[128px] sm:text-lg lg:min-h-[136px] lg:max-w-[74ch]"
           >
             {summary}
           </p>
@@ -234,12 +271,12 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
       </div>
       <div
         ref={imageRef}
-        className="h-[260px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:h-[340px] lg:h-[420px]"
+        className="h-[260px] overflow-hidden rounded-2xl bg-transparent sm:h-[340px] lg:h-[420px]"
       >
         <img
           src={imageUrl}
           alt="Noticia principal"
-          className="h-full w-full bg-white object-contain"
+          className="h-full w-full bg-transparent object-cover object-center sm:object-contain sm:mix-blend-multiply"
         />
       </div>
 
