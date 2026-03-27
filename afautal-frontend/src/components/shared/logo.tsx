@@ -13,7 +13,7 @@ export default function Logo({ className = "", priority = false }: LogoProps) {
             width={220}
             height={74}
             priority={priority}
-            className={`h-auto w-[150px] sm:w-[170px] lg:w-[300px] ${className}`}
+            className={`h-auto w-[150px] sm:w-[170px] lg:w-[250px] ${className}`}
         />
     );
 }
