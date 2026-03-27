@@ -113,20 +113,22 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			return ctx.throw(409, 'El usuario ya tiene una cuenta activa.');
 		}
 
-		const existingSolicitudByRut = await strapi.db.query('api::solicitud.solicitud').findOne({
-			where: { rut },
-			select: ['id'],
+		const solicitudDocuments = strapi.documents('api::solicitud.solicitud') as any;
+
+		const existingSolicitudByRut = await solicitudDocuments.findFirst({
+			filters: { rut },
+			status: 'published',
 		});
 
-		const existingSolicitudByEmail = await strapi.db.query('api::solicitud.solicitud').findOne({
-			where: { correo_electronico: correo },
-			select: ['id'],
+		const existingSolicitudByEmail = await solicitudDocuments.findFirst({
+			filters: { correo_electronico: correo },
+			status: 'published',
 		});
 
 		if (
 			existingSolicitudByRut &&
 			existingSolicitudByEmail &&
-			existingSolicitudByRut.id !== existingSolicitudByEmail.id
+			existingSolicitudByRut.documentId !== existingSolicitudByEmail.documentId
 		) {
 			return ctx.throw(409, 'El RUT y el correo pertenecen a solicitudes distintas.');
 		}
@@ -150,23 +152,21 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 		let solicitudId: number | null = null;
 
 		if (existingSolicitudByRut || existingSolicitudByEmail) {
-			solicitudId = (existingSolicitudByRut?.id ?? existingSolicitudByEmail?.id) as number;
+			const existingSolicitud = (existingSolicitudByRut ?? existingSolicitudByEmail) as any;
 
-			await strapi.db.query('api::solicitud.solicitud').update({
-				where: { id: solicitudId },
-				data: {
-					...solicitudData,
-					publishedAt: new Date(),
-				},
+			const updatedSolicitud = await solicitudDocuments.update({
+				documentId: existingSolicitud.documentId,
+				status: 'published',
+				data: solicitudData,
 			});
+
+			solicitudId = updatedSolicitud.id as number;
 		}
 
 		if (!solicitudId) {
-			const solicitud = await strapi.db.query('api::solicitud.solicitud').create({
-				data: {
-					...solicitudData,
-					publishedAt: new Date(),
-				},
+			const solicitud = await solicitudDocuments.create({
+				status: 'published',
+				data: solicitudData,
 			});
 
 			solicitudId = solicitud.id as number;
@@ -279,6 +279,27 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			}
 		}
 
+		const solicitudWithUser = (await strapi.db.query('api::solicitud.solicitud').findOne({
+			where: { id: solicitudId },
+			populate: { usuario: true },
+		})) as any;
+
+		if (!solicitudWithUser?.usuario || solicitudWithUser.usuario.id !== userId) {
+			await strapi.db.query('api::solicitud.solicitud').update({
+				where: { id: solicitudId },
+				data: { usuario: userId },
+			});
+
+			const fallbackSolicitudWithUser = (await strapi.db.query('api::solicitud.solicitud').findOne({
+				where: { id: solicitudId },
+				populate: { usuario: true },
+			})) as any;
+
+			if (!fallbackSolicitudWithUser?.usuario || fallbackSolicitudWithUser.usuario.id !== userId) {
+				return ctx.throw(500, 'No fue posible vincular el usuario desde la solicitud.');
+			}
+		}
+
 		const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 		try {
@@ -304,6 +325,7 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			data: {
 				solicitudId,
 				userId,
+				relationLinked: true,
 			},
 		});
 	},
