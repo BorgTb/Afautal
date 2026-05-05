@@ -28,6 +28,7 @@ export interface RegistroSolicitudPayload {
   rut: string;
   nombre_completo: string;
   correo_electronico: string;
+  telefono?: string;
   unidad_academica?: string;
   fecha_nacimiento?: string;
   tipo_contrato?: string;

@@ -1,0 +1,41 @@
+{
+  "kind": "singleType",
+  "collectionName": "datos_transferencia",
+  "info": {
+    "singularName": "datos-transferencia",
+    "pluralName": "datos-transferencias",
+    "displayName": "Datos Transferencia",
+    "description": "Datos bancarios oficiales de AFAUTAL para transferencias"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "default": "AFAUTAL"
+    },
+    "rut": {
+      "type": "string",
+      "required": true
+    },
+    "banco": {
+      "type": "string",
+      "required": true
+    },
+    "tipo_cuenta": {
+      "type": "enumeration",
+      "enum": ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"],
+      "required": true
+    },
+    "numero_cuenta": {
+      "type": "string",
+      "required": true
+    },
+    "correo_comprobante": {
+      "type": "email",
+      "required": true
+    }
+  }
+}

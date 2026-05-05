@@ -82,6 +82,12 @@
       "relation": "oneToOne",
       "target": "api::solicitud.solicitud",
       "inversedBy": "usuario"
+    },
+    "solicitudes_gas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::solicitud-gas.solicitud-gas",
+      "mappedBy": "usuario"
     }
   }
 }

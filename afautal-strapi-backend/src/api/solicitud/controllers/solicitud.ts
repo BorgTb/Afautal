@@ -3,7 +3,6 @@
  */
 
 import { factories } from '@strapi/strapi';
-import crypto from 'node:crypto';
 
 interface SolicitudRegistroPayload {
 	rut?: string;
@@ -17,6 +16,7 @@ interface SolicitudRegistroPayload {
 	comuna?: string;
 	ciudad?: string;
 	direccion_particular?: string;
+	telefono?: string;
 	acepta_descuento?: boolean;
 }
 
@@ -26,13 +26,15 @@ interface SolicitudWriteData {
 	correo_electronico: string;
 	unidad_academica: string | null;
 	fecha_nacimiento: string | null;
-	tipo_contrato: 'Planta regular' | null; // Corregido: Sin guion bajo
+	tipo_contrato: 'Planta regular' | null;
 	jerarquia: 'Titular' | null;
 	region: string | null;
 	comuna: string | null;
 	ciudad: string | null;
 	direccion_particular: string | null;
+	telefono: string | null;
 	acepta_descuento: boolean;
+	estado: 'pendiente';
 }
 
 const normalizeTipoContrato = (value?: string): 'Planta regular' | null => {
@@ -51,36 +53,6 @@ const normalizeJerarquia = (value?: string): 'Titular' | null => {
 	return null;
 };
 
-const buildTemporaryPassword = (): string => {
-	const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-	const lowercase = 'abcdefghijkmnopqrstuvwxyz';
-	const digits = '23456789';
-	const all = `${uppercase}${lowercase}${digits}`;
-
-	const pick = (pool: string): string => {
-		const index = crypto.randomInt(0, pool.length);
-		return pool[index];
-	};
-
-	const chars = [pick(uppercase), pick(lowercase), pick(digits)];
-
-	for (let i = 0; i < 9; i += 1) {
-		chars.push(pick(all));
-	}
-
-	for (let i = chars.length - 1; i > 0; i -= 1) {
-		const j = crypto.randomInt(0, i + 1);
-		[chars[i], chars[j]] = [chars[j], chars[i]];
-	}
-
-	return chars.join('');
-};
-
-const buildUsernameFromEmail = (email: string): string => {
-	const prefix = email.split('@')[0]?.replace(/[^a-zA-Z0-9._-]/g, '') || 'usuario';
-	return `${prefix}-${Date.now()}`;
-};
-
 export default factories.createCoreController('api::solicitud.solicitud', ({ strapi }) => ({
 	async registerFromSolicitud(ctx) {
 		const payload = (ctx.request.body ?? {}) as SolicitudRegistroPayload;
@@ -92,44 +64,31 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			return ctx.badRequest('rut, nombre_completo y correo_electronico son obligatorios.');
 		}
 
-		const existingUserByRut = await strapi.db.query('plugin::users-permissions.user').findOne({
-			where: { rut },
-			select: ['id', 'password_temporal'],
+		// Verificar si ya existe un usuario activo
+		const existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+			where: {
+				$or: [{ rut }, { email: correo }],
+				password_temporal: false,
+			},
 		});
 
-		const existingUserByEmail = await strapi.db.query('plugin::users-permissions.user').findOne({
-			where: { email: correo },
-			select: ['id', 'password_temporal'],
-		});
-
-		if (existingUserByRut && existingUserByEmail && existingUserByRut.id !== existingUserByEmail.id) {
-			return ctx.throw(409, 'El RUT y el correo ya pertenecen a usuarios distintos.');
-		}
-
-		const existingUser = existingUserByRut ?? existingUserByEmail;
-
-		if (existingUser && !existingUser.password_temporal) {
-			return ctx.throw(409, 'El usuario ya tiene una cuenta activa.');
+		if (existingUser) {
+			return ctx.throw(409, 'Ya existe una cuenta activa con este RUT o correo.');
 		}
 
 		const solicitudDocuments = strapi.documents('api::solicitud.solicitud') as any;
 
-		const existingSolicitudByRut = await solicitudDocuments.findFirst({
-			filters: { rut },
+		// Verificar si ya existe una solicitud pendiente
+		const existingSolicitud = await solicitudDocuments.findFirst({
+			filters: {
+				$or: [{ rut }, { correo_electronico: correo }],
+				estado: 'pendiente',
+			},
 			status: 'published',
 		});
 
-		const existingSolicitudByEmail = await solicitudDocuments.findFirst({
-			filters: { correo_electronico: correo },
-			status: 'published',
-		});
-
-		if (
-			existingSolicitudByRut &&
-			existingSolicitudByEmail &&
-			existingSolicitudByRut.documentId !== existingSolicitudByEmail.documentId
-		) {
-			return ctx.throw(409, 'El RUT y el correo pertenecen a solicitudes distintas.');
+		if (existingSolicitud) {
+			return ctx.throw(409, 'Ya existe una solicitud de registro pendiente para este usuario.');
 		}
 
 		const solicitudData: SolicitudWriteData = {
@@ -144,186 +103,21 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			comuna: payload.comuna?.trim() || null,
 			ciudad: payload.ciudad?.trim() || null,
 			direccion_particular: payload.direccion_particular?.trim() || null,
+			telefono: payload.telefono?.trim() || null,
 			acepta_descuento: Boolean(payload.acepta_descuento),
+			estado: 'pendiente',
 		};
 
-		let solicitudId: number | null = null;
-
-		if (existingSolicitudByRut || existingSolicitudByEmail) {
-			const existingSolicitud = (existingSolicitudByRut ?? existingSolicitudByEmail) as any;
-
-			const updatedSolicitud = await solicitudDocuments.update({
-				documentId: existingSolicitud.documentId,
-				status: 'published',
-				data: solicitudData,
-			});
-
-			solicitudId = updatedSolicitud.id as number;
-		}
-
-		if (!solicitudId) {
-			const solicitud = await solicitudDocuments.create({
-				status: 'published',
-				data: solicitudData,
-			});
-
-			solicitudId = solicitud.id as number;
-		}
-
-		const temporaryPassword = buildTemporaryPassword();
-		const authenticatedRole = await strapi.db
-			.query('plugin::users-permissions.role')
-			.findOne({ where: { type: 'authenticated' } });
-
-		if (!authenticatedRole) {
-			return ctx.throw(500, 'No se encontro el rol authenticated en users-permissions.');
-		}
-
-		const userService = strapi.plugin('users-permissions').service('user');
-
-		let userId: number;
-
-		if (existingUser) {
-			await userService.edit(existingUser.id, {
-				email: correo,
-				provider: 'local',
-				password: temporaryPassword,
-				confirmed: true,
-				blocked: false,
-				role: authenticatedRole.id,
-				rut,
-				nombre_completo: nombreCompleto,
-				unidad_academica: payload.unidad_academica?.trim() || null,
-				password_temporal: true,
-				solicitud: solicitudId,
-			});
-
-			userId = existingUser.id;
-		} else {
-			const user = await userService.add({
-				username: buildUsernameFromEmail(correo),
-				email: correo,
-				provider: 'local',
-				password: temporaryPassword,
-				confirmed: true,
-				blocked: false,
-				role: authenticatedRole.id,
-				rut,
-				nombre_completo: nombreCompleto,
-				unidad_academica: payload.unidad_academica?.trim() || null,
-				password_temporal: true,
-				solicitud: solicitudId,
-			});
-
-			userId = user.id;
-		}
-
-		const createdUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-			where: { id: userId },
-			select: ['id', 'password'],
+		const solicitud = await solicitudDocuments.create({
+			status: 'published',
+			data: solicitudData,
 		});
-
-		if (!createdUser?.password) {
-			return ctx.throw(500, 'No fue posible verificar el usuario creado.');
-		}
-
-		const temporaryPasswordIsValid = await userService.validatePassword(
-			temporaryPassword,
-			createdUser.password
-		);
-
-		if (!temporaryPasswordIsValid) {
-			return ctx.throw(500, 'La contraseña temporal generada no pudo validarse.');
-		}
-
-		const persistedSolicitud = await strapi.db.query('api::solicitud.solicitud').findOne({
-			where: { id: solicitudId },
-			select: ['id'],
-		});
-
-		if (!persistedSolicitud?.id) {
-			return ctx.throw(500, 'No fue posible persistir la solicitud de registro.');
-		}
-
-		const linkedUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-			where: { id: userId },
-			populate: { solicitud: true },
-		});
-
-		if (!linkedUser?.solicitud || linkedUser.solicitud.id !== solicitudId) {
-			await userService.edit(userId, {
-				solicitud: solicitudId,
-			});
-		}
-
-		const finalLinkedUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-			where: { id: userId },
-			populate: { solicitud: true },
-		});
-
-		if (!finalLinkedUser?.solicitud || finalLinkedUser.solicitud.id !== solicitudId) {
-			await strapi.db.query('plugin::users-permissions.user').update({
-				where: { id: userId },
-				data: { solicitud: solicitudId },
-			});
-
-			const fallbackLinkedUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-				where: { id: userId },
-				populate: { solicitud: true },
-			});
-
-			if (!fallbackLinkedUser?.solicitud || fallbackLinkedUser.solicitud.id !== solicitudId) {
-				return ctx.throw(500, 'No fue posible vincular la solicitud con el usuario.');
-			}
-		}
-
-		const solicitudWithUser = (await strapi.db.query('api::solicitud.solicitud').findOne({
-			where: { id: solicitudId },
-			populate: { usuario: true },
-		})) as any;
-
-		if (!solicitudWithUser?.usuario || solicitudWithUser.usuario.id !== userId) {
-			await strapi.db.query('api::solicitud.solicitud').update({
-				where: { id: solicitudId },
-				data: { usuario: userId },
-			});
-
-			const fallbackSolicitudWithUser = (await strapi.db.query('api::solicitud.solicitud').findOne({
-				where: { id: solicitudId },
-				populate: { usuario: true },
-			})) as any;
-
-			if (!fallbackSolicitudWithUser?.usuario || fallbackSolicitudWithUser.usuario.id !== userId) {
-				return ctx.throw(500, 'No fue posible vincular el usuario desde la solicitud.');
-			}
-		}
-
-		const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-
-		try {
-			await strapi.plugin('email').service('email').send({
-				to: correo,
-				subject: 'AFAUTAL - Acceso inicial con contraseña temporal',
-				text: [
-					`Hola ${nombreCompleto},`,
-					'Tu acceso inicial ha sido creado.',
-					`Contraseña temporal: ${temporaryPassword}`,
-					`Inicia sesion en: ${frontendUrl}/auth/inicio-sesion`,
-					'Al ingresar por primera vez deberas cambiar tu contraseña obligatoriamente.',
-				].join('\n'),
-			});
-		} catch (error) {
-			strapi.log.error('No fue posible enviar el correo de contraseña temporal.');
-			strapi.log.error(error);
-		}
 
 		ctx.send({
 			ok: true,
-			message: 'Solicitud registrada. Revisa tu correo para obtener la contraseña temporal.',
+			message: 'Tu solicitud de registro ha sido enviada con éxito. Un administrador la revisará pronto.',
 			data: {
-				solicitudId,
-				userId,
-				relationLinked: true,
+				solicitudId: solicitud.id,
 			},
 		});
 	},

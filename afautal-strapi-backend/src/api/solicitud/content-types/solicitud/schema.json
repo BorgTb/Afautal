@@ -4,65 +4,41 @@
   "info": {
     "singularName": "solicitud",
     "pluralName": "solicitudes",
-    "displayName": "Solicitud"
+    "displayName": "Solicitud",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {},
   "attributes": {
-    "rut": {
-      "type": "string",
-      "required": true,
-      "unique": true
-    },
-    "nombre_completo": {
-      "type": "string",
-      "required": true
-    },
-    "fecha_nacimiento": {
-      "type": "date"
-    },
-    "correo_electronico": {
-      "type": "email",
-      "required": true,
-      "unique": true
-    },
-    "unidad_academica": {
-      "type": "string"
-    },
-    "tipo_contrato": {
+    "rut": { "type": "string", "required": true, "unique": true },
+    "nombre_completo": { "type": "string", "required": true },
+    "fecha_nacimiento": { "type": "date", "required": true },
+    "correo_electronico": { "type": "email", "required": true, "unique": true },
+    "unidad_academica": { "type": "string", "required": true },
+    "tipo_contrato": { "type": "enumeration", "enum": ["Planta regular"], "required": true },
+    "jerarquia": { "type": "enumeration", "enum": ["Titular"], "required": true },
+    "region": { "type": "string", "required": true },
+    "comuna": { "type": "string", "required": true },
+    "ciudad": { "type": "string", "required": true },
+    "direccion_particular": { "type": "string", "required": true },
+    "telefono": { "type": "string" },
+    "banco": { "type": "string" },
+    "tipo_cuenta": {
       "type": "enumeration",
-      "enum": [
-        "Planta regular"
-      ]
+      "enum": ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"]
     },
-    "jerarquia": {
+    "estado": {
       "type": "enumeration",
-      "enum": [
-        "Titular"
-      ]
+      "enum": ["pendiente", "aprobado", "rechazado"],
+      "default": "pendiente"
     },
-    "region": {
-      "type": "string"
-    },
-    "comuna": {
-      "type": "string"
-    },
-    "ciudad": {
-      "type": "string"
-    },
-    "direccion_particular": {
-      "type": "string"
-    },
-    "acepta_descuento": {
-      "type": "boolean"
-    },
+    "acepta_descuento": { "type": "boolean", "required": true },
     "usuario": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
-      "mappedBy": "solicitud"
+      "inversedBy": "solicitud"
     }
   }
 }

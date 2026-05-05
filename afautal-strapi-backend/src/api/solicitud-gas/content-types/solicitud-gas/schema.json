@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "solicitudes_gas",
+  "info": {
+    "singularName": "solicitud-gas",
+    "pluralName": "solicitudes-gas",
+    "displayName": "Solicitud Gas",
+    "description": "Registro de solicitudes de vales de gas"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "usuario": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "solicitudes_gas"
+    },
+    "kg": {
+      "type": "decimal",
+      "required": true
+    },
+    "precio": {
+      "type": "integer",
+      "required": true
+    },
+    "cantidad": {
+      "type": "integer",
+      "default": 1
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["pendiente", "pagado", "comprobante_subido", "entregado", "rechazado", "cancelado"],
+      "default": "pendiente"
+    },
+    "comprobante": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images", "files"]
+    },
+    "fecha_solicitud": {
+      "type": "datetime"
+    }
+  }
+}

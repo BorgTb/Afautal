@@ -493,6 +493,46 @@ export interface ApiContactoContacto extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiDatosTransferenciaDatosTransferencia
+  extends Struct.SingleTypeSchema {
+  collectionName: 'datos_transferencia';
+  info: {
+    description: 'Datos bancarios oficiales de AFAUTAL para transferencias';
+    displayName: 'Datos Transferencia';
+    pluralName: 'datos-transferencias';
+    singularName: 'datos-transferencia';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    banco: Schema.Attribute.String & Schema.Attribute.Required;
+    correo_comprobante: Schema.Attribute.Email & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::datos-transferencia.datos-transferencia'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'AFAUTAL'>;
+    numero_cuenta: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    rut: Schema.Attribute.String & Schema.Attribute.Required;
+    tipo_cuenta: Schema.Attribute.Enumeration<
+      ['Cuenta Corriente', 'Cuenta Vista', 'Cuenta RUT', 'Cuenta de Ahorro']
+    > &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiDetalleQuienesSomosDetalleQuienesSomos
   extends Struct.SingleTypeSchema {
   collectionName: 'detalles_quienes_somos';
@@ -720,9 +760,90 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPrecioGasPrecioGas extends Struct.CollectionTypeSchema {
+  collectionName: 'precios_gas';
+  info: {
+    description: 'Valores de cilindros de gas por kg';
+    displayName: 'Precio Gas';
+    pluralName: 'precios-gas';
+    singularName: 'precio-gas';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    empresa: Schema.Attribute.String & Schema.Attribute.DefaultTo<'Abastible'>;
+    kg: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::precio-gas.precio-gas'
+    > &
+      Schema.Attribute.Private;
+    precio: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSolicitudGasSolicitudGas
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'solicitudes_gas';
+  info: {
+    description: 'Registro de solicitudes de vales de gas';
+    displayName: 'Solicitud Gas';
+    pluralName: 'solicitudes-gas';
+    singularName: 'solicitud-gas';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    cantidad: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
+    comprobante: Schema.Attribute.Media<'images' | 'files'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    estado: Schema.Attribute.Enumeration<
+      [
+        'pendiente',
+        'pagado',
+        'comprobante_subido',
+        'entregado',
+        'rechazado',
+        'cancelado',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'pendiente'>;
+    fecha_solicitud: Schema.Attribute.DateTime;
+    kg: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::solicitud-gas.solicitud-gas'
+    > &
+      Schema.Attribute.Private;
+    precio: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usuario: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
   collectionName: 'solicitudes';
   info: {
+    description: '';
     displayName: 'Solicitud';
     pluralName: 'solicitudes';
     singularName: 'solicitud';
@@ -731,18 +852,24 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    acepta_descuento: Schema.Attribute.Boolean;
-    ciudad: Schema.Attribute.String;
-    comuna: Schema.Attribute.String;
+    acepta_descuento: Schema.Attribute.Boolean & Schema.Attribute.Required;
+    banco: Schema.Attribute.String;
+    ciudad: Schema.Attribute.String & Schema.Attribute.Required;
+    comuna: Schema.Attribute.String & Schema.Attribute.Required;
     correo_electronico: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    direccion_particular: Schema.Attribute.String;
-    fecha_nacimiento: Schema.Attribute.Date;
-    jerarquia: Schema.Attribute.Enumeration<['Titular']>;
+    direccion_particular: Schema.Attribute.String & Schema.Attribute.Required;
+    estado: Schema.Attribute.Enumeration<
+      ['pendiente', 'aprobado', 'rechazado']
+    > &
+      Schema.Attribute.DefaultTo<'pendiente'>;
+    fecha_nacimiento: Schema.Attribute.Date & Schema.Attribute.Required;
+    jerarquia: Schema.Attribute.Enumeration<['Titular']> &
+      Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -751,12 +878,17 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     nombre_completo: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
-    region: Schema.Attribute.String;
+    region: Schema.Attribute.String & Schema.Attribute.Required;
     rut: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
-    tipo_contrato: Schema.Attribute.Enumeration<['Planta regular']>;
-    unidad_academica: Schema.Attribute.String;
+    telefono: Schema.Attribute.String;
+    tipo_contrato: Schema.Attribute.Enumeration<['Planta regular']> &
+      Schema.Attribute.Required;
+    tipo_cuenta: Schema.Attribute.Enumeration<
+      ['Cuenta Corriente', 'Cuenta Vista', 'Cuenta RUT', 'Cuenta de Ahorro']
+    >;
+    unidad_academica: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1261,6 +1393,10 @@ export interface PluginUsersPermissionsUser
       'oneToOne',
       'api::solicitud.solicitud'
     >;
+    solicitudes_gas: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::solicitud-gas.solicitud-gas'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1286,6 +1422,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::comentario.comentario': ApiComentarioComentario;
       'api::contacto.contacto': ApiContactoContacto;
+      'api::datos-transferencia.datos-transferencia': ApiDatosTransferenciaDatosTransferencia;
       'api::detalle-quienes-somos.detalle-quienes-somos': ApiDetalleQuienesSomosDetalleQuienesSomos;
       'api::directiva.directiva': ApiDirectivaDirectiva;
       'api::documento.documento': ApiDocumentoDocumento;
@@ -1293,6 +1430,8 @@ declare module '@strapi/strapi' {
       'api::mision-vision-valor.mision-vision-valor': ApiMisionVisionValorMisionVisionValor;
       'api::nosotros.nosotros': ApiNosotrosNosotros;
       'api::noticia.noticia': ApiNoticiaNoticia;
+      'api::precio-gas.precio-gas': ApiPrecioGasPrecioGas;
+      'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;
       'api::solicitud.solicitud': ApiSolicitudSolicitud;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

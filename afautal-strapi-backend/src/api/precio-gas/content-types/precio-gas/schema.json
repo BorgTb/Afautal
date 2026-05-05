@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "precios_gas",
+  "info": {
+    "singularName": "precio-gas",
+    "pluralName": "precios-gas",
+    "displayName": "Precio Gas",
+    "description": "Valores de cilindros de gas por kg"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "kg": {
+      "type": "decimal",
+      "required": true
+    },
+    "precio": {
+      "type": "integer",
+      "required": true
+    },
+    "empresa": {
+      "type": "string",
+      "default": "Abastible"
+    }
+  }
+}

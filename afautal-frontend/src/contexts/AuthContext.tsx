@@ -92,9 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginUser = useCallback(async (identifier: string, password: string) => {
     const result = await login(identifier, password);
 
+    // Tras el login exitoso, obtenemos el perfil completo (con relaciones)
+    // para evitar datos parciales en la UI.
+    const me = await fetchCurrentUser(result.jwt);
+
     setToken(result.jwt);
-    setUser(result.user);
-    writeStoredAuth({ token: result.jwt, user: result.user });
+    setUser(me);
+    writeStoredAuth({ token: result.jwt, user: me });
   }, []);
 
   const completeFirstPasswordChange = useCallback(
