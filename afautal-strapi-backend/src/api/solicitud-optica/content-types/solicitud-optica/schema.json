@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "solicitudes_opticas",
+  "info": {
+    "singularName": "solicitud-optica",
+    "pluralName": "solicitudes-opticas",
+    "displayName": "Solicitud Óptica",
+    "description": "Solicitudes de horas para la óptica"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "mensaje": {
+      "type": "text",
+      "required": true
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["pendiente", "agendada", "completada", "rechazada", "cancelada"],
+      "default": "pendiente"
+    },
+    "usuario": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "solicitudes_opticas"
+    },
+    "carga_familiar": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::carga-familiar.carga-familiar"
+    },
+    "fecha_solicitud": {
+      "type": "datetime"
+    }
+  }
+}

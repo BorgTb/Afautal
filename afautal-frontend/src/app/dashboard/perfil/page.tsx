@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Mail, Calendar, MapPin, Shield, Building, Briefcase, CreditCard, Save } from "lucide-react";
+import { User, Mail, Calendar, MapPin, Shield, Building, Briefcase, CreditCard, Save, Users, Plus, Trash2, XCircle } from "lucide-react";
 import { getAuthStorageKey } from "@/lib/auth";
 import { fetchBancos, type Banco } from "@/lib/banco";
+import { fetchMisCargas, addCarga, deleteCarga, type CargaFamiliar } from "@/lib/carga";
 
 const TIPOS_CUENTA = ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"];
+const PARENTESCOS = ["Cónyuge", "Hijo/a", "Padre/Madre", "Conviviente Civil", "Otro"];
 
 export default function PerfilPage() {
   const { user, token, refreshUser, loading } = useAuth();
@@ -16,9 +18,15 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false);
   const [bancosList, setBancosList] = useState<Banco[]>([]);
 
+  const [cargas, setCargas] = useState<CargaFamiliar[]>([]);
+  const [isAddingCarga, setIsAddingCarga] = useState(false);
+  const [nuevaCarga, setNuevaCarga] = useState({ rut: "", nombre_completo: "", parentesco: "Hijo/a" });
+  const [savingCarga, setSavingCarga] = useState(false);
+
   useEffect(() => {
     if (token) {
       fetchBancos(token).then(setBancosList).catch(console.error);
+      fetchMisCargas(token).then(setCargas).catch(console.error);
     }
   }, [token]);
 
@@ -90,6 +98,32 @@ export default function PerfilPage() {
     return partes.length > 0 ? partes.join(", ") : "No registrada";
   };
 
+  const handleAddCarga = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    setSavingCarga(true);
+    try {
+      const newCarga = await addCarga(token, nuevaCarga as any);
+      setCargas([newCarga, ...cargas]);
+      setIsAddingCarga(false);
+      setNuevaCarga({ rut: "", nombre_completo: "", parentesco: "Hijo/a" });
+    } catch (error) {
+      alert("Error al agregar la carga familiar.");
+    } finally {
+      setSavingCarga(false);
+    }
+  };
+
+  const handleDeleteCarga = async (id: number) => {
+    if (!token || !confirm("¿Eliminar esta carga familiar?")) return;
+    try {
+      await deleteCarga(token, id);
+      setCargas(cargas.filter(c => c.id !== id));
+    } catch (error) {
+      alert("Error al eliminar la carga.");
+    }
+  };
+
   return (
     <div className="mx-auto max-w-5xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       
@@ -140,6 +174,73 @@ export default function PerfilPage() {
               <InfoItem icon={<Briefcase className="text-slate-400" />} label="Tipo de Contrato" value={solicitud.tipo_contrato || "No registrado"} />
             </div>
           </div>
+
+          {/* Cargas Familiares */}
+          <div className="rounded-2xl bg-white p-6 shadow-xl ring-1 ring-slate-200 sm:p-10">
+            <div className="flex items-center justify-between mb-8 border-b pb-4">
+              <h3 className="flex items-center gap-3 text-2xl font-black text-slate-900">
+                <Users className="text-[#BF0F0F]" size={28} />
+                Cargas Familiares
+              </h3>
+              {!isAddingCarga && (
+                <button onClick={() => setIsAddingCarga(true)} className="flex items-center gap-2 text-sm font-black text-[#BF0F0F] hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
+                  <Plus size={16} /> Añadir
+                </button>
+              )}
+            </div>
+
+            {isAddingCarga && (
+              <div className="mb-8 p-6 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+                <form onSubmit={handleAddCarga} className="space-y-4">
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">RUT</label>
+                      <input required type="text" value={nuevaCarga.rut} onChange={e => setNuevaCarga({...nuevaCarga, rut: e.target.value})} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" placeholder="Ej: 12.345.678-9" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">Nombre Completo</label>
+                      <input required type="text" value={nuevaCarga.nombre_completo} onChange={e => setNuevaCarga({...nuevaCarga, nombre_completo: e.target.value})} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">Parentesco</label>
+                      <select value={nuevaCarga.parentesco} onChange={e => setNuevaCarga({...nuevaCarga, parentesco: e.target.value as any})} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none">
+                        {PARENTESCOS.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2">
+                    <button type="button" onClick={() => setIsAddingCarga(false)} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" disabled={savingCarga} className="px-6 py-2 bg-[#BF0F0F] text-white rounded-lg text-sm font-black hover:bg-[#A61B26] disabled:opacity-50">
+                      {savingCarga ? "Guardando..." : "Guardar Carga"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {cargas.length === 0 && !isAddingCarga ? (
+                <p className="text-center text-slate-500 font-medium py-4 italic">No tienes cargas familiares registradas.</p>
+              ) : (
+                cargas.map(carga => (
+                  <div key={carga.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 bg-white hover:shadow-md transition-shadow gap-4">
+                    <div>
+                      <p className="font-black text-slate-900 text-lg">{carga.nombre_completo}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-sm font-bold text-slate-500">{carga.rut}</span>
+                        <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-black text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                          {carga.parentesco}
+                        </span>
+                      </div>
+                    </div>
+                    <button onClick={() => handleDeleteCarga(carga.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors self-start sm:self-auto" title="Eliminar carga">
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Columna Derecha: Datos Bancarios */}
@@ -160,14 +261,14 @@ export default function PerfilPage() {
                 <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                   <div>
                     <label className="block text-xs font-black text-slate-500 uppercase mb-1">Banco</label>
-                    <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold bg-white outline-none focus:ring-2 focus:ring-[#BF0F0F]">
+                    <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white outline-none focus:ring-2 focus:ring-[#BF0F0F]">
                       <option value="">Seleccionar Banco</option>
                       {bancosList.map(b => <option key={b.id} value={b.nombre}>{b.nombre}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-black text-slate-500 uppercase mb-1">Tipo de Cuenta</label>
-                    <select value={tipoCuenta} onChange={(e) => setTipoCuenta(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold bg-white outline-none focus:ring-2 focus:ring-[#BF0F0F]">
+                    <select value={tipoCuenta} onChange={(e) => setTipoCuenta(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white outline-none focus:ring-2 focus:ring-[#BF0F0F]">
                       <option value="">Seleccionar Tipo</option>
                       {TIPOS_CUENTA.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>

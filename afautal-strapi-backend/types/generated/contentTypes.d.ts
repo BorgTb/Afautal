@@ -459,6 +459,47 @@ export interface ApiBancoBanco extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCargaFamiliarCargaFamiliar
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'cargas_familiares';
+  info: {
+    description: 'Cargas familiares asociadas a los socios';
+    displayName: 'Carga Familiar';
+    pluralName: 'cargas-familiares';
+    singularName: 'carga-familiar';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::carga-familiar.carga-familiar'
+    > &
+      Schema.Attribute.Private;
+    nombre_completo: Schema.Attribute.String & Schema.Attribute.Required;
+    parentesco: Schema.Attribute.Enumeration<
+      ['C\u00F3nyuge', 'Hijo/a', 'Padre/Madre', 'Conviviente Civil', 'Otro']
+    > &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    rut: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    socio: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiComentarioComentario extends Struct.CollectionTypeSchema {
   collectionName: 'comentarios';
   info: {
@@ -484,6 +525,38 @@ export interface ApiComentarioComentario extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     opinion: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiConfiguracionOpticaConfiguracionOptica
+  extends Struct.SingleTypeSchema {
+  collectionName: 'configuracion_optica';
+  info: {
+    description: 'Configuraci\u00F3n general para solicitudes de horas \u00F3pticas';
+    displayName: 'Configuraci\u00F3n \u00D3ptica';
+    pluralName: 'configuraciones-opticas';
+    singularName: 'configuracion-optica';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email_notificaciones: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'optica@afautal.cl'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::configuracion-optica.configuracion-optica'
+    > &
+      Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -858,6 +931,49 @@ export interface ApiSolicitudGasSolicitudGas
     > &
       Schema.Attribute.Private;
     precio: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usuario: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiSolicitudOpticaSolicitudOptica
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'solicitudes_opticas';
+  info: {
+    description: 'Solicitudes de horas para la \u00F3ptica';
+    displayName: 'Solicitud \u00D3ptica';
+    pluralName: 'solicitudes-opticas';
+    singularName: 'solicitud-optica';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    carga_familiar: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::carga-familiar.carga-familiar'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    estado: Schema.Attribute.Enumeration<
+      ['pendiente', 'agendada', 'completada', 'rechazada', 'cancelada']
+    > &
+      Schema.Attribute.DefaultTo<'pendiente'>;
+    fecha_solicitud: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::solicitud-optica.solicitud-optica'
+    > &
+      Schema.Attribute.Private;
+    mensaje: Schema.Attribute.Text & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1387,6 +1503,10 @@ export interface PluginUsersPermissionsUser
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    cargas_familiares: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::carga-familiar.carga-familiar'
+    >;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
@@ -1426,6 +1546,10 @@ export interface PluginUsersPermissionsUser
       'oneToMany',
       'api::solicitud-gas.solicitud-gas'
     >;
+    solicitudes_opticas: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::solicitud-optica.solicitud-optica'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1450,7 +1574,9 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::banco.banco': ApiBancoBanco;
+      'api::carga-familiar.carga-familiar': ApiCargaFamiliarCargaFamiliar;
       'api::comentario.comentario': ApiComentarioComentario;
+      'api::configuracion-optica.configuracion-optica': ApiConfiguracionOpticaConfiguracionOptica;
       'api::contacto.contacto': ApiContactoContacto;
       'api::datos-transferencia.datos-transferencia': ApiDatosTransferenciaDatosTransferencia;
       'api::detalle-quienes-somos.detalle-quienes-somos': ApiDetalleQuienesSomosDetalleQuienesSomos;
@@ -1462,6 +1588,7 @@ declare module '@strapi/strapi' {
       'api::noticia.noticia': ApiNoticiaNoticia;
       'api::precio-gas.precio-gas': ApiPrecioGasPrecioGas;
       'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;
+      'api::solicitud-optica.solicitud-optica': ApiSolicitudOpticaSolicitudOptica;
       'api::solicitud.solicitud': ApiSolicitudSolicitud;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

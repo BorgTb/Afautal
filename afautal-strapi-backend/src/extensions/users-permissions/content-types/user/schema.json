@@ -88,6 +88,18 @@
       "relation": "oneToMany",
       "target": "api::solicitud-gas.solicitud-gas",
       "mappedBy": "usuario"
+    },
+    "cargas_familiares": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::carga-familiar.carga-familiar",
+      "mappedBy": "socio"
+    },
+    "solicitudes_opticas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::solicitud-optica.solicitud-optica",
+      "mappedBy": "usuario"
     }
   }
 }

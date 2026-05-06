@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cargas_familiares",
+  "info": {
+    "singularName": "carga-familiar",
+    "pluralName": "cargas-familiares",
+    "displayName": "Carga Familiar",
+    "description": "Cargas familiares asociadas a los socios"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "rut": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "nombre_completo": {
+      "type": "string",
+      "required": true
+    },
+    "parentesco": {
+      "type": "enumeration",
+      "enum": ["Cónyuge", "Hijo/a", "Padre/Madre", "Conviviente Civil", "Otro"],
+      "required": true
+    },
+    "socio": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "cargas_familiares"
+    }
+  }
+}
