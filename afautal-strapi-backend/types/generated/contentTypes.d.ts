@@ -1550,6 +1550,7 @@ export interface PluginUsersPermissionsUser
       'oneToMany',
       'api::solicitud-optica.solicitud-optica'
     >;
+    unidad_academica: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
