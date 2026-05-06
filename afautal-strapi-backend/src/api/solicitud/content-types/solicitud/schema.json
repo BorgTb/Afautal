@@ -15,7 +15,7 @@
     "nombre_completo": { "type": "string", "required": true },
     "fecha_nacimiento": { "type": "date", "required": true },
     "correo_electronico": { "type": "email", "required": true, "unique": true },
-    "unidad_academica": { "type": "string", "required": true },
+    "unidad_academica": { "type": "string" },
     "tipo_contrato": { "type": "enumeration", "enum": ["Planta regular"], "required": true },
     "jerarquia": { "type": "enumeration", "enum": ["Titular"], "required": true },
     "region": { "type": "string", "required": true },

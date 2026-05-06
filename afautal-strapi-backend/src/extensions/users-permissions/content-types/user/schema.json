@@ -74,6 +74,9 @@
     "nombre_completo": {
       "type": "string"
     },
+    "unidad_academica": {
+      "type": "string"
+    },
     "password_temporal": {
       "type": "boolean"
     },

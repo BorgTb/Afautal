@@ -95,7 +95,7 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			rut,
 			nombre_completo: nombreCompleto,
 			correo_electronico: correo,
-			unidad_academica: payload.unidad_academica?.trim() || null,
+			unidad_academica: payload.unidad_academica?.trim() || "",
 			fecha_nacimiento: payload.fecha_nacimiento || null,
 			tipo_contrato: normalizeTipoContrato(payload.tipo_contrato),
 			jerarquia: normalizeJerarquia(payload.jerarquia),

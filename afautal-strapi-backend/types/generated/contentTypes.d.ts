@@ -1033,7 +1033,7 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
     tipo_cuenta: Schema.Attribute.Enumeration<
       ['Cuenta Corriente', 'Cuenta Vista', 'Cuenta RUT', 'Cuenta de Ahorro']
     >;
-    unidad_academica: Schema.Attribute.String & Schema.Attribute.Required;
+    unidad_academica: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

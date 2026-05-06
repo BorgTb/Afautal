@@ -205,8 +205,8 @@ export default function RegisterPage() {
 										{jerarquiaOptions.map(opt => <option key={opt} value={opt} className="text-black font-medium">{opt}</option>)}
 									</select>
 								</div>
-								<label className="flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-300 transition-colors mt-2">
-									<input type="checkbox" checked={aceptaDescuento} onChange={(e) => setAceptaDescuento(e.target.checked)} className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F]" />
+								<label htmlFor="aceptaDescuento" className="flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-300 transition-colors mt-2">
+									<input id="aceptaDescuento" type="checkbox" checked={aceptaDescuento} onChange={(e) => setAceptaDescuento(e.target.checked)} className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F]" />
 									<span className="ml-3 text-sm font-bold text-gray-800">Acepto descuento por planilla de mi cuota social</span>
 								</label>
 							</div>
@@ -218,8 +218,8 @@ export default function RegisterPage() {
 									<label className={labelClasses}>Correo Electrónico</label>
 									<input type="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} className={inputClasses} placeholder="ejemplo@correo.cl" />
 								</div>
-								<label className="flex items-start p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-300 transition-colors">
-									<input type="checkbox" required checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)} className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F] mt-1" />
+								<label htmlFor="aceptaTerminos" className="flex items-start p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-300 transition-colors">
+									<input id="aceptaTerminos" type="checkbox" required checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)} className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F] mt-1" />
 									<span className="ml-3 text-sm font-bold text-gray-800 leading-tight">He leído y acepto los estatutos y términos de privacidad de AFAUTAL.</span>
 								</label>
 							</div>
