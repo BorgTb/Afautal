@@ -90,7 +90,7 @@ export default function RegisterPage() {
 			await submitSolicitudRegistro({
 				rut, nombre_completo: nombreCompleto, correo_electronico: correo, telefono,
 				unidad_academica: unidadAcademica, fecha_nacimiento: fechaNacimiento,
-				tipo_contrato, jerarquia, region, comuna, ciudad,
+				tipo_contrato: tipoContrato, jerarquia, region, comuna, ciudad,
 				direccion_particular: direccionParticular || "No especificada",
 				acepta_descuento: aceptaDescuento,
 			});

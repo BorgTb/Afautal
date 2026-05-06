@@ -18,6 +18,8 @@ export interface AuthUser {
     comuna?: string;
     ciudad?: string;
     direccion_particular?: string;
+    banco?: string;
+    tipo_cuenta?: string;
   };
 }
 
