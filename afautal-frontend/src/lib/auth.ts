@@ -7,6 +7,8 @@ export interface AuthUser {
   unidad_academica?: string;
   password_temporal?: boolean;
   solicitud?: {
+    id?: number;
+    documentId?: string;
     rut?: string;
     fecha_nacimiento?: string;
     unidad_academica?: string;

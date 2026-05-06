@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "bancos",
+  "info": {
+    "singularName": "banco",
+    "pluralName": "bancos",
+    "displayName": "Banco",
+    "description": "Lista de bancos y sus URLs para redirección"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

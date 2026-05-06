@@ -3,17 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchPreciosGas, submitSolicitudGas, fetchMySolicitudesGas, fetchDatosTransferencia, uploadComprobante, updateSolicitudGas, type PrecioGas, type SolicitudGas, type DatosTransferencia } from "@/lib/gas";
+import { fetchBancos, type Banco } from "@/lib/banco";
 import gsap from "gsap";
-import { Flame, ShoppingCart, History, Info, ExternalLink, CheckCircle2, UploadCloud, FileCheck, Filter, XCircle } from "lucide-react";
-
-const BANK_URLS: Record<string, string> = {
-  "Banco Estado": "https://www.bancoestado.cl",
-  "Banco de Chile": "https://www.bancochile.cl",
-  "Santander": "https://www.santander.cl",
-  "BCI": "https://www.bci.cl",
-  "Scotiabank": "https://www.scotiabank.cl",
-  "Itaú": "https://www.itau.cl"
-};
+import { Flame, ShoppingCart, History, Info, ExternalLink, CheckCircle2, UploadCloud, FileCheck, Filter, XCircle, CreditCard } from "lucide-react";
 
 const ITEMS_POR_PAGINA = 10;
 
@@ -22,6 +14,7 @@ export default function GestionGasPage() {
   const [precios, setPrecios] = useState<PrecioGas[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudGas[]>([]);
   const [datosTransferencia, setDatosTransferencia] = useState<DatosTransferencia | null>(null);
+  const [bancosList, setBancosList] = useState<Banco[]>([]);
   const [selectedGas, setSelectedGas] = useState<PrecioGas | null>(null);
   const [cantidad, setCantidad] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -58,14 +51,16 @@ export default function GestionGasPage() {
 
     const loadData = async () => {
       try {
-        const [p, s, d] = await Promise.all([
+        const [p, s, d, bList] = await Promise.all([
           fetchPreciosGas(token), 
           fetchMySolicitudesGas(token),
-          fetchDatosTransferencia(token)
+          fetchDatosTransferencia(token),
+          fetchBancos(token)
         ]);
         setPrecios(p);
         setSolicitudes(s);
         setDatosTransferencia(d);
+        setBancosList(bList);
       } catch (error) {
         console.error(error);
       } finally {
@@ -166,7 +161,8 @@ export default function GestionGasPage() {
 
   const getBankPortal = () => {
     const userBank = user?.solicitud?.banco || "";
-    return BANK_URLS[userBank] || null;
+    const bankObj = bancosList.find(b => b.nombre === userBank);
+    return bankObj ? bankObj.url : null;
   };
 
   // Lógica de filtrado, ordenamiento y paginación
@@ -427,11 +423,23 @@ export default function GestionGasPage() {
                     {s.estado === 'pendiente' && (
                       <div className="flex gap-2">
                         <button
+                          onClick={() => {
+                            setLastSolicitud(s);
+                            setView("exito");
+                          }}
+                          disabled={uploadingId === s.id}
+                          className="flex-1 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-sm"
+                          title="Ver Datos de Pago"
+                        >
+                          <CreditCard size={14} /> Pagar
+                        </button>
+                        <button
                           onClick={() => openFileSelector(s.id)}
                           disabled={uploadingId === s.id}
-                          className="flex-1 py-2.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
+                          className="flex-1 py-2.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-sm"
+                          title="Subir Comprobante"
                         >
-                          {uploadingId === s.id ? "Subiendo..." : <><UploadCloud size={14} /> Comprobante</>}
+                          {uploadingId === s.id ? "..." : <><UploadCloud size={14} /> Subir</>}
                         </button>
                         <button
                           onClick={() => handleCancel(s.id)}

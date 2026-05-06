@@ -30,7 +30,8 @@ export default factories.createCoreController('api::solicitud-gas.solicitud-gas'
 
     const entries = await strapi.db.query('api::solicitud-gas.solicitud-gas').findMany({
       where: {
-        usuario: user.id
+        usuario: user.id,
+        estado: { $ne: 'cancelado' }
       },
       orderBy: { fecha_solicitud: 'desc' },
       populate: ['usuario', 'comprobante']

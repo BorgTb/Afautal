@@ -4,10 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Mail, Calendar, MapPin, Shield, Building, Briefcase, CreditCard, Save } from "lucide-react";
 import { getAuthStorageKey } from "@/lib/auth";
-
-const BANCOS_CHILE = [
-  "Banco Estado", "Banco de Chile", "Santander", "BCI", "Scotiabank", "Itaú", "Banco BICE", "Banco Security", "Banco Falabella", "Banco Ripley"
-];
+import { fetchBancos, type Banco } from "@/lib/banco";
 
 const TIPOS_CUENTA = ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"];
 
@@ -17,6 +14,13 @@ export default function PerfilPage() {
   const [banco, setBanco] = useState("");
   const [tipoCuenta, setTipoCuenta] = useState("");
   const [saving, setSaving] = useState(false);
+  const [bancosList, setBancosList] = useState<Banco[]>([]);
+
+  useEffect(() => {
+    if (token) {
+      fetchBancos(token).then(setBancosList).catch(console.error);
+    }
+  }, [token]);
 
   useEffect(() => {
     if (user?.solicitud) {
@@ -44,11 +48,13 @@ export default function PerfilPage() {
   const solicitud = user.solicitud || {};
 
   const handleSaveBank = async () => {
-    if (!token || !solicitud.id) return;
+    const targetId = solicitud.documentId || solicitud.id;
+    if (!token || !targetId) return;
+    
     setSaving(true);
     try {
       const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
-      const response = await fetch(`${STRAPI_URL}/api/solicitudes/${solicitud.id}`, {
+      const response = await fetch(`${STRAPI_URL}/api/solicitudes/${targetId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -156,7 +162,7 @@ export default function PerfilPage() {
                     <label className="block text-xs font-black text-slate-500 uppercase mb-1">Banco</label>
                     <select value={banco} onChange={(e) => setBanco(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold bg-white outline-none focus:ring-2 focus:ring-[#BF0F0F]">
                       <option value="">Seleccionar Banco</option>
-                      {BANCOS_CHILE.map(b => <option key={b} value={b}>{b}</option>)}
+                      {bancosList.map(b => <option key={b.id} value={b.nombre}>{b.nombre}</option>)}
                     </select>
                   </div>
                   <div>

@@ -98,7 +98,8 @@ export async function fetchMySolicitudesGas(token: string): Promise<SolicitudGas
   }
 
   const body = await response.json();
-  return body.data;
+  const data: SolicitudGas[] = body.data || [];
+  return data.filter(s => s.estado !== "cancelado");
 }
 
 export async function uploadComprobante(token: string, file: File): Promise<number> {

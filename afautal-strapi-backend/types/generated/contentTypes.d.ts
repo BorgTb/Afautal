@@ -430,6 +430,35 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiBancoBanco extends Struct.CollectionTypeSchema {
+  collectionName: 'bancos';
+  info: {
+    description: 'Lista de bancos y sus URLs para redirecci\u00F3n';
+    displayName: 'Banco';
+    pluralName: 'bancos';
+    singularName: 'banco';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::banco.banco'> &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    url: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiComentarioComentario extends Struct.CollectionTypeSchema {
   collectionName: 'comentarios';
   info: {
@@ -1420,6 +1449,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::banco.banco': ApiBancoBanco;
       'api::comentario.comentario': ApiComentarioComentario;
       'api::contacto.contacto': ApiContactoContacto;
       'api::datos-transferencia.datos-transferencia': ApiDatosTransferenciaDatosTransferencia;
