@@ -42,7 +42,7 @@ export default function RootLayout({
         <AppAuthProvider>
           <AuthGate>
             <Navbar />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 mt-16">{children}</main>
             <Footer />
           </AuthGate>
         </AppAuthProvider>

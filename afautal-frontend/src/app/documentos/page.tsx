@@ -93,7 +93,7 @@ export default async function DocumentsPage() {
 	const documents = documentsResult.data;
 
 	return (
-		<main className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
+		<main className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
 			<section className="mx-auto w-full max-w-6xl">
 				<header className="mb-10">
 					<h1 className="news-reveal text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
