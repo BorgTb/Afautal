@@ -34,6 +34,18 @@
     "email_notificaciones": {
       "type": "email",
       "description": "Correo al que llegarán las solicitudes para este servicio"
+    },
+    "bloques": {
+      "type": "dynamiczone",
+      "components": [
+        "shared.texto-rico",
+        "shared.alerta"
+      ]
+    },
+    "campos_formulario": {
+      "type": "component",
+      "repeatable": true,
+      "component": "formulario.campo"
     }
   }
 }

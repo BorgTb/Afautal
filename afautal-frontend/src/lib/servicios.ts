@@ -1,5 +1,28 @@
 import { getStrapiURL } from "./strapi";
 
+export type BloqueTextoRico = {
+  __component: "shared.texto-rico";
+  id: number;
+  contenido: string;
+};
+
+export type BloqueAlerta = {
+  __component: "shared.alerta";
+  id: number;
+  tipo: "info" | "warning" | "success" | "error";
+  titulo: string;
+  mensaje: string;
+};
+
+export type CampoFormulario = {
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  tipo: "texto" | "textarea" | "fecha" | "seleccion";
+  opciones?: string; // Solo para tipo "seleccion", separado por comas
+  requerido: boolean;
+};
+
 export interface Servicio {
   id: number;
   nombre: string;
@@ -7,11 +30,14 @@ export interface Servicio {
   descripcion: string | null;
   icono: string | null;
   habilitado: boolean;
+  bloques?: (BloqueTextoRico | BloqueAlerta)[];
+  campos_formulario?: CampoFormulario[];
 }
 
 export interface SolicitudServicio {
   id: number;
-  mensaje: string;
+  mensaje?: string;
+  datos_formulario?: Record<string, string>;
   estado: "pendiente" | "agendada" | "completada" | "rechazada" | "cancelada";
   fecha_solicitud: string;
   carga_familiar?: {
@@ -59,8 +85,9 @@ export async function fetchServicioBySlug(slug: string, token?: string): Promise
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  // Populate dynamic zones (bloques) and repeatable components (campos_formulario)
   const res = await fetch(
-    getStrapiURL(`/api/servicios?filters[slug][$eq]=${slug}`),
+    getStrapiURL(`/api/servicios?filters[slug][$eq]=${slug}&populate[bloques][populate]=*&populate[campos_formulario][populate]=*`),
     {
       headers,
       cache: "no-store",
@@ -102,6 +129,7 @@ export async function fetchMisSolicitudesServicio(servicioId: number, token: str
     return {
       id: item.id,
       mensaje: attrs.mensaje,
+      datos_formulario: attrs.datos_formulario,
       estado: attrs.estado,
       fecha_solicitud: attrs.fecha_solicitud || attrs.createdAt,
       carga_familiar: attrs.carga_familiar?.data
@@ -122,7 +150,8 @@ export async function fetchMisSolicitudesServicio(servicioId: number, token: str
 export async function submitSolicitudServicio(
   token: string,
   payload: {
-    mensaje: string;
+    mensaje?: string;
+    datos_formulario?: Record<string, string>;
     servicio: number;
     carga_familiar?: number;
   }

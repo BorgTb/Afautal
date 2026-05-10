@@ -873,6 +873,10 @@ export interface ApiServicioServicio extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    bloques: Schema.Attribute.DynamicZone<
+      ['shared.texto-rico', 'shared.alerta']
+    >;
+    campos_formulario: Schema.Attribute.Component<'formulario.campo', true>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -964,6 +968,7 @@ export interface ApiSolicitudServicioSolicitudServicio
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    datos_formulario: Schema.Attribute.JSON;
     estado: Schema.Attribute.Enumeration<
       ['pendiente', 'agendada', 'completada', 'rechazada', 'cancelada']
     > &
@@ -975,7 +980,7 @@ export interface ApiSolicitudServicioSolicitudServicio
       'api::solicitud-servicio.solicitud-servicio'
     > &
       Schema.Attribute.Private;
-    mensaje: Schema.Attribute.Text & Schema.Attribute.Required;
+    mensaje: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
     servicio: Schema.Attribute.Relation<'manyToOne', 'api::servicio.servicio'>;
     updatedAt: Schema.Attribute.DateTime;

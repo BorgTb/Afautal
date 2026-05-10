@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_shared_texto_ricos",
+  "info": {
+    "displayName": "Texto Rico",
+    "icon": "align-justify",
+    "description": "Bloque de texto con formato libre"
+  },
+  "options": {},
+  "attributes": {
+    "contenido": {
+      "type": "richtext",
+      "required": true
+    }
+  }
+}

@@ -12,8 +12,10 @@
   },
   "attributes": {
     "mensaje": {
-      "type": "text",
-      "required": true
+      "type": "text"
+    },
+    "datos_formulario": {
+      "type": "json"
     },
     "estado": {
       "type": "enumeration",

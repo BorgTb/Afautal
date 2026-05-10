@@ -1,0 +1,40 @@
+{
+  "collectionName": "components_formulario_campos",
+  "info": {
+    "displayName": "Campo de Formulario",
+    "icon": "server",
+    "description": "Define un campo dinámico para el formulario del servicio"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "El identificador interno del campo (ej. 'motivo_consulta'). Usa solo minúsculas y guiones bajos."
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "El texto que verá el usuario (ej. 'Motivo de Consulta')"
+    },
+    "tipo": {
+      "type": "enumeration",
+      "enum": [
+        "texto",
+        "textarea",
+        "fecha",
+        "seleccion"
+      ],
+      "required": true,
+      "default": "texto"
+    },
+    "opciones": {
+      "type": "text",
+      "description": "Solo para tipo 'seleccion'. Escribe las opciones separadas por comas (ej. 'Mañana, Tarde, Noche')"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

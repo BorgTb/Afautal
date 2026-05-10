@@ -10,11 +10,11 @@ import {
   submitSolicitudServicio, 
   cancelarSolicitudServicio, 
   type Servicio, 
-  type SolicitudServicio 
+  type SolicitudServicio,
+  type CampoFormulario
 } from "@/lib/servicios";
-import { Eye, CalendarPlus, History, UserCircle, Users, CheckCircle2, XCircle, Info, Stethoscope, BriefcaseMedical, HeartPulse, Activity } from "lucide-react";
+import { Eye, CalendarPlus, History, UserCircle, Users, CheckCircle2, XCircle, Info, Stethoscope, BriefcaseMedical, HeartPulse, Activity, AlertTriangle } from "lucide-react";
 
-// Helper simple para íconos dinámicos (se pueden agregar más si se necesitan)
 const renderIcon = (iconName: string | null, size = 36, className = "text-[#BF0F0F]") => {
   switch (iconName) {
     case "Stethoscope": return <Stethoscope size={size} className={className} />;
@@ -28,7 +28,6 @@ const renderIcon = (iconName: string | null, size = 36, className = "text-[#BF0F
 };
 
 export default function ServicioPage({ params }: { params: Promise<{ slug: string }> }) {
-  // En Next.js 15 o si params es una Promesa, debemos desenvolverlo
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const router = useRouter();
@@ -41,7 +40,8 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
   const [notFound, setNotFound] = useState(false);
   
   const [beneficiario, setBeneficiario] = useState<string>("socio");
-  const [mensaje, setMensaje] = useState("");
+  // Estado dinámico para el formulario
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{
@@ -70,6 +70,15 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
         }
         setServicio(serv);
 
+        // Inicializar estado del formulario con valores por defecto
+        const initialFormState: Record<string, string> = {};
+        if (serv.campos_formulario) {
+          serv.campos_formulario.forEach(campo => {
+            initialFormState[campo.nombre_variable] = "";
+          });
+        }
+        setFormValues(initialFormState);
+
         const [c, s] = await Promise.all([
           fetchMisCargas(token),
           fetchMisSolicitudesServicio(serv.id, token)
@@ -87,6 +96,10 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
     void loadData();
   }, [token, slug]);
 
+  const handleFieldChange = (name: string, value: string) => {
+    setFormValues(prev => ({ ...prev, [name]: value }));
+  };
+
   const showModal = (title: string, message: string, type: "success" | "error" | "confirm" = "success", onConfirm?: () => void) => {
     setModalConfig({ isOpen: true, title, message, type, onConfirm });
   };
@@ -95,20 +108,41 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !mensaje.trim() || !servicio) return;
+    if (!token || !servicio) return;
+
+    // Validación básica de requeridos
+    if (servicio.campos_formulario) {
+      for (const campo of servicio.campos_formulario) {
+        if (campo.requerido && !formValues[campo.nombre_variable]?.trim()) {
+          showModal("Campos Incompletos", `El campo "${campo.etiqueta}" es obligatorio.`, "error");
+          return;
+        }
+      }
+    }
 
     setSubmitting(true);
     try {
       const cargaFamiliarId = beneficiario !== "socio" ? Number(beneficiario) : undefined;
+      
+      // Armamos un resumen en string para la vista rápida de Strapi (opcional, pero útil)
+      const resumenMensaje = Object.entries(formValues)
+        .map(([key, val]) => `${key}: ${val}`)
+        .join(" | ");
+
       await submitSolicitudServicio(token, {
-        mensaje,
+        mensaje: resumenMensaje || "Solicitud generada dinámicamente",
+        datos_formulario: formValues,
         servicio: servicio.id,
         carga_familiar: cargaFamiliarId
       });
 
       const s = await fetchMisSolicitudesServicio(servicio.id, token);
       setSolicitudes(s);
-      setMensaje("");
+      
+      // Limpiar campos
+      const resetForm: Record<string, string> = {};
+      Object.keys(formValues).forEach(k => resetForm[k] = "");
+      setFormValues(resetForm);
       setBeneficiario("socio");
       
       showModal("Solicitud Enviada", "Tu solicitud ha sido enviada exitosamente. Te contactaremos pronto.", "success");
@@ -167,9 +201,61 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
         </div>
       </div>
 
+      {/* Renderizado Dinámico de Bloques de Contenido (Zonas Dinámicas) */}
+      {servicio.bloques && servicio.bloques.length > 0 && (
+        <div className="space-y-6">
+          {servicio.bloques.map((bloque) => {
+            if (bloque.__component === "shared.texto-rico") {
+              return (
+                <div key={bloque.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  {/* Para markdown básico de Strapi */}
+                  <div className="prose max-w-none text-gray-700 whitespace-pre-wrap font-medium">
+                    {bloque.contenido}
+                  </div>
+                </div>
+              );
+            }
+
+            if (bloque.__component === "shared.alerta") {
+              const bgColors = {
+                info: "bg-blue-50 border-blue-200",
+                warning: "bg-yellow-50 border-yellow-200",
+                success: "bg-green-50 border-green-200",
+                error: "bg-red-50 border-red-200"
+              };
+              const textColors = {
+                info: "text-blue-800",
+                warning: "text-yellow-800",
+                success: "text-green-800",
+                error: "text-red-800"
+              };
+              const iconColors = {
+                info: "text-blue-500",
+                warning: "text-yellow-500",
+                success: "text-green-500",
+                error: "text-red-500"
+              };
+
+              return (
+                <div key={bloque.id} className={`p-4 rounded-xl border ${bgColors[bloque.tipo]} flex items-start gap-3`}>
+                  {bloque.tipo === 'info' ? <Info size={24} className={`shrink-0 ${iconColors[bloque.tipo]}`} /> :
+                   bloque.tipo === 'success' ? <CheckCircle2 size={24} className={`shrink-0 ${iconColors[bloque.tipo]}`} /> :
+                   <AlertTriangle size={24} className={`shrink-0 ${iconColors[bloque.tipo]}`} />}
+                  <div>
+                    <h4 className={`font-black ${textColors[bloque.tipo]}`}>{bloque.titulo}</h4>
+                    <p className={`text-sm mt-1 font-medium ${textColors[bloque.tipo]} opacity-90`}>{bloque.mensaje}</p>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
-        {/* Formulario de Solicitud */}
+        {/* Formulario de Solicitud (Dinámico) */}
         <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100">
           <h3 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2 border-b pb-4">
             <CalendarPlus size={22} className="text-[#BF0F0F]" />
@@ -177,6 +263,7 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Campo fijo: Beneficiario */}
             <div>
               <label className="block text-sm font-black text-gray-700 uppercase mb-2">¿Para quién es la hora?</label>
               <div className="space-y-3">
@@ -199,21 +286,62 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-black text-gray-700 uppercase mb-2">Mensaje / Preferencia de horario</label>
-              <textarea 
-                required 
-                rows={4}
-                value={mensaje}
-                onChange={e => setMensaje(e.target.value)}
-                placeholder="Indícanos tu disponibilidad (ej: Lunes por la mañana) o el motivo de tu consulta..."
-                className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none resize-none"
-              ></textarea>
-            </div>
+            {/* Campos Dinámicos */}
+            {servicio.campos_formulario?.map((campo: CampoFormulario) => (
+              <div key={campo.id}>
+                <label className="block text-sm font-black text-gray-700 uppercase mb-2">
+                  {campo.etiqueta} {campo.requerido && <span className="text-red-500">*</span>}
+                </label>
+                
+                {campo.tipo === 'texto' && (
+                  <input 
+                    type="text"
+                    required={campo.requerido}
+                    value={formValues[campo.nombre_variable] || ""}
+                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none"
+                  />
+                )}
+
+                {campo.tipo === 'textarea' && (
+                  <textarea 
+                    required={campo.requerido}
+                    rows={4}
+                    value={formValues[campo.nombre_variable] || ""}
+                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none resize-none"
+                  ></textarea>
+                )}
+
+                {campo.tipo === 'fecha' && (
+                  <input 
+                    type="date"
+                    required={campo.requerido}
+                    value={formValues[campo.nombre_variable] || ""}
+                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none"
+                  />
+                )}
+
+                {campo.tipo === 'seleccion' && (
+                  <select
+                    required={campo.requerido}
+                    value={formValues[campo.nombre_variable] || ""}
+                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none"
+                  >
+                    <option value="" disabled>Seleccione una opción</option>
+                    {campo.opciones?.split(',').map((opt, i) => (
+                      <option key={i} value={opt.trim()}>{opt.trim()}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            ))}
 
             <button
               type="submit"
-              disabled={submitting || !mensaje.trim()}
+              disabled={submitting}
               className="w-full py-4 bg-[#BF0F0F] text-white rounded-xl font-black text-lg shadow-xl hover:bg-[#A61B26] transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {submitting ? "Enviando..." : "Enviar Solicitud"}
@@ -251,9 +379,30 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
                         {s.estado}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-gray-700 bg-white p-3 rounded-lg border border-gray-100">
-                    "{s.mensaje}"
-                  </p>
+                  
+                  {/* Vista Dinámica de Datos */}
+                  <div className="bg-white p-3 rounded-lg border border-gray-100 mt-2">
+                    {s.datos_formulario && Object.keys(s.datos_formulario).length > 0 ? (
+                      <ul className="space-y-1.5">
+                        {Object.entries(s.datos_formulario).map(([key, val]) => {
+                          // Buscar la etiqueta original si existe en la configuración del servicio actual
+                          const campoDef = servicio.campos_formulario?.find(c => c.nombre_variable === key);
+                          const etiqueta = campoDef ? campoDef.etiqueta : key.replace(/_/g, ' ');
+                          return (
+                            <li key={key} className="text-sm">
+                              <span className="font-black text-gray-700 capitalize">{etiqueta}:</span>{' '}
+                              <span className="font-medium text-gray-600">{val || '-'}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">
+                        "{s.mensaje}"
+                      </p>
+                    )}
+                  </div>
+
                   {s.estado === 'pendiente' && (
                     <button onClick={() => handleCancel(s.id)} className="absolute bottom-4 right-4 text-xs font-bold text-red-600 hover:underline">
                       Cancelar
