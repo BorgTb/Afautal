@@ -1,11 +1,11 @@
 {
   "kind": "collectionType",
-  "collectionName": "solicitudes_opticas",
+  "collectionName": "solicitudes_servicios",
   "info": {
-    "singularName": "solicitud-optica",
-    "pluralName": "solicitudes-opticas",
-    "displayName": "Solicitud Óptica",
-    "description": "Solicitudes de horas para la óptica"
+    "singularName": "solicitud-servicio",
+    "pluralName": "solicitudes-servicios",
+    "displayName": "Solicitud de Servicio",
+    "description": "Peticiones de horas para los distintos servicios"
   },
   "options": {
     "draftAndPublish": false
@@ -24,12 +24,17 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "solicitudes_opticas"
+      "inversedBy": "solicitudes_servicios"
     },
     "carga_familiar": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::carga-familiar.carga-familiar"
+    },
+    "servicio": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::servicio.servicio"
     },
     "fecha_solicitud": {
       "type": "datetime"

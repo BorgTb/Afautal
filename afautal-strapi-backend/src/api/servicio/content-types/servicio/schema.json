@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "servicios",
+  "info": {
+    "singularName": "servicio",
+    "pluralName": "servicios",
+    "displayName": "Servicio",
+    "description": "Definición de servicios dinámicos (ej. Óptica, Dental, etc.)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nombre",
+      "required": true
+    },
+    "descripcion": {
+      "type": "text"
+    },
+    "icono": {
+      "type": "string",
+      "description": "Nombre del ícono de Lucide (ej: 'Eye', 'Stethoscope')"
+    },
+    "habilitado": {
+      "type": "boolean",
+      "default": true
+    },
+    "email_notificaciones": {
+      "type": "email",
+      "description": "Correo al que llegarán las solicitudes para este servicio"
+    }
+  }
+}

@@ -532,38 +532,6 @@ export interface ApiComentarioComentario extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiConfiguracionOpticaConfiguracionOptica
-  extends Struct.SingleTypeSchema {
-  collectionName: 'configuracion_optica';
-  info: {
-    description: 'Configuraci\u00F3n general para solicitudes de horas \u00F3pticas';
-    displayName: 'Configuraci\u00F3n \u00D3ptica';
-    pluralName: 'configuraciones-opticas';
-    singularName: 'configuracion-optica';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    email_notificaciones: Schema.Attribute.Email &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'optica@afautal.cl'>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::configuracion-optica.configuracion-optica'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiContactoContacto extends Struct.SingleTypeSchema {
   collectionName: 'contactos';
   info: {
@@ -893,6 +861,40 @@ export interface ApiPrecioGasPrecioGas extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiServicioServicio extends Struct.CollectionTypeSchema {
+  collectionName: 'servicios';
+  info: {
+    description: 'Definici\u00F3n de servicios din\u00E1micos (ej. \u00D3ptica, Dental, etc.)';
+    displayName: 'Servicio';
+    pluralName: 'servicios';
+    singularName: 'servicio';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descripcion: Schema.Attribute.Text;
+    email_notificaciones: Schema.Attribute.Email;
+    habilitado: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    icono: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::servicio.servicio'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'nombre'> & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiSolicitudGasSolicitudGas
   extends Struct.CollectionTypeSchema {
   collectionName: 'solicitudes_gas';
@@ -942,14 +944,14 @@ export interface ApiSolicitudGasSolicitudGas
   };
 }
 
-export interface ApiSolicitudOpticaSolicitudOptica
+export interface ApiSolicitudServicioSolicitudServicio
   extends Struct.CollectionTypeSchema {
-  collectionName: 'solicitudes_opticas';
+  collectionName: 'solicitudes_servicios';
   info: {
-    description: 'Solicitudes de horas para la \u00F3ptica';
-    displayName: 'Solicitud \u00D3ptica';
-    pluralName: 'solicitudes-opticas';
-    singularName: 'solicitud-optica';
+    description: 'Peticiones de horas para los distintos servicios';
+    displayName: 'Solicitud de Servicio';
+    pluralName: 'solicitudes-servicios';
+    singularName: 'solicitud-servicio';
   };
   options: {
     draftAndPublish: false;
@@ -970,11 +972,12 @@ export interface ApiSolicitudOpticaSolicitudOptica
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::solicitud-optica.solicitud-optica'
+      'api::solicitud-servicio.solicitud-servicio'
     > &
       Schema.Attribute.Private;
     mensaje: Schema.Attribute.Text & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
+    servicio: Schema.Attribute.Relation<'manyToOne', 'api::servicio.servicio'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1546,9 +1549,9 @@ export interface PluginUsersPermissionsUser
       'oneToMany',
       'api::solicitud-gas.solicitud-gas'
     >;
-    solicitudes_opticas: Schema.Attribute.Relation<
+    solicitudes_servicios: Schema.Attribute.Relation<
       'oneToMany',
-      'api::solicitud-optica.solicitud-optica'
+      'api::solicitud-servicio.solicitud-servicio'
     >;
     unidad_academica: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
@@ -1577,7 +1580,6 @@ declare module '@strapi/strapi' {
       'api::banco.banco': ApiBancoBanco;
       'api::carga-familiar.carga-familiar': ApiCargaFamiliarCargaFamiliar;
       'api::comentario.comentario': ApiComentarioComentario;
-      'api::configuracion-optica.configuracion-optica': ApiConfiguracionOpticaConfiguracionOptica;
       'api::contacto.contacto': ApiContactoContacto;
       'api::datos-transferencia.datos-transferencia': ApiDatosTransferenciaDatosTransferencia;
       'api::detalle-quienes-somos.detalle-quienes-somos': ApiDetalleQuienesSomosDetalleQuienesSomos;
@@ -1588,8 +1590,9 @@ declare module '@strapi/strapi' {
       'api::nosotros.nosotros': ApiNosotrosNosotros;
       'api::noticia.noticia': ApiNoticiaNoticia;
       'api::precio-gas.precio-gas': ApiPrecioGasPrecioGas;
+      'api::servicio.servicio': ApiServicioServicio;
       'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;
-      'api::solicitud-optica.solicitud-optica': ApiSolicitudOpticaSolicitudOptica;
+      'api::solicitud-servicio.solicitud-servicio': ApiSolicitudServicioSolicitudServicio;
       'api::solicitud.solicitud': ApiSolicitudSolicitud;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

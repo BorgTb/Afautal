@@ -1,17 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchMisCargas, type CargaFamiliar } from "@/lib/carga";
-import { fetchMisSolicitudesOpticas, submitSolicitudOptica, cancelarSolicitudOptica, type SolicitudOptica } from "@/lib/optica";
-import { Eye, CalendarPlus, History, UserCircle, Users, CheckCircle2, XCircle, Info } from "lucide-react";
-import gsap from "gsap";
+import { 
+  fetchServicioBySlug, 
+  fetchMisSolicitudesServicio, 
+  submitSolicitudServicio, 
+  cancelarSolicitudServicio, 
+  type Servicio, 
+  type SolicitudServicio 
+} from "@/lib/servicios";
+import { Eye, CalendarPlus, History, UserCircle, Users, CheckCircle2, XCircle, Info, Stethoscope, BriefcaseMedical, HeartPulse, Activity } from "lucide-react";
 
-export default function HorasOpticasPage() {
-  const { token, user } = useAuth();
+// Helper simple para íconos dinámicos (se pueden agregar más si se necesitan)
+const renderIcon = (iconName: string | null, size = 36, className = "text-[#BF0F0F]") => {
+  switch (iconName) {
+    case "Stethoscope": return <Stethoscope size={size} className={className} />;
+    case "BriefcaseMedical": return <BriefcaseMedical size={size} className={className} />;
+    case "HeartPulse": return <HeartPulse size={size} className={className} />;
+    case "Activity": return <Activity size={size} className={className} />;
+    case "Eye":
+    default:
+      return <Eye size={size} className={className} />;
+  }
+};
+
+export default function ServicioPage({ params }: { params: Promise<{ slug: string }> }) {
+  // En Next.js 15 o si params es una Promesa, debemos desenvolverlo
+  const resolvedParams = use(params);
+  const slug = resolvedParams.slug;
+  const router = useRouter();
+
+  const { token } = useAuth();
+  const [servicio, setServicio] = useState<Servicio | null>(null);
   const [cargas, setCargas] = useState<CargaFamiliar[]>([]);
-  const [solicitudes, setSolicitudes] = useState<SolicitudOptica[]>([]);
+  const [solicitudes, setSolicitudes] = useState<SolicitudServicio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   
   const [beneficiario, setBeneficiario] = useState<string>("socio");
   const [mensaje, setMensaje] = useState("");
@@ -35,21 +62,30 @@ export default function HorasOpticasPage() {
 
     const loadData = async () => {
       try {
+        const serv = await fetchServicioBySlug(slug, token);
+        if (!serv || !serv.habilitado) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+        setServicio(serv);
+
         const [c, s] = await Promise.all([
           fetchMisCargas(token),
-          fetchMisSolicitudesOpticas(token)
+          fetchMisSolicitudesServicio(serv.id, token)
         ]);
         setCargas(c);
         setSolicitudes(s);
       } catch (error) {
         console.error(error);
+        setNotFound(true);
       } finally {
         setLoading(false);
       }
     };
 
     void loadData();
-  }, [token]);
+  }, [token, slug]);
 
   const showModal = (title: string, message: string, type: "success" | "error" | "confirm" = "success", onConfirm?: () => void) => {
     setModalConfig({ isOpen: true, title, message, type, onConfirm });
@@ -59,17 +95,18 @@ export default function HorasOpticasPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !mensaje.trim()) return;
+    if (!token || !mensaje.trim() || !servicio) return;
 
     setSubmitting(true);
     try {
       const cargaFamiliarId = beneficiario !== "socio" ? Number(beneficiario) : undefined;
-      await submitSolicitudOptica(token, {
+      await submitSolicitudServicio(token, {
         mensaje,
+        servicio: servicio.id,
         carga_familiar: cargaFamiliarId
       });
 
-      const s = await fetchMisSolicitudesOpticas(token);
+      const s = await fetchMisSolicitudesServicio(servicio.id, token);
       setSolicitudes(s);
       setMensaje("");
       setBeneficiario("socio");
@@ -84,10 +121,10 @@ export default function HorasOpticasPage() {
 
   const handleCancel = (id: number) => {
     showModal("Cancelar Solicitud", "¿Estás seguro de que deseas cancelar esta solicitud?", "confirm", async () => {
-      if (!token) return;
+      if (!token || !servicio) return;
       try {
-        await cancelarSolicitudOptica(token, id);
-        const s = await fetchMisSolicitudesOpticas(token);
+        await cancelarSolicitudServicio(token, id);
+        const s = await fetchMisSolicitudesServicio(servicio.id, token);
         setSolicitudes(s);
         showModal("Cancelada", "La solicitud ha sido cancelada.", "success");
       } catch (error) {
@@ -104,16 +141,29 @@ export default function HorasOpticasPage() {
     );
   }
 
+  if (notFound || !servicio) {
+    return (
+      <div className="flex flex-col h-96 items-center justify-center text-center">
+        <XCircle size={64} className="text-gray-300 mb-4" />
+        <h2 className="text-2xl font-black text-gray-800">Servicio no encontrado</h2>
+        <p className="text-gray-500 mt-2">El servicio que intentas solicitar no existe o no está disponible.</p>
+        <button onClick={() => router.push("/dashboard")} className="mt-6 text-[#BF0F0F] font-bold hover:underline">Volver al inicio</button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-black text-gray-900 flex items-center gap-3">
-            <Eye className="text-[#BF0F0F]" size={36} />
-            Horas Ópticas
+            {renderIcon(servicio.icono)}
+            {servicio.nombre}
           </h1>
-          <p className="text-gray-600 mt-1 font-medium">Solicita una hora para atención óptica presencial.</p>
+          {servicio.descripcion && (
+            <p className="text-gray-600 mt-1 font-medium">{servicio.descripcion}</p>
+          )}
         </div>
       </div>
 
@@ -175,12 +225,12 @@ export default function HorasOpticasPage() {
         <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100 h-full">
           <h3 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2 border-b pb-4">
             <History size={22} className="text-[#BF0F0F]" />
-            Historial de Horas
+            Historial de Solicitudes
           </h3>
 
           <div className="space-y-4">
             {solicitudes.length === 0 ? (
-              <p className="text-gray-400 text-center py-8 font-medium italic">No tienes solicitudes previas.</p>
+              <p className="text-gray-400 text-center py-8 font-medium italic">No tienes solicitudes previas para este servicio.</p>
             ) : (
               solicitudes.map(s => (
                 <div key={s.id} className="p-5 rounded-xl border border-gray-200 bg-gray-50 flex flex-col gap-3 relative">
@@ -195,6 +245,7 @@ export default function HorasOpticasPage() {
                         s.estado === 'agendada' ? "bg-blue-100 text-blue-700" :
                         s.estado === 'completada' ? "bg-green-100 text-green-700" :
                         s.estado === 'rechazada' ? "bg-red-100 text-red-700" :
+                        s.estado === 'cancelada' ? "bg-gray-200 text-gray-600" :
                         "bg-yellow-100 text-yellow-700"
                       }`}>
                         {s.estado}
