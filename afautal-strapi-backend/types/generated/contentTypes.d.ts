@@ -489,7 +489,10 @@ export interface ApiCargaFamiliarCargaFamiliar
     publishedAt: Schema.Attribute.DateTime;
     rut: Schema.Attribute.String &
       Schema.Attribute.Required &
-      Schema.Attribute.Unique;
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 9;
+      }>;
     socio: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.user'
@@ -1721,7 +1724,11 @@ export interface PluginUsersPermissionsUser
       'manyToOne',
       'plugin::users-permissions.role'
     >;
-    rut: Schema.Attribute.String & Schema.Attribute.Unique;
+    rut: Schema.Attribute.String &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 9;
+      }>;
     solicitud: Schema.Attribute.Relation<
       'oneToOne',
       'api::solicitud.solicitud'

@@ -9,7 +9,7 @@ import { fetchMisCargas, addCarga, deleteCarga, type CargaFamiliar } from "@/lib
 import { formatRUT, formatPhone } from "@/lib/utils";
 
 const TIPOS_CUENTA = ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"];
-const PARENTESCOS = ["Cónyuge", "Hijo/a", "Padre/Madre", "Conviviente Civil", "Otro"];
+const PARENTESCOS = ["Cónyuge", "Conviviente Civil", "Padre/Madre" ,"Hijo/a"];
 
 export default function PerfilPage() {
   const { user, token, refreshUser, loading } = useAuth();
@@ -174,7 +174,7 @@ export default function PerfilPage() {
             <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
               <InfoItem icon={<User className="text-slate-400" />} label="RUT" value={formatRUT(user.rut || solicitud.rut || "")} />
               <InfoItem icon={<Mail className="text-slate-400" />} label="Correo Electrónico" value={user.email} />
-              <InfoItem icon={<Phone className="text-slate-400" />} label="Teléfono" value={formatPhone(solicitud.telefono)} />
+              <InfoItem icon={<Phone className="text-slate-400" />} label="Teléfono" value={formatPhone((user as any).telefono || (solicitud as any).telefono)} />
               <InfoItem icon={<Calendar className="text-slate-400" />} label="Fecha de Nacimiento" value={formatDate(solicitud.fecha_nacimiento)} />
               <InfoItem icon={<MapPin className="text-slate-400" />} label="Dirección" value={getDireccionCompleta()} />
               <InfoItem icon={<Building className="text-slate-400" />} label="Unidad Académica" value={user.unidad_academica || solicitud.unidad_academica || "No registrada"} />
