@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "plantillas_correo_gas",
+  "info": {
+    "singularName": "plantilla-correo-gas",
+    "pluralName": "plantillas-correo-gas",
+    "displayName": "Plantilla Correo Gas",
+    "description": "Configura el contenido de los correos automáticos al abrir una ventana de gas"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "asunto": {
+      "type": "string",
+      "required": true,
+      "default": "Nueva ventana de venta de vales de gas abierta"
+    },
+    "cuerpo": {
+      "type": "richtext",
+      "required": true,
+      "default": "Hola {{usuario}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas. Ingresa a la plataforma para ver los nuevos precios.\n\nSaludos,\nEquipo AFAUTAL"
+    },
+    "email_remitente": {
+      "type": "email",
+      "default": "no-reply@afautal.cl"
+    }
+  }
+}

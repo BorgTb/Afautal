@@ -830,6 +830,43 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPlantillaCorreoGasPlantillaCorreoGas
+  extends Struct.SingleTypeSchema {
+  collectionName: 'plantillas_correo_gas';
+  info: {
+    description: 'Configura el contenido de los correos autom\u00E1ticos al abrir una ventana de gas';
+    displayName: 'Plantilla Correo Gas';
+    pluralName: 'plantillas-correo-gas';
+    singularName: 'plantilla-correo-gas';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    asunto: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Nueva ventana de venta de vales de gas abierta'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cuerpo: Schema.Attribute.RichText &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Hola {{usuario}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas. Ingresa a la plataforma para ver los nuevos precios.\n\nSaludos,\nEquipo AFAUTAL'>;
+    email_remitente: Schema.Attribute.Email &
+      Schema.Attribute.DefaultTo<'no-reply@afautal.cl'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::plantilla-correo-gas.plantilla-correo-gas'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiPrecioGasPrecioGas extends Struct.CollectionTypeSchema {
   collectionName: 'precios_gas';
   info: {
@@ -1636,6 +1673,7 @@ declare module '@strapi/strapi' {
       'api::mision-vision-valor.mision-vision-valor': ApiMisionVisionValorMisionVisionValor;
       'api::nosotros.nosotros': ApiNosotrosNosotros;
       'api::noticia.noticia': ApiNoticiaNoticia;
+      'api::plantilla-correo-gas.plantilla-correo-gas': ApiPlantillaCorreoGasPlantillaCorreoGas;
       'api::precio-gas.precio-gas': ApiPrecioGasPrecioGas;
       'api::servicio.servicio': ApiServicioServicio;
       'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;

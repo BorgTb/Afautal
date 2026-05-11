@@ -40,13 +40,11 @@ export default factories.createCoreController('api::ventana-gas.ventana-gas', ({
       }
 
       // 2. Publicar precios de gas
-      // Primero encontramos los documentos
       const precios = await strapi.documents('api::precio-gas.precio-gas').findMany({
-        status: 'draft', // Buscar en borradores
+        status: 'draft',
       });
 
       for (const precio of precios) {
-        // En Strapi 5, para publicar simplemente llamamos a publish con el documentId
         await strapi.documents('api::precio-gas.precio-gas').publish({
           documentId: precio.documentId,
         });
@@ -66,22 +64,34 @@ export default factories.createCoreController('api::ventana-gas.ventana-gas', ({
         },
       });
 
-      // 4. Enviar correos a usuarios
+      // 4. Enviar correos a usuarios usando la plantilla de Strapi
       try {
+        // Obtener la plantilla editable
+        const plantilla = await strapi.documents('api::plantilla-correo-gas.plantilla-correo-gas').findFirst();
+        
+        const asunto = plantilla?.asunto || 'Nueva ventana de venta de vales de gas abierta';
+        const cuerpoBase = plantilla?.cuerpo || 'Hola {{usuario}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas.';
+        const remitente = plantilla?.email_remitente || 'no-reply@afautal.cl';
+
         const usuarios = await strapi.db.query('plugin::users-permissions.user').findMany({
           where: { confirmed: true },
-          select: ['email', 'username'],
+          select: ['email', 'username', 'nombre_completo'],
         });
 
-        strapi.log.info(`Iniciando envío de correos a ${usuarios.length} usuarios...`);
+        strapi.log.info(`Iniciando envío de correos a ${usuarios.length} usuarios usando la plantilla: "${asunto}"`);
 
         for (const user of usuarios) {
           try {
+            // Reemplazo de variables dinámicas
+            const cuerpoPersonalizado = cuerpoBase
+              .replace(/{{usuario}}/g, user.username)
+              .replace(/{{nombre}}/g, user.nombre_completo || user.username);
+
             await strapi.plugin('email').service('email').send({
               to: user.email,
-              from: 'noreply@afautal.cl',
-              subject: 'Nueva ventana de venta de vales de gas abierta',
-              text: `Hola ${user.username},\n\nSe ha abierto una nueva ventana para solicitar vales de gas. Ingresa a la plataforma para ver los nuevos precios.\n\nSaludos,\nEquipo AFAUTAL`,
+              from: remitente,
+              subject: asunto,
+              text: cuerpoPersonalizado,
             });
           } catch (e) {
             strapi.log.error(`Error enviando correo a ${user.email}:`, e);
