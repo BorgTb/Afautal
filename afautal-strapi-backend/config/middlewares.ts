@@ -12,7 +12,7 @@ const config: Core.Config.Middlewares = [
           'connect-src': ["'self'", 'https:', 'http:', 'https://analytics.strapi.io'],
           'img-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com', 'https://excellent-nurture-beee0f6ec0.strapiapp.com'],
           'media-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com', 'https://excellent-nurture-beee0f6ec0.strapiapp.com'],
-          'frame-src': ["'self'", 'http://localhost:3000', 'https://api.tudominio.com', 'https://www.tudominio.com', process.env.FRONTEND_URL || 'http://localhost:3000'],
+          'frame-src': ["'self'", 'http://localhost:3000', 'https://api.tudominio.com', 'https://www.afautal.vercel.app', process.env.FRONTEND_URL || 'http://localhost:3000'],
           upgradeInsecureRequests: null,
         },
       },
