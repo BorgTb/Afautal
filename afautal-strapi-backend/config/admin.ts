@@ -24,7 +24,10 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
     config: {
       handler(uid: string, { documentId }: { documentId: string }) {
         if (uid === 'api::noticia.noticia') {
-          return `http://${env('FRONTEND_URL', 'http://localhost:3000')}/api/preview?secret=${env('PREVIEW_SECRET', 'tu-secreto-super-seguro')}&documentId=${documentId}`;
+          const baseUrl = env('FRONTEND_URL', 'http://localhost:3000');
+          // Asegurarse de no duplicar http:// si ya viene en la variable
+          const formattedUrl = baseUrl.startsWith('http') ? baseUrl : `http://${baseUrl}`;
+          return `${formattedUrl}/api/preview?secret=${env('PREVIEW_SECRET', 'tu-secreto-super-seguro')}&documentId=${documentId}`;
         }
         return null;
       },
