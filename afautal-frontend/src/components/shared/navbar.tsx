@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Briefcase, ChevronDown, Clock3, Flame, HeartPulse, KeyRound, LogOut, Menu, User, UserPlus, X } from "lucide-react";
+import { Briefcase, ChevronDown, Clock3, Flame, HeartPulse, KeyRound, LogOut, Menu, User, UserPlus, X, ShieldCheck } from "lucide-react";
 import Logo from "./logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchServiciosHabilitados } from "@/lib/servicios";
@@ -49,7 +49,7 @@ const mobileLinkClass =
   "flex items-center gap-3 px-4 py-3 text-base font-bold text-slate-700 hover:bg-slate-50 rounded-xl w-full text-left";
 
 export default function Navbar() {
-  const { isAuthenticated, isTemporaryPassword, loading, logout, token } = useAuth();
+  const { isAuthenticated, isTemporaryPassword, loading, logout, token, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isServicesMenuOpen, setIsServicesMenuOpen] = useState(false);
@@ -250,6 +250,18 @@ export default function Navbar() {
                     <User size={18} />
                     Mi perfil
                   </Link>
+
+                  {user?.role?.type === 'admin' && (
+                    <Link
+                      href="/dashboard/admin/gas"
+                      className="flex items-center gap-3 px-4 py-3.5 text-[15px] font-semibold text-red-700 hover:bg-red-50 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <ShieldCheck size={18} />
+                      Admin Gas
+                    </Link>
+                  )}
+
                   <div className="h-px w-full bg-slate-200"></div>
                   <button
                     type="button"

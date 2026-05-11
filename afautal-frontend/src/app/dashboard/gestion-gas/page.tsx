@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchPreciosGas, submitSolicitudGas, fetchMySolicitudesGas, fetchDatosTransferencia, uploadComprobante, updateSolicitudGas, type PrecioGas, type SolicitudGas, type DatosTransferencia } from "@/lib/gas";
+import { fetchPreciosGas, submitSolicitudGas, fetchMySolicitudesGas, fetchDatosTransferencia, uploadComprobante, updateSolicitudGas, fetchActiveWindow, type PrecioGas, type SolicitudGas, type DatosTransferencia, type VentanaGas } from "@/lib/gas";
 import { fetchBancos, type Banco } from "@/lib/banco";
 import gsap from "gsap";
-import { Flame, ShoppingCart, History, Info, ExternalLink, CheckCircle2, UploadCloud, FileCheck, Filter, XCircle, CreditCard } from "lucide-react";
+import { Flame, ShoppingCart, History, Info, ExternalLink, CheckCircle2, UploadCloud, FileCheck, Filter, XCircle, CreditCard, Lock } from "lucide-react";
 
 const ITEMS_POR_PAGINA = 10;
 
@@ -16,6 +16,7 @@ export default function GestionGasPage() {
   const [datosTransferencia, setDatosTransferencia] = useState<DatosTransferencia | null>(null);
   const [bancosList, setBancosList] = useState<Banco[]>([]);
   const [selectedGas, setSelectedGas] = useState<PrecioGas | null>(null);
+  const [ventanaActiva, setVentanaActiva] = useState<VentanaGas | null>(null);
   const [cantidad, setCantidad] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -51,16 +52,18 @@ export default function GestionGasPage() {
 
     const loadData = async () => {
       try {
-        const [p, s, d, bList] = await Promise.all([
+        const [p, s, d, bList, v] = await Promise.all([
           fetchPreciosGas(token), 
           fetchMySolicitudesGas(token),
           fetchDatosTransferencia(token),
-          fetchBancos(token)
+          fetchBancos(token),
+          fetchActiveWindow(token)
         ]);
         setPrecios(p);
         setSolicitudes(s);
         setDatosTransferencia(d);
         setBancosList(bList);
+        setVentanaActiva(v);
       } catch (error) {
         console.error(error);
       } finally {
@@ -93,14 +96,15 @@ export default function GestionGasPage() {
   const closeModal = () => setModalConfig(prev => ({ ...prev, isOpen: false }));
 
   const handleRequest = async () => {
-    if (!token || !selectedGas) return;
+    if (!token || !selectedGas || !ventanaActiva) return;
 
     setSubmitting(true);
     try {
       const sol = await submitSolicitudGas(token, {
         kg: selectedGas.kg,
         precio: selectedGas.precio,
-        cantidad: cantidad
+        cantidad: cantidad,
+        ventana_gas: ventanaActiva.id
       });
       setLastSolicitud(sol);
       setView("exito");
@@ -282,79 +286,89 @@ export default function GestionGasPage() {
 
       <div className="flex flex-col gap-12">
         {/* Fila 1: Selección de Vales y Ayuda */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Selección de Vales */}
-          <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100">
-            <h3 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
-              <ShoppingCart size={22} className="text-[#BF0F0F]" />
-              Selecciona tu Vale
-            </h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {precios.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setSelectedGas(p)}
-                  className={`p-6 rounded-xl border-2 transition-all text-left relative overflow-hidden group ${
-                    selectedGas?.id === p.id 
-                    ? "border-[#BF0F0F] bg-red-50" 
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                  }`}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-2xl font-black text-gray-900">{p.kg} KG</span>
-                    <Flame size={24} className={selectedGas?.id === p.id ? "text-[#BF0F0F]" : "text-gray-200 group-hover:text-red-200"} />
-                  </div>
-                  <p className="text-3xl font-black text-[#BF0F0F]">${p.precio.toLocaleString('es-CL')}</p>
-                  <p className="text-xs font-bold text-gray-400 mt-2 uppercase tracking-widest">{p.empresa}</p>
-                </button>
-              ))}
-            </div>
-
-            {selectedGas && (
-              <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <div className="flex items-center gap-4">
-                    <label className="font-bold text-gray-700">Cantidad:</label>
-                    <div className="flex items-center bg-white border border-gray-300 rounded-lg">
-                      <button 
-                        onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                        className="px-4 py-2 hover:bg-gray-100 text-gray-600 font-bold"
-                      >-</button>
-                      <span className="px-4 py-2 font-black text-gray-900">{cantidad}</span>
-                      <button 
-                        onClick={() => setCantidad(cantidad + 1)}
-                        className="px-4 py-2 hover:bg-gray-100 text-gray-600 font-bold"
-                      >+</button>
-                    </div>
-                  </div>
-                  <div className="text-center sm:text-right">
-                    <p className="text-sm font-bold text-gray-500 uppercase">Total a pagar</p>
-                    <p className="text-3xl font-black text-[#BF0F0F]">${(selectedGas.precio * cantidad).toLocaleString('es-CL')}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleRequest}
-                  disabled={submitting}
-                  className="w-full mt-6 py-4 bg-[#BF0F0F] text-white rounded-xl font-black text-lg shadow-xl hover:bg-[#A61B26] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {submitting ? "Procesando..." : "Confirmar y Ver Datos de Pago"}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Información y Ayuda */}
-          <div className="lg:col-span-1 bg-blue-50 p-6 sm:p-8 rounded-2xl border border-blue-100 flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <Info className="text-blue-600 shrink-0" size={28} />
-              <h4 className="font-black text-blue-900 text-lg">Importante</h4>
-            </div>
-            <p className="text-sm text-blue-800 leading-relaxed font-medium">
-              Una vez confirmada la solicitud, deberás realizar la transferencia y adjuntar el comprobante en tu historial ("Mis Solicitudes" en la parte inferior). El vale será habilitado en un plazo máximo de 24 horas hábiles tras la verificación.
+        {!ventanaActiva ? (
+          <div className="bg-yellow-50 border border-yellow-200 p-10 rounded-2xl text-center shadow-sm">
+            <Lock className="mx-auto text-yellow-600 mb-4" size={48} />
+            <h2 className="text-2xl font-black text-yellow-900">Ventas de Gas Cerradas</h2>
+            <p className="text-yellow-800 font-medium mt-2 max-w-md mx-auto">
+              Actualmente no hay una ventana de venta activa. Te notificaremos por correo electrónico cuando se abran nuevas solicitudes con precios actualizados.
             </p>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Selección de Vales */}
+            <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100">
+              <h3 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+                <ShoppingCart size={22} className="text-[#BF0F0F]" />
+                Selecciona tu Vale ({ventanaActiva.nombre})
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {precios.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedGas(p)}
+                    className={`p-6 rounded-xl border-2 transition-all text-left relative overflow-hidden group ${
+                      selectedGas?.id === p.id 
+                      ? "border-[#BF0F0F] bg-red-50" 
+                      : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-2xl font-black text-gray-900">{p.kg} KG</span>
+                      <Flame size={24} className={selectedGas?.id === p.id ? "text-[#BF0F0F]" : "text-gray-200 group-hover:text-red-200"} />
+                    </div>
+                    <p className="text-3xl font-black text-[#BF0F0F]">${p.precio.toLocaleString('es-CL')}</p>
+                    <p className="text-xs font-bold text-gray-400 mt-2 uppercase tracking-widest">{p.empresa}</p>
+                  </button>
+                ))}
+              </div>
+
+              {selectedGas && (
+                <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <label className="font-bold text-gray-700">Cantidad:</label>
+                      <div className="flex items-center bg-white border border-gray-300 rounded-lg">
+                        <button 
+                          onClick={() => setCantidad(Math.max(1, cantidad - 1))}
+                          className="px-4 py-2 hover:bg-gray-100 text-gray-600 font-bold"
+                        >-</button>
+                        <span className="px-4 py-2 font-black text-gray-900">{cantidad}</span>
+                        <button 
+                          onClick={() => setCantidad(cantidad + 1)}
+                          className="px-4 py-2 hover:bg-gray-100 text-gray-600 font-bold"
+                        >+</button>
+                      </div>
+                    </div>
+                    <div className="text-center sm:text-right">
+                      <p className="text-sm font-bold text-gray-500 uppercase">Total a pagar</p>
+                      <p className="text-3xl font-black text-[#BF0F0F]">${(selectedGas.precio * cantidad).toLocaleString('es-CL')}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleRequest}
+                    disabled={submitting}
+                    className="w-full mt-6 py-4 bg-[#BF0F0F] text-white rounded-xl font-black text-lg shadow-xl hover:bg-[#A61B26] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {submitting ? "Procesando..." : "Confirmar y Ver Datos de Pago"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Información y Ayuda */}
+            <div className="lg:col-span-1 bg-blue-50 p-6 sm:p-8 rounded-2xl border border-blue-100 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <Info className="text-blue-600 shrink-0" size={28} />
+                <h4 className="font-black text-blue-900 text-lg">Importante</h4>
+              </div>
+              <p className="text-sm text-blue-800 leading-relaxed font-medium">
+                Una vez confirmada la solicitud, deberás realizar la transferencia y adjuntar el comprobante en tu historial ("Mis Solicitudes" en la parte inferior). El vale será habilitado en un plazo máximo de 24 horas hábiles tras la verificación.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Fila 2: Historial de Solicitudes Filtrable y Paginado */}
         <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100">

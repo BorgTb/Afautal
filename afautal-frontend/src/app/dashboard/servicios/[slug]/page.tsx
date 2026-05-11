@@ -342,7 +342,7 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-4 bg-[#BF0F0F] text-white rounded-xl font-black text-lg shadow-xl hover:bg-[#A61B26] transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-4 bg-[#BF0F0F] text-white rounded-xl font-black text-lg shadow-xl hover:bg-[#A61B26] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submitting ? "Enviando..." : "Enviar Solicitud"}
             </button>

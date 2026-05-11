@@ -75,6 +75,7 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
       // para que incluya toda la info de la solicitud en la respuesta
       populate: {
         solicitud: true,
+        role: true,
       },
     });
 

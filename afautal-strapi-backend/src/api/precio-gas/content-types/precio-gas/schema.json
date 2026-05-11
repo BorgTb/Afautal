@@ -8,7 +8,7 @@
     "description": "Valores de cilindros de gas por kg"
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "attributes": {
     "kg": {

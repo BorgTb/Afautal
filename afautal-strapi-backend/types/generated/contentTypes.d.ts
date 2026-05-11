@@ -839,7 +839,7 @@ export interface ApiPrecioGasPrecioGas extends Struct.CollectionTypeSchema {
     singularName: 'precio-gas';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -945,6 +945,10 @@ export interface ApiSolicitudGasSolicitudGas
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    ventana_gas: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::ventana-gas.ventana-gas'
+    >;
   };
 }
 
@@ -1049,6 +1053,44 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+  };
+}
+
+export interface ApiVentanaGasVentanaGas extends Struct.CollectionTypeSchema {
+  collectionName: 'ventanas_gas';
+  info: {
+    description: 'Periodos de tiempo donde se habilitan las compras de gas';
+    displayName: 'Ventana Gas';
+    pluralName: 'ventanas-gas';
+    singularName: 'ventana-gas';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    estado: Schema.Attribute.Enumeration<['activa', 'cerrada']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'cerrada'>;
+    fecha_fin: Schema.Attribute.DateTime;
+    fecha_inicio: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ventana-gas.ventana-gas'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    solicitudes_gas: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::solicitud-gas.solicitud-gas'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1599,6 +1641,7 @@ declare module '@strapi/strapi' {
       'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;
       'api::solicitud-servicio.solicitud-servicio': ApiSolicitudServicioSolicitudServicio;
       'api::solicitud.solicitud': ApiSolicitudSolicitud;
+      'api::ventana-gas.ventana-gas': ApiVentanaGasVentanaGas;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

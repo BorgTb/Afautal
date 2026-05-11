@@ -6,6 +6,11 @@ export interface AuthUser {
   nombre_completo?: string;
   unidad_academica?: string;
   password_temporal?: boolean;
+  role?: {
+    id: number;
+    name: string;
+    type: string;
+  };
   solicitud?: {
     id?: number;
     documentId?: string;

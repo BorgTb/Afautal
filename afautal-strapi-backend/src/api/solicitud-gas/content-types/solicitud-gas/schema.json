@@ -41,6 +41,12 @@
     },
     "fecha_solicitud": {
       "type": "datetime"
+    },
+    "ventana_gas": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ventana-gas.ventana-gas",
+      "inversedBy": "solicitudes_gas"
     }
   }
 }

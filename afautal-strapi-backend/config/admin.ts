@@ -19,6 +19,17 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
     nps: env.bool('FLAG_NPS', true),
     promoteEE: env.bool('FLAG_PROMOTE_EE', true),
   },
+  preview: {
+    enabled: true,
+    config: {
+      handler(uid: string, { documentId }: { documentId: string }) {
+        if (uid === 'api::noticia.noticia') {
+          return `http://localhost:3000/api/preview?secret=${env('PREVIEW_SECRET', 'tu-secreto-super-seguro')}&documentId=${documentId}`;
+        }
+        return null;
+      },
+    },
+  },
 });
 
 export default config;

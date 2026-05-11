@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCollectionType, getStrapiMediaURL } from "@/lib/strapi";
+import { draftMode } from "next/headers";
+import { strapiFetch, StrapiSingleResponse, getStrapiMediaURL } from "@/lib/strapi";
 
 interface NewsMediaAttributes {
   url?: string;
@@ -129,19 +130,26 @@ export default async function NewsDetailPage({
   params: Promise<{ newsId: string }>;
 }) {
   const { newsId } = await params;
+  const draft = await draftMode();
+  const isEnabled = draft.isEnabled;
 
-  const result = await getCollectionType<NoticiaPayload>(
-    "noticias",
-    "populate=foto_noticia&sort=noticia_principal:desc&sort=fecha_publicacion:desc&pagination[limit]=200"
-  ).catch(() => ({ data: [] as NoticiaPayload[] }));
+  // En Strapi v5 usamos status=draft para traer borradores
+  const query = isEnabled ? "populate=foto_noticia&status=draft" : "populate=foto_noticia";
 
-  const noticia = result.data.find((item) => String(item.documentId ?? item.id) === newsId);
+  const result = await strapiFetch<StrapiSingleResponse<NoticiaPayload>>(
+    `/api/noticias/${newsId}`,
+    { cache: isEnabled ? "no-store" : "force-cache" },
+    query
+  ).catch(() => null);
+
+  const noticia = result?.data;
 
   if (!noticia) {
     notFound();
   }
 
-  const source = noticia.attributes ?? noticia;
+  // Soporte para formato v4 (attributes) y v5 (plano)
+  const source = noticia.attributes || noticia;
   const titulo = source.titulo_noticia?.trim() || "Noticia";
   const cuerpo = stripMarkdown(source.cuerpo_noticia);
   const autor = source.autor_noticia?.trim();
@@ -149,32 +157,43 @@ export default async function NewsDetailPage({
   const meta = [autor, fecha].filter(Boolean).join(" • ");
 
   return (
-    <div className="w-full py-10 sm:py-12">
-      <div className="news-reveal mx-auto w-full max-w-7xl px-6">
-        <Link href="/news" className="text-sm font-semibold uppercase tracking-[0.14em] text-[#BF0F0F] hover:underline">
-          Volver a noticias
-        </Link>
-      </div>
-
-      <section className="news-reveal news-delay-1 mt-5 px-6">
-        <div className="mx-auto w-full max-w-5xl bg-slate-50 p-2 sm:p-3">
-          <img
-            src={getNewsImage(source.foto_noticia)}
-            alt={getNewsAlt(source.foto_noticia, titulo)}
-            className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full object-contain"
-          />
+    <>
+      {isEnabled && (
+        <div className="bg-yellow-400 text-yellow-900 px-4 py-2.5 flex justify-center items-center gap-4 text-sm font-bold z-50 relative sticky top-0">
+          <span>⚠️ Estás previsualizando un borrador no publicado.</span>
+          <a href={`/api/disable-preview?redirect=/news/${newsId}`} className="underline hover:text-black transition-colors">
+            Salir del modo borrador
+          </a>
         </div>
-      </section>
+      )}
 
-      <section className="news-reveal news-delay-2 mx-auto w-full max-w-7xl px-6 py-8 sm:py-10">
-        {source.noticia_principal && (
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#BF0F0F]">Noticia principal</p>
-        )}
+      <div className="w-full py-10 sm:py-12">
+        <div className="news-reveal mx-auto w-full max-w-7xl px-6">
+          <Link href="/news" className="text-sm font-semibold uppercase tracking-[0.14em] text-[#BF0F0F] hover:underline">
+            Volver a noticias
+          </Link>
+        </div>
 
-        <h1 className="text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">{titulo}</h1>
-        {meta && <p className="mt-3 text-sm text-slate-500">{meta}</p>}
-        {cuerpo && <p className="mt-6 whitespace-pre-wrap text-base leading-relaxed text-slate-700">{cuerpo}</p>}
-      </section>
-    </div>
+        <section className="news-reveal news-delay-1 mt-5 px-6">
+          <div className="mx-auto w-full max-w-5xl bg-slate-50 p-2 sm:p-3">
+            <img
+              src={getNewsImage(source.foto_noticia)}
+              alt={getNewsAlt(source.foto_noticia, titulo)}
+              className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full object-contain"
+            />
+          </div>
+        </section>
+
+        <section className="news-reveal news-delay-2 mx-auto w-full max-w-7xl px-6 py-8 sm:py-10">
+          {source.noticia_principal && (
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#BF0F0F]">Noticia principal</p>
+          )}
+
+          <h1 className="text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">{titulo}</h1>
+          {meta && <p className="mt-3 text-sm text-slate-500">{meta}</p>}
+          {cuerpo && <p className="mt-6 whitespace-pre-wrap text-base leading-relaxed text-slate-700">{cuerpo}</p>}
+        </section>
+      </div>
+    </>
   );
 }

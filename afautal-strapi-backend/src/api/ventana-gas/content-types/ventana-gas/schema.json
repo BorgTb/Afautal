@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ventanas_gas",
+  "info": {
+    "singularName": "ventana-gas",
+    "pluralName": "ventanas-gas",
+    "displayName": "Ventana Gas",
+    "description": "Periodos de tiempo donde se habilitan las compras de gas"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["activa", "cerrada"],
+      "default": "cerrada",
+      "required": true
+    },
+    "fecha_inicio": {
+      "type": "datetime",
+      "required": true
+    },
+    "fecha_fin": {
+      "type": "datetime"
+    },
+    "solicitudes_gas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::solicitud-gas.solicitud-gas",
+      "mappedBy": "ventana_gas"
+    }
+  }
+}

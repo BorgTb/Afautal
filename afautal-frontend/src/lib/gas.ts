@@ -60,7 +60,30 @@ export async function fetchPreciosGas(token?: string): Promise<PrecioGas[]> {
   return body.data;
 }
 
-export async function submitSolicitudGas(token: string, data: { kg: number; precio: number; cantidad: number }): Promise<SolicitudGas> {
+export interface VentanaGas {
+  id: number;
+  documentId: string;
+  nombre: string;
+  estado: "activa" | "cerrada";
+}
+
+export async function fetchActiveWindow(token?: string): Promise<VentanaGas | null> {
+  const headers: HeadersInit = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${STRAPI_URL}/api/ventanas-gas?filters[estado][$eq]=activa`, {
+    headers,
+    cache: "no-store",
+  });
+
+  if (!response.ok) return null;
+  const body = await response.json();
+  return body.data?.[0] || null;
+}
+
+export async function submitSolicitudGas(token: string, data: { kg: number; precio: number; cantidad: number; ventana_gas: number }): Promise<SolicitudGas> {
   const response = await fetch(`${STRAPI_URL}/api/solicitudes-gas`, {
     method: "POST",
     headers: {
