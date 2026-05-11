@@ -11,8 +11,9 @@ import {
   fetchSolicitudesPorVentana,
   type VentanaGas
 } from "@/lib/admin-gas";
-import { Flame, Save, Send, Plus, History, Users, FileSpreadsheet, AlertCircle, CheckCircle2, Trash2, Layers } from "lucide-react";
+import { Flame, Save, Send, Plus, History, Users, FileSpreadsheet, AlertCircle, CheckCircle2, Trash2, Layers, Clock } from "lucide-react";
 import { AdminGate } from "@/components/shared/admin-gate";
+import * as XLSX from "xlsx";
 
 export default function AdminGasPage() {
   const { token } = useAuth();
@@ -146,6 +147,36 @@ export default function AdminGasPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleDownloadExcel = () => {
+    if (solicitudes.length === 0) {
+      alert("No hay solicitudes para exportar en esta ventana.");
+      return;
+    }
+
+    // Preparar datos para Excel: RUT, Correo, Cantidad (KG)
+    const dataToExport = solicitudes.map((s) => {
+      // Manejar formato Strapi 5 (plano)
+      const u = s.usuario || {};
+      return {
+        "RUT": u.rut || "No disponible",
+        "Correo": u.email || "No disponible",
+        "Nombre Completo": u.nombre_completo || u.username || "Desconocido",
+        "Tamaño Cilindro (KG)": s.kg || 0,
+        "Cantidad Pedida": s.cantidad || 0,
+        "Total Pedido (KG)": (s.kg || 0) * (s.cantidad || 1),
+        "Fecha Solicitud": new Date(s.fecha_solicitud || s.createdAt).toLocaleDateString('es-CL'),
+        "Estado": s.estado
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Gas");
+    
+    const fileName = `Reporte_Gas_${ventanaActiva?.nombre.replace(/\s/g, '_') || "AFAUTAL"}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
   };
 
   if (loading) return <div className="p-20 text-center font-bold text-black">Cargando panel de administración...</div>;
@@ -295,7 +326,10 @@ export default function AdminGasPage() {
                      <div className="flex justify-between items-center mb-4">
                        <p className="font-black text-gray-800">Solicitudes: {solicitudes.length}</p>
                      </div>
-                     <button className="w-full flex justify-center items-center gap-2 bg-gray-900 text-white py-3 rounded-xl font-black hover:bg-black transition-all">
+                     <button 
+                      onClick={handleDownloadExcel}
+                      className="w-full flex justify-center items-center gap-2 bg-gray-900 text-white py-3 rounded-xl font-black hover:bg-black transition-all"
+                     >
                        <FileSpreadsheet size={18} /> DESCARGAR EXCEL
                      </button>
                   </div>
@@ -308,16 +342,21 @@ export default function AdminGasPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 relative overflow-hidden">
+               <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                  <div className="bg-gray-900 text-white px-4 py-2 rounded-full text-xs font-black flex items-center gap-2 shadow-xl">
+                    <Clock size={14} /> POR IMPLEMENTAR
+                  </div>
+               </div>
                <h2 className="text-xl font-black text-gray-800 flex items-center gap-2 mb-4">
                   <Users size={20} className="text-gray-400" />
                   Carga de Excel
                </h2>
                <p className="text-sm text-gray-500 font-medium mb-6">Sube el archivo de respuesta para procesar las solicitudes.</p>
                
-               <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#BF0F0F] transition-colors cursor-pointer group">
-                  <FileSpreadsheet className="mx-auto text-gray-300 group-hover:text-[#BF0F0F] mb-3" size={40} />
-                  <p className="text-xs font-black text-gray-400 group-hover:text-gray-600 uppercase">Haz clic o arrastra un archivo</p>
+               <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center transition-colors cursor-not-allowed">
+                  <FileSpreadsheet className="mx-auto text-gray-300 mb-3" size={40} />
+                  <p className="text-xs font-black text-gray-400 uppercase">Función deshabilitada</p>
                </div>
             </div>
           </aside>
