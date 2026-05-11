@@ -172,9 +172,9 @@ export default function PerfilPage() {
               Información Personal
             </h3>
             <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
-              <InfoItem icon={<User className="text-slate-400" />} label="RUT" value={formatRUT(user.rut || solicitud.rut)} />
+              <InfoItem icon={<User className="text-slate-400" />} label="RUT" value={formatRUT(user.rut || solicitud.rut || "")} />
               <InfoItem icon={<Mail className="text-slate-400" />} label="Correo Electrónico" value={user.email} />
-              <InfoItem icon={<Phone className="text-slate-400" />} label="Teléfono" value={solicitud.telefono || "No registrado"} />
+              <InfoItem icon={<Phone className="text-slate-400" />} label="Teléfono" value={formatPhone(solicitud.telefono)} />
               <InfoItem icon={<Calendar className="text-slate-400" />} label="Fecha de Nacimiento" value={formatDate(solicitud.fecha_nacimiento)} />
               <InfoItem icon={<MapPin className="text-slate-400" />} label="Dirección" value={getDireccionCompleta()} />
               <InfoItem icon={<Building className="text-slate-400" />} label="Unidad Académica" value={user.unidad_academica || solicitud.unidad_academica || "No registrada"} />

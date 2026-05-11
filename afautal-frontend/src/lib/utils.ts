@@ -3,7 +3,7 @@
  * @param rut RUT en cualquier formato (con o sin puntos/guión)
  * @returns RUT formateado (ej: 12.345.678-9) o el string original si no es válido
  */
-export const formatRUT = (rut: string): string => {
+export const formatRUT = (rut?: string): string => {
   if (!rut) return "No disponible";
   
   // Limpiar puntos y guiones
@@ -26,7 +26,7 @@ export const formatRUT = (rut: string): string => {
  * @param value Número de teléfono (ej: +56912345678 o 12345678)
  * @returns Teléfono formateado (ej: +56 9 1234 5678)
  */
-export const formatPhone = (value: string): string => {
+export const formatPhone = (value?: string): string => {
   if (!value) return "No registrado";
   const digits = value.replace(/\D/g, "");
   if (!digits) return value;
