@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchPreciosGas, submitSolicitudGas, fetchMySolicitudesGas, fetchDatosTransferencia, uploadComprobante, updateSolicitudGas, fetchActiveWindow, type PrecioGas, type SolicitudGas, type DatosTransferencia, type VentanaGas } from "@/lib/gas";
 import { fetchBancos, type Banco } from "@/lib/banco";
+import { formatRUT } from "@/lib/utils";
 import gsap from "gsap";
 import { Flame, ShoppingCart, History, Info, ExternalLink, CheckCircle2, UploadCloud, FileCheck, Filter, XCircle, CreditCard, Lock } from "lucide-react";
 
@@ -103,8 +104,7 @@ export default function GestionGasPage() {
       const sol = await submitSolicitudGas(token, {
         kg: selectedGas.kg,
         precio: selectedGas.precio,
-        cantidad: cantidad,
-        ventana_gas: ventanaActiva.id
+        cantidad: cantidad
       });
       setLastSolicitud(sol);
       setView("exito");
@@ -210,7 +210,7 @@ export default function GestionGasPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase">RUT</p>
-                  <p className="font-bold text-gray-900">{datosTransferencia.rut}</p>
+                  <p className="font-bold text-gray-900">{formatRUT(datosTransferencia.rut)}</p>
                 </div>
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase">Banco</p>

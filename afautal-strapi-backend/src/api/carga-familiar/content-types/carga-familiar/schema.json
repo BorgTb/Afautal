@@ -14,7 +14,8 @@
     "rut": {
       "type": "string",
       "required": true,
-      "unique": true
+      "unique": true,
+      "maxLength": 9
     },
     "nombre_completo": {
       "type": "string",

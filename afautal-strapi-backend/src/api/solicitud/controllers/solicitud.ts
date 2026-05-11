@@ -28,9 +28,9 @@ interface SolicitudWriteData {
 	fecha_nacimiento: string | null;
 	tipo_contrato: 'Planta regular' | null;
 	jerarquia: 'Titular' | null;
-	region: string | null;
-	comuna: string | null;
-	ciudad: string | null;
+	region: { set: string[] } | null;
+	comuna: { set: string[] } | null;
+	ciudad: { set: string[] } | null;
 	direccion_particular: string | null;
 	telefono: string | null;
 	acepta_descuento: boolean;
@@ -99,9 +99,9 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			fecha_nacimiento: payload.fecha_nacimiento || null,
 			tipo_contrato: normalizeTipoContrato(payload.tipo_contrato),
 			jerarquia: normalizeJerarquia(payload.jerarquia),
-			region: payload.region?.trim() || null,
-			comuna: payload.comuna?.trim() || null,
-			ciudad: payload.ciudad?.trim() || null,
+			region: payload.region ? { set: [payload.region] } : null,
+			comuna: payload.comuna ? { set: [payload.comuna] } : null,
+			ciudad: payload.ciudad ? { set: [payload.ciudad] } : null,
 			direccion_particular: payload.direccion_particular?.trim() || null,
 			telefono: payload.telefono?.trim() || null,
 			acepta_descuento: Boolean(payload.acepta_descuento),

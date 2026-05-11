@@ -7,6 +7,15 @@ export default factories.createCoreController('api::solicitud-gas.solicitud-gas'
       return ctx.unauthorized('No estás autenticado');
     }
 
+    // Buscar ventana activa
+    const ventanaActiva = await strapi.db.query('api::ventana-gas.ventana-gas').findOne({
+      where: { estado: 'activa' }
+    });
+
+    if (!ventanaActiva) {
+      return ctx.badRequest('No hay una ventana de venta de gas activa actualmente.');
+    }
+
     const payload = ctx.request.body.data || {};
 
     // Crear la entrada directamente en la base de datos saltando la validación REST
@@ -14,9 +23,10 @@ export default factories.createCoreController('api::solicitud-gas.solicitud-gas'
       data: {
         ...payload,
         usuario: user.id,
+        ventana_gas: ventanaActiva.id,
         estado: payload.estado || 'pendiente'
       },
-      populate: ['usuario', 'comprobante']
+      populate: ['usuario', 'comprobante', 'ventana_gas']
     });
 
     return { data: entry };

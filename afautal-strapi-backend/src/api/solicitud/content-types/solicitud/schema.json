@@ -11,16 +11,28 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "rut": { "type": "string", "required": true, "unique": true },
+    "rut": { "type": "string", "required": true, "unique": true, "maxLength": 9 },
     "nombre_completo": { "type": "string", "required": true },
     "fecha_nacimiento": { "type": "date", "required": true },
     "correo_electronico": { "type": "email", "required": true, "unique": true },
     "unidad_academica": { "type": "string" },
     "tipo_contrato": { "type": "enumeration", "enum": ["Planta regular"], "required": true },
     "jerarquia": { "type": "enumeration", "enum": ["Titular"], "required": true },
-    "region": { "type": "string", "required": true },
-    "comuna": { "type": "string", "required": true },
-    "ciudad": { "type": "string", "required": true },
+    "region": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::region.region"
+    },
+    "comuna": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::comuna.comuna"
+    },
+    "ciudad": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::ciudad.ciudad"
+    },
     "direccion_particular": { "type": "string", "required": true },
     "telefono": { "type": "string" },
     "banco": { "type": "string" },

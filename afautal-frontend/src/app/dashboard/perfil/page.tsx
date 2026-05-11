@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Mail, Calendar, MapPin, Shield, Building, Briefcase, CreditCard, Save, Users, Plus, Trash2, XCircle } from "lucide-react";
+import { User, Mail, Calendar, MapPin, Shield, Building, Briefcase, CreditCard, Save, Users, Plus, Trash2, XCircle, Phone } from "lucide-react";
 import { getAuthStorageKey } from "@/lib/auth";
 import { fetchBancos, type Banco } from "@/lib/banco";
 import { fetchMisCargas, addCarga, deleteCarga, type CargaFamiliar } from "@/lib/carga";
+import { formatRUT, formatPhone } from "@/lib/utils";
 
 const TIPOS_CUENTA = ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"];
 const PARENTESCOS = ["Cónyuge", "Hijo/a", "Padre/Madre", "Conviviente Civil", "Otro"];
@@ -94,7 +95,12 @@ export default function PerfilPage() {
   };
 
   const getDireccionCompleta = () => {
-    const partes = [solicitud.direccion_particular, solicitud.comuna, solicitud.ciudad, solicitud.region].filter(Boolean);
+    const partes = [
+      solicitud.direccion_particular, 
+      solicitud.comuna?.nombre, 
+      solicitud.ciudad?.nombre, 
+      solicitud.region?.nombre
+    ].filter(Boolean);
     return partes.length > 0 ? partes.join(", ") : "No registrada";
   };
 
@@ -166,8 +172,9 @@ export default function PerfilPage() {
               Información Personal
             </h3>
             <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
-              <InfoItem icon={<User className="text-slate-400" />} label="RUT" value={user.rut || solicitud.rut || "No registrado"} />
+              <InfoItem icon={<User className="text-slate-400" />} label="RUT" value={formatRUT(user.rut || solicitud.rut)} />
               <InfoItem icon={<Mail className="text-slate-400" />} label="Correo Electrónico" value={user.email} />
+              <InfoItem icon={<Phone className="text-slate-400" />} label="Teléfono" value={solicitud.telefono || "No registrado"} />
               <InfoItem icon={<Calendar className="text-slate-400" />} label="Fecha de Nacimiento" value={formatDate(solicitud.fecha_nacimiento)} />
               <InfoItem icon={<MapPin className="text-slate-400" />} label="Dirección" value={getDireccionCompleta()} />
               <InfoItem icon={<Building className="text-slate-400" />} label="Unidad Académica" value={user.unidad_academica || solicitud.unidad_academica || "No registrada"} />
@@ -195,7 +202,17 @@ export default function PerfilPage() {
                   <div className="grid sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-black text-slate-500 uppercase mb-1">RUT</label>
-                      <input required type="text" value={nuevaCarga.rut} onChange={e => setNuevaCarga({...nuevaCarga, rut: e.target.value})} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" placeholder="Ej: 12.345.678-9" />
+                      <input 
+                        required 
+                        type="text" 
+                        value={nuevaCarga.rut} 
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9);
+                          setNuevaCarga({...nuevaCarga, rut: val});
+                        }} 
+                        className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" 
+                        placeholder="Ej: 123456789" 
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-black text-slate-500 uppercase mb-1">Nombre Completo</label>
@@ -227,7 +244,7 @@ export default function PerfilPage() {
                     <div>
                       <p className="font-black text-slate-900 text-lg">{carga.nombre_completo}</p>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm font-bold text-slate-500">{carga.rut}</span>
+                        <span className="text-sm font-bold text-slate-500">{formatRUT(carga.rut)}</span>
                         <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-black text-blue-700 ring-1 ring-inset ring-blue-700/10">
                           {carga.parentesco}
                         </span>

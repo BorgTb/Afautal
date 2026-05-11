@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "comunas",
+  "info": {
+    "singularName": "comuna",
+    "pluralName": "comunas",
+    "displayName": "Comuna",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    },
+    "region": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::region.region",
+      "inversedBy": "comunas"
+    }
+  }
+}

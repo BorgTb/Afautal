@@ -70,8 +70,8 @@ export default factories.createCoreController('api::ventana-gas.ventana-gas', ({
         const plantilla = await strapi.documents('api::plantilla-correo-gas.plantilla-correo-gas').findFirst();
         
         const asunto = plantilla?.asunto || 'Nueva ventana de venta de vales de gas abierta';
-        const cuerpoBase = plantilla?.cuerpo || 'Hola {{usuario}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas.';
-        const remitente = plantilla?.email_remitente || 'no-reply@afautal.cl';
+        const cuerpoBase = plantilla?.cuerpo || 'Hola {{nombre}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas.';
+        const remitente = plantilla?.email_remitente || 'noreply@afautal.cl';
 
         const usuarios = await strapi.db.query('plugin::users-permissions.user').findMany({
           where: { confirmed: true },
@@ -84,7 +84,7 @@ export default factories.createCoreController('api::ventana-gas.ventana-gas', ({
           try {
             // Reemplazo de variables dinámicas
             const cuerpoPersonalizado = cuerpoBase
-              .replace(/{{usuario}}/g, user.username)
+              .replace(/{{usuario}}/g, user.nombre_completo || user.username)
               .replace(/{{nombre}}/g, user.nombre_completo || user.username);
 
             await strapi.plugin('email').service('email').send({

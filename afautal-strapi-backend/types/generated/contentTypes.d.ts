@@ -500,6 +500,36 @@ export interface ApiCargaFamiliarCargaFamiliar
   };
 }
 
+export interface ApiCiudadCiudad extends Struct.CollectionTypeSchema {
+  collectionName: 'ciudades';
+  info: {
+    description: '';
+    displayName: 'Ciudad';
+    pluralName: 'ciudades';
+    singularName: 'ciudad';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ciudad.ciudad'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    region: Schema.Attribute.Relation<'manyToOne', 'api::region.region'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiComentarioComentario extends Struct.CollectionTypeSchema {
   collectionName: 'comentarios';
   info: {
@@ -532,6 +562,36 @@ export interface ApiComentarioComentario extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiComunaComuna extends Struct.CollectionTypeSchema {
+  collectionName: 'comunas';
+  info: {
+    description: '';
+    displayName: 'Comuna';
+    pluralName: 'comunas';
+    singularName: 'comuna';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::comuna.comuna'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    region: Schema.Attribute.Relation<'manyToOne', 'api::region.region'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiContactoContacto extends Struct.SingleTypeSchema {
   collectionName: 'contactos';
   info: {
@@ -554,7 +614,7 @@ export interface ApiContactoContacto extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    telefono: Schema.Attribute.Integer;
+    telefono: Schema.Attribute.String;
     ubicacion: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -851,7 +911,7 @@ export interface ApiPlantillaCorreoGasPlantillaCorreoGas
       Schema.Attribute.Private;
     cuerpo: Schema.Attribute.RichText &
       Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'Hola {{usuario}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas. Ingresa a la plataforma para ver los nuevos precios.\n\nSaludos,\nEquipo AFAUTAL'>;
+      Schema.Attribute.DefaultTo<'Hola {{nombre}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas. Ingresa a la plataforma para ver los nuevos precios.\n\nSaludos,\nEquipo AFAUTAL'>;
     email_remitente: Schema.Attribute.Email &
       Schema.Attribute.DefaultTo<'no-reply@afautal.cl'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -891,6 +951,40 @@ export interface ApiPrecioGasPrecioGas extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     precio: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRegionRegion extends Struct.CollectionTypeSchema {
+  collectionName: 'regiones';
+  info: {
+    description: '';
+    displayName: 'Regi\u00F3n';
+    pluralName: 'regiones';
+    singularName: 'region';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    ciudades: Schema.Attribute.Relation<'oneToMany', 'api::ciudad.ciudad'>;
+    codigo: Schema.Attribute.String & Schema.Attribute.Unique;
+    comunas: Schema.Attribute.Relation<'oneToMany', 'api::comuna.comuna'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::region.region'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1048,8 +1142,8 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
   attributes: {
     acepta_descuento: Schema.Attribute.Boolean & Schema.Attribute.Required;
     banco: Schema.Attribute.String;
-    ciudad: Schema.Attribute.String & Schema.Attribute.Required;
-    comuna: Schema.Attribute.String & Schema.Attribute.Required;
+    ciudad: Schema.Attribute.Relation<'oneToOne', 'api::ciudad.ciudad'>;
+    comuna: Schema.Attribute.Relation<'oneToOne', 'api::comuna.comuna'>;
     correo_electronico: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
@@ -1072,10 +1166,13 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     nombre_completo: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
-    region: Schema.Attribute.String & Schema.Attribute.Required;
+    region: Schema.Attribute.Relation<'oneToOne', 'api::region.region'>;
     rut: Schema.Attribute.String &
       Schema.Attribute.Required &
-      Schema.Attribute.Unique;
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 9;
+      }>;
     telefono: Schema.Attribute.String;
     tipo_contrato: Schema.Attribute.Enumeration<['Planta regular']> &
       Schema.Attribute.Required;
@@ -1663,7 +1760,9 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::banco.banco': ApiBancoBanco;
       'api::carga-familiar.carga-familiar': ApiCargaFamiliarCargaFamiliar;
+      'api::ciudad.ciudad': ApiCiudadCiudad;
       'api::comentario.comentario': ApiComentarioComentario;
+      'api::comuna.comuna': ApiComunaComuna;
       'api::contacto.contacto': ApiContactoContacto;
       'api::datos-transferencia.datos-transferencia': ApiDatosTransferenciaDatosTransferencia;
       'api::detalle-quienes-somos.detalle-quienes-somos': ApiDetalleQuienesSomosDetalleQuienesSomos;
@@ -1675,6 +1774,7 @@ declare module '@strapi/strapi' {
       'api::noticia.noticia': ApiNoticiaNoticia;
       'api::plantilla-correo-gas.plantilla-correo-gas': ApiPlantillaCorreoGasPlantillaCorreoGas;
       'api::precio-gas.precio-gas': ApiPrecioGasPrecioGas;
+      'api::region.region': ApiRegionRegion;
       'api::servicio.servicio': ApiServicioServicio;
       'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;
       'api::solicitud-servicio.solicitud-servicio': ApiSolicitudServicioSolicitudServicio;

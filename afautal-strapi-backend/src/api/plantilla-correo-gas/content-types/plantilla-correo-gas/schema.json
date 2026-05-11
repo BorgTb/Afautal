@@ -19,7 +19,7 @@
     "cuerpo": {
       "type": "richtext",
       "required": true,
-      "default": "Hola {{usuario}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas. Ingresa a la plataforma para ver los nuevos precios.\n\nSaludos,\nEquipo AFAUTAL"
+      "default": "Hola {{nombre}},\n\nSe ha abierto una nueva ventana para solicitar vales de gas. Ingresa a la plataforma para ver los nuevos precios.\n\nSaludos,\nEquipo AFAUTAL"
     },
     "email_remitente": {
       "type": "email",

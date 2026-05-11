@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ciudades",
+  "info": {
+    "singularName": "ciudad",
+    "pluralName": "ciudades",
+    "displayName": "Ciudad",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    },
+    "region": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::region.region",
+      "inversedBy": "ciudades"
+    }
+  }
+}

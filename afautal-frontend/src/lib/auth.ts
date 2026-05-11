@@ -19,9 +19,9 @@ export interface AuthUser {
     unidad_academica?: string;
     tipo_contrato?: string;
     jerarquia?: string;
-    region?: string;
-    comuna?: string;
-    ciudad?: string;
+    region?: { nombre: string };
+    comuna?: { nombre: string };
+    ciudad?: { nombre: string };
     direccion_particular?: string;
     banco?: string;
     tipo_cuenta?: string;

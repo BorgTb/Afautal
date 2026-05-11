@@ -14,6 +14,7 @@ import {
 import { Flame, Save, Send, Plus, History, Users, FileSpreadsheet, AlertCircle, CheckCircle2, Trash2, Layers, Clock } from "lucide-react";
 import { AdminGate } from "@/components/shared/admin-gate";
 import * as XLSX from "xlsx";
+import { formatRUT } from "@/lib/utils";
 
 export default function AdminGasPage() {
   const { token } = useAuth();
@@ -41,7 +42,11 @@ export default function AdminGasPage() {
       
       if (v) {
         const s = await fetchSolicitudesPorVentana(token, v.documentId);
-        setSolicitudes(s);
+        // Solo considerar las solicitudes marcadas como pagadas
+        const pagadas = s.filter((sol: any) => sol.estado === "pagado");
+        setSolicitudes(pagadas);
+      } else {
+        setSolicitudes([]);
       }
     } catch (error) {
       console.error(error);
@@ -147,21 +152,6 @@ export default function AdminGasPage() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const formatRUT = (rut: string) => {
-    if (!rut) return "No disponible";
-    // Limpiar puntos y guiones
-    let value = rut.replace(/\./g, "").replace(/-/g, "");
-    if (value.length < 2) return rut;
-
-    // Extraer cuerpo y dígito verificador
-    const body = value.slice(0, -1);
-    const dv = value.slice(-1).toUpperCase();
-
-    // Formatear cuerpo con puntos
-    let formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return `${formattedBody}-${dv}`;
   };
 
   const handleDownloadExcel = () => {

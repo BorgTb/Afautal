@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "regiones",
+  "info": {
+    "singularName": "region",
+    "pluralName": "regiones",
+    "displayName": "Región",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "codigo": {
+      "type": "string",
+      "unique": true
+    },
+    "comunas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comuna.comuna",
+      "mappedBy": "region"
+    },
+    "ciudades": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ciudad.ciudad",
+      "mappedBy": "region"
+    }
+  }
+}

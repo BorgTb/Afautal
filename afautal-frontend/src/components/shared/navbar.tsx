@@ -32,7 +32,6 @@ const tempAuthLinks: NavLink[] = [
 
 const staticAuthLinks: NavLink[] = [
   { name: "Comprar vales", href: "/dashboard/gestion-gas"},
-  { name: "Plan salud", href: "/dashboard/plan-complementario-salud"}
 ];
 
 const desktopActionClass =

@@ -74,7 +74,9 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
       // Eliminamos el 'select' restrictivo y agregamos 'populate'
       // para que incluya toda la info de la solicitud en la respuesta
       populate: {
-        solicitud: true,
+        solicitud: {
+          populate: ['region', 'comuna', 'ciudad']
+        },
         role: true,
       },
     });

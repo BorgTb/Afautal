@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { fetchRegistroOptions, submitSolicitudRegistro } from "@/lib/auth";
+import { fetchRegiones, fetchCiudadesByRegion, fetchComunasByRegion, type Region, type Ciudad, type Comuna } from "@/lib/geography";
 
 export default function RegisterPage() {
 	const [step, setStep] = useState(1);
@@ -17,6 +18,11 @@ export default function RegisterPage() {
 	const [jerarquiaOptions, setJerarquiaOptions] = useState<string[]>(["Titular"]);
 	const [tipoContrato, setTipoContrato] = useState("Planta regular");
 	const [jerarquia, setJerarquia] = useState("Titular");
+	
+	const [regiones, setRegiones] = useState<Region[]>([]);
+	const [ciudades, setCiudades] = useState<Ciudad[]>([]);
+	const [comunas, setComunas] = useState<Comuna[]>([]);
+	
 	const [region, setRegion] = useState("");
 	const [comuna, setComuna] = useState("");
 	const [ciudad, setCiudad] = useState("");
@@ -30,10 +36,14 @@ export default function RegisterPage() {
 
 	useEffect(() => {
 		let active = true;
-		const loadRegistroOptions = async () => {
+		const loadInitialData = async () => {
 			try {
-				const options = await fetchRegistroOptions();
+				const [options, regs] = await Promise.all([
+					fetchRegistroOptions(),
+					fetchRegiones()
+				]);
 				if (!active) return;
+				
 				if (options.tipo_contrato.length > 0) {
 					setTipoContratoOptions(options.tipo_contrato);
 					setTipoContrato(options.tipo_contrato[0]);
@@ -42,11 +52,27 @@ export default function RegisterPage() {
 					setJerarquiaOptions(options.jerarquia);
 					setJerarquia(options.jerarquia[0]);
 				}
+				setRegiones(regs);
 			} catch { /* Fallback */ }
 		};
-		void loadRegistroOptions();
+		void loadInitialData();
 		return () => { active = false; };
 	}, []);
+
+	useEffect(() => {
+		if (region) {
+			const reg = regiones.find(r => r.documentId === region);
+			if (reg) {
+				fetchCiudadesByRegion(reg.documentId).then(setCiudades).catch(console.error);
+				fetchComunasByRegion(reg.documentId).then(setComunas).catch(console.error);
+			}
+		} else {
+			setCiudades([]);
+			setComunas([]);
+		}
+		setCiudad("");
+		setComuna("");
+	}, [region, regiones]);
 
 	// Animación de entrada de cada paso con GSAP
 	useEffect(() => {
@@ -88,7 +114,8 @@ export default function RegisterPage() {
 		setSubmitting(true);
 		try {
 			await submitSolicitudRegistro({
-				rut, nombre_completo: nombreCompleto, correo_electronico: correo, telefono,
+				rut, nombre_completo: nombreCompleto, correo_electronico: correo, 
+				telefono: `+569${telefono}`,
 				unidad_academica: unidadAcademica, fecha_nacimiento: fechaNacimiento,
 				tipo_contrato: tipoContrato, jerarquia, region, comuna, ciudad,
 				direccion_particular: direccionParticular || "No especificada",
@@ -151,10 +178,20 @@ export default function RegisterPage() {
 				<form onSubmit={handleSubmit}>
 					<div ref={stepContainerRef}>
 						{step === 1 && (
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 								<div className="md:col-span-1">
-									<label className={labelClasses}>RUT</label>
-									<input type="text" required value={rut} onChange={(e) => setRut(e.target.value)} className={inputClasses} placeholder="12.345.678-9" />
+									<label className={labelClasses}>RUT (Sin puntos ni guion)</label>
+									<input 
+										type="text" 
+										required 
+										value={rut} 
+										onChange={(e) => {
+											const val = e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9);
+											setRut(val);
+										}} 
+										className={inputClasses} 
+										placeholder="Ej: 123456789" 
+									/>
 								</div>
 								<div className="md:col-span-1">
 									<label className={labelClasses}>Nombre Completo</label>
@@ -166,19 +203,42 @@ export default function RegisterPage() {
 								</div>
 								<div>
 									<label className={labelClasses}>Teléfono</label>
-									<input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} className={inputClasses} placeholder="+56 9 ..." />
+									<div className="flex mt-1 rounded-md shadow-sm border border-gray-400 overflow-hidden group focus-within:border-[#BF0F0F] focus-within:ring-1 focus-within:ring-[#BF0F0F] transition-colors">
+										<span className="inline-flex items-center justify-center whitespace-nowrap px-3.5 bg-gray-100 text-gray-800 font-black sm:text-sm border-r border-gray-300 group-focus-within:bg-red-50 group-focus-within:text-[#BF0F0F] group-focus-within:border-[#BF0F0F] transition-colors">
+											+56 9
+										</span>
+										<input 
+											type="tel" 
+											value={telefono} 
+											onChange={(e) => {
+												const val = e.target.value.replace(/\D/g, "").slice(0, 8);
+												setTelefono(val);
+											}} 
+											className="block w-full px-3 py-2 text-black bg-white placeholder-gray-500 sm:text-sm font-medium focus:ring-0 focus:outline-none border-none" 
+											placeholder="12345678" 
+										/>
+									</div>
 								</div>
 								<div>
 									<label className={labelClasses}>Región</label>
-									<input type="text" required value={region} onChange={(e) => setRegion(e.target.value)} className={inputClasses} />
-								</div>
-								<div>
-									<label className={labelClasses}>Comuna</label>
-									<input type="text" required value={comuna} onChange={(e) => setComuna(e.target.value)} className={inputClasses} />
+									<select required value={region} onChange={(e) => setRegion(e.target.value)} className={inputClasses}>
+										<option value="">Seleccionar Región</option>
+										{regiones.map(r => <option key={r.documentId} value={r.documentId}>{r.nombre}</option>)}
+									</select>
 								</div>
 								<div>
 									<label className={labelClasses}>Ciudad</label>
-									<input type="text" required value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={inputClasses} />
+									<select required value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={inputClasses} disabled={!region}>
+										<option value="">Seleccionar Ciudad</option>
+										{ciudades.map(c => <option key={c.documentId} value={c.documentId}>{c.nombre}</option>)}
+									</select>
+								</div>
+								<div>
+									<label className={labelClasses}>Comuna</label>
+									<select required value={comuna} onChange={(e) => setComuna(e.target.value)} className={inputClasses} disabled={!region}>
+										<option value="">Seleccionar Comuna</option>
+										{comunas.map(c => <option key={c.documentId} value={c.documentId}>{c.nombre}</option>)}
+									</select>
 								</div>
 								<div className="md:col-span-2">
 									<label className={labelClasses}>Dirección Particular</label>

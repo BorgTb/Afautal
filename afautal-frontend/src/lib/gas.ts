@@ -83,7 +83,7 @@ export async function fetchActiveWindow(token?: string): Promise<VentanaGas | nu
   return body.data?.[0] || null;
 }
 
-export async function submitSolicitudGas(token: string, data: { kg: number; precio: number; cantidad: number; ventana_gas: number }): Promise<SolicitudGas> {
+export async function submitSolicitudGas(token: string, data: { kg: number; precio: number; cantidad: number }): Promise<SolicitudGas> {
   const response = await fetch(`${STRAPI_URL}/api/solicitudes-gas`, {
     method: "POST",
     headers: {

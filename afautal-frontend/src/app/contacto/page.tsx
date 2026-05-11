@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { Instagram } from "lucide-react";
 import { getSingleType } from "@/lib/strapi";
+import { formatPhone } from "@/lib/utils";
 
 interface ContactoPayload {
 	ubicacion?: string;
@@ -41,23 +42,6 @@ function normalizeContacto(payload: ContactoPayload | null): ContactoData {
 	};
 }
 
-function formatChilePhoneDisplay(value: string): string {
-	const digits = value.replace(/\D/g, "");
-	if (!digits) return "";
-
-	const withoutCountry = digits.startsWith("56") ? digits.slice(2) : digits;
-
-	if (withoutCountry.startsWith("9")) {
-		const body = withoutCountry.slice(1);
-		if (body.length >= 8) {
-			return `+56 9 ${body.slice(0, 4)} ${body.slice(4, 8)}`;
-		}
-		return `+56 9 ${body}`.trim();
-	}
-
-	return `+56 ${withoutCountry}`.trim();
-}
-
 function getChilePhoneHref(value: string): string {
 	const digits = value.replace(/\D/g, "");
 	if (!digits) return "";
@@ -87,7 +71,7 @@ export default async function ContactoPage() {
 	const embedUrl = mapEmbedUrl(contacto.ubicacion);
 	const mapsUrl = mapExternalUrl(contacto.ubicacion);
 	const instagramUrl = normalizeInstagramUrl(contacto.urlInstagram);
-	const phoneDisplay = formatChilePhoneDisplay(contacto.telefono);
+	const phoneDisplay = formatPhone(contacto.telefono);
 	const phoneHref = getChilePhoneHref(contacto.telefono);
 
 	return (
