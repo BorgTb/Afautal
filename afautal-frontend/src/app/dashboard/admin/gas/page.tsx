@@ -149,6 +149,21 @@ export default function AdminGasPage() {
     }
   };
 
+  const formatRUT = (rut: string) => {
+    if (!rut) return "No disponible";
+    // Limpiar puntos y guiones
+    let value = rut.replace(/\./g, "").replace(/-/g, "");
+    if (value.length < 2) return rut;
+
+    // Extraer cuerpo y dígito verificador
+    const body = value.slice(0, -1);
+    const dv = value.slice(-1).toUpperCase();
+
+    // Formatear cuerpo con puntos
+    let formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return `${formattedBody}-${dv}`;
+  };
+
   const handleDownloadExcel = () => {
     if (solicitudes.length === 0) {
       alert("No hay solicitudes para exportar en esta ventana.");
@@ -160,7 +175,7 @@ export default function AdminGasPage() {
       // Manejar formato Strapi 5 (plano)
       const u = s.usuario || {};
       return {
-        "RUT": u.rut || "No disponible",
+        "RUT": formatRUT(u.rut),
         "Correo": u.email || "No disponible",
         "Nombre Completo": u.nombre_completo || u.username || "Desconocido",
         "Tamaño Cilindro (KG)": s.kg || 0,
