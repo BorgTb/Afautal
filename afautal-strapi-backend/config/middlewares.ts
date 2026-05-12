@@ -1,5 +1,4 @@
-import type { Core } from '@strapi/strapi';
-
+// middlewares.ts - CORRECCIÓN
 const config: Core.Config.Middlewares = [
   'strapi::logger',
   'strapi::errors',
@@ -9,7 +8,6 @@ const config: Core.Config.Middlewares = [
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          // Agregamos explícitamente Vercel para que la API permita la conexión
           'connect-src': ["'self'", 'https:', 'http:', 'https://afautal.vercel.app', 'https://analytics.strapi.io'],
           'img-src': [
             "'self'", 
@@ -28,11 +26,16 @@ const config: Core.Config.Middlewares = [
           ],
           'frame-src': [
             "'self'", 
+            'https://afautal.vercel.app',
             'http://localhost:3000', 
-            'https://afautal.vercel.app', 
-            'https://www.afautal.vercel.app',
+            // Eliminar www o usar solo el dominio principal
             process.env.FRONTEND_URL
           ].filter(Boolean),
+          // También necesitas agregar frame-ancestors si Strapi carga tu app en iframe
+          'frame-ancestors': [
+            "'self'",
+            'https://excellent-nurture-beee0f6ec0.strapiapp.com' // URL de tu Strapi Cloud
+          ],
           upgradeInsecureRequests: null,
         },
       },
@@ -46,5 +49,3 @@ const config: Core.Config.Middlewares = [
   'strapi::favicon',
   'strapi::public',
 ];
-
-export default config;
