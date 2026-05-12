@@ -1,5 +1,6 @@
-// middlewares.ts - CORRECCIÓN
-const config: Core.Config.Middlewares = [
+// config/middlewares.ts
+// No necesitas importar Core, usa la exportación directa
+export default [
   'strapi::logger',
   'strapi::errors',
   {
@@ -27,14 +28,11 @@ const config: Core.Config.Middlewares = [
           'frame-src': [
             "'self'", 
             'https://afautal.vercel.app',
-            'http://localhost:3000', 
-            // Eliminar www o usar solo el dominio principal
-            process.env.FRONTEND_URL
-          ].filter(Boolean),
-          // También necesitas agregar frame-ancestors si Strapi carga tu app en iframe
+            'http://localhost:3000',
+          ],
           'frame-ancestors': [
             "'self'",
-            'https://excellent-nurture-beee0f6ec0.strapiapp.com' // URL de tu Strapi Cloud
+            'https://excellent-nurture-beee0f6ec0.strapiapp.com'
           ],
           upgradeInsecureRequests: null,
         },
