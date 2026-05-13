@@ -47,11 +47,14 @@ export interface RegistroSolicitudPayload {
   ciudad?: string;
   direccion_particular?: string;
   acepta_descuento?: boolean;
+  banco?: string;
+  tipo_cuenta?: string;
 }
 
 export interface RegistroOptions {
-  tipo_contrato: string[];
-  jerarquia: string[];
+  tipo_contrato: { documentId: string; nombre: string }[];
+  jerarquia: { documentId: string; nombre: string }[];
+  tipo_cuenta: { documentId: string; nombre: string }[];
 }
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
@@ -104,6 +107,8 @@ export async function submitSolicitudRegistro(payload: RegistroSolicitudPayload)
     comuna: payload.comuna?.trim(),
     ciudad: payload.ciudad?.trim(),
     direccion_particular: payload.direccion_particular?.trim(),
+    banco: payload.banco?.trim(),
+    tipo_cuenta: payload.tipo_cuenta,
   };
 
   const response = await fetch(`${STRAPI_URL}/api/auth/solicitud-registro`, {
@@ -127,17 +132,23 @@ export async function submitSolicitudRegistro(payload: RegistroSolicitudPayload)
 }
 
 export async function fetchRegistroOptions(): Promise<RegistroOptions> {
-  const response = await fetch(`${STRAPI_URL}/api/auth/registro-options`, {
-    cache: "no-store",
-  });
+  const [tcRes, jerRes, tcCuentaRes] = await Promise.all([
+    fetch(`${STRAPI_URL}/api/tipo-contratos?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" }),
+    fetch(`${STRAPI_URL}/api/jerarquias?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" }),
+    fetch(`${STRAPI_URL}/api/tipo-cuentas?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" })
+  ]);
 
-  const body = await safeJson<{ data?: RegistroOptions; error?: { message?: string } }>(response);
+  const [tcBody, jerBody, tcCuentaBody] = await Promise.all([
+    safeJson<{ data?: { documentId: string; nombre: string }[] }>(tcRes),
+    safeJson<{ data?: { documentId: string; nombre: string }[] }>(jerRes),
+    safeJson<{ data?: { documentId: string; nombre: string }[] }>(tcCuentaRes)
+  ]);
 
-  if (!response.ok || !body.data) {
-    throw new Error(getErrorMessage(body, "No se pudieron obtener las opciones de registro."));
-  }
-
-  return body.data;
+  return {
+    tipo_contrato: tcBody.data || [],
+    jerarquia: jerBody.data || [],
+    tipo_cuenta: tcCuentaBody.data || [],
+  };
 }
 
 export async function login(identifier: string, password: string): Promise<LoginResponse> {
