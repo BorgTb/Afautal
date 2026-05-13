@@ -1,6 +1,6 @@
-import type { Core } from '@strapi/strapi';
-
-const config: Core.Config.Middlewares = [
+// config/middlewares.ts
+// No necesitas importar Core, usa la exportación directa
+export default [
   'strapi::logger',
   'strapi::errors',
   {
@@ -9,7 +9,6 @@ const config: Core.Config.Middlewares = [
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          // Agregamos explícitamente Vercel para que la API permita la conexión
           'connect-src': ["'self'", 'https:', 'http:', 'https://afautal.vercel.app', 'https://analytics.strapi.io'],
           'img-src': [
             "'self'", 
@@ -28,11 +27,13 @@ const config: Core.Config.Middlewares = [
           ],
           'frame-src': [
             "'self'", 
-            'http://localhost:3000', 
-            'https://afautal.vercel.app', 
-            'https://www.afautal.vercel.app',
-            process.env.FRONTEND_URL
-          ].filter(Boolean),
+            'https://afautal.vercel.app',
+            'http://localhost:3000',
+          ],
+          'frame-ancestors': [
+            "'self'",
+            'https://excellent-nurture-beee0f6ec0.strapiapp.com'
+          ],
           upgradeInsecureRequests: null,
         },
       },
@@ -46,5 +47,3 @@ const config: Core.Config.Middlewares = [
   'strapi::favicon',
   'strapi::public',
 ];
-
-export default config;
