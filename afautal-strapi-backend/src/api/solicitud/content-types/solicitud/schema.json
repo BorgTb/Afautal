@@ -21,6 +21,11 @@
       "relation": "oneToOne",
       "target": "api::tipo-contrato.tipo-contrato"
     },
+    "categoria": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::categoria.categoria"
+    },
     "jerarquia": {
       "type": "relation",
       "relation": "oneToOne",
@@ -43,7 +48,11 @@
     },
     "direccion_particular": { "type": "string", "required": true },
     "telefono": { "type": "string" },
-    "banco": { "type": "string" },
+    "banco": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::banco.banco"
+    },
     "tipo_cuenta": {
       "type": "relation",
       "relation": "oneToOne",
@@ -54,7 +63,6 @@
       "enum": ["pendiente", "aprobado", "rechazado"],
       "default": "pendiente"
     },
-    "acepta_descuento": { "type": "boolean", "required": true },
     "usuario": {
       "type": "relation",
       "relation": "oneToOne",

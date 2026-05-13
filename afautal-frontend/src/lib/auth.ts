@@ -18,6 +18,7 @@ export interface AuthUser {
     fecha_nacimiento?: string;
     unidad_academica?: string;
     tipo_contrato?: string;
+    categoria?: string;
     jerarquia?: string;
     region?: { nombre: string };
     comuna?: { nombre: string };
@@ -41,20 +42,22 @@ export interface RegistroSolicitudPayload {
   unidad_academica?: string;
   fecha_nacimiento?: string;
   tipo_contrato?: string;
+  categoria?: string;
   jerarquia?: string;
   region?: string;
   comuna?: string;
   ciudad?: string;
   direccion_particular?: string;
-  acepta_descuento?: boolean;
   banco?: string;
   tipo_cuenta?: string;
 }
 
 export interface RegistroOptions {
   tipo_contrato: { documentId: string; nombre: string }[];
+  categoria: { documentId: string; nombre: string }[];
   jerarquia: { documentId: string; nombre: string }[];
   tipo_cuenta: { documentId: string; nombre: string }[];
+  banco: { documentId: string; nombre: string }[];
 }
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
@@ -102,6 +105,7 @@ export async function submitSolicitudRegistro(payload: RegistroSolicitudPayload)
     correo_electronico: payload.correo_electronico.trim().toLowerCase(),
     unidad_academica: payload.unidad_academica?.trim(),
     tipo_contrato: payload.tipo_contrato,
+    categoria: payload.categoria,
     jerarquia: payload.jerarquia,
     region: payload.region?.trim(),
     comuna: payload.comuna?.trim(),
@@ -132,22 +136,28 @@ export async function submitSolicitudRegistro(payload: RegistroSolicitudPayload)
 }
 
 export async function fetchRegistroOptions(): Promise<RegistroOptions> {
-  const [tcRes, jerRes, tcCuentaRes] = await Promise.all([
-    fetch(`${STRAPI_URL}/api/tipo-contratos?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" }),
+  const [tcRes, catRes, jerRes, tcCuentaRes, bancoRes] = await Promise.all([
+    fetch(`${STRAPI_URL}/api/tipos-contrato?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" }),
+    fetch(`${STRAPI_URL}/api/categorias?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" }),
     fetch(`${STRAPI_URL}/api/jerarquias?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" }),
-    fetch(`${STRAPI_URL}/api/tipo-cuentas?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" })
+    fetch(`${STRAPI_URL}/api/tipos-cuenta?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" }),
+    fetch(`${STRAPI_URL}/api/bancos?sort=nombre:asc&pagination[limit]=100`, { cache: "no-store" })
   ]);
 
-  const [tcBody, jerBody, tcCuentaBody] = await Promise.all([
+  const [tcBody, catBody, jerBody, tcCuentaBody, bancoBody] = await Promise.all([
     safeJson<{ data?: { documentId: string; nombre: string }[] }>(tcRes),
+    safeJson<{ data?: { documentId: string; nombre: string }[] }>(catRes),
     safeJson<{ data?: { documentId: string; nombre: string }[] }>(jerRes),
-    safeJson<{ data?: { documentId: string; nombre: string }[] }>(tcCuentaRes)
+    safeJson<{ data?: { documentId: string; nombre: string }[] }>(tcCuentaRes),
+    safeJson<{ data?: { documentId: string; nombre: string }[] }>(bancoRes)
   ]);
 
   return {
     tipo_contrato: tcBody.data || [],
+    categoria: catBody.data || [],
     jerarquia: jerBody.data || [],
     tipo_cuenta: tcCuentaBody.data || [],
+    banco: bancoBody.data || [],
   };
 }
 

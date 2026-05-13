@@ -503,6 +503,34 @@ export interface ApiCargaFamiliarCargaFamiliar
   };
 }
 
+export interface ApiCategoriaCategoria extends Struct.CollectionTypeSchema {
+  collectionName: 'categorias';
+  info: {
+    displayName: 'Categoria';
+    pluralName: 'categorias';
+    singularName: 'categoria';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::categoria.categoria'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCiudadCiudad extends Struct.CollectionTypeSchema {
   collectionName: 'ciudades';
   info: {
@@ -1171,8 +1199,11 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    acepta_descuento: Schema.Attribute.Boolean & Schema.Attribute.Required;
-    banco: Schema.Attribute.String;
+    banco: Schema.Attribute.Relation<'oneToOne', 'api::banco.banco'>;
+    categoria: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::categoria.categoria'
+    >;
     ciudad: Schema.Attribute.Relation<'oneToOne', 'api::ciudad.ciudad'>;
     comuna: Schema.Attribute.Relation<'oneToOne', 'api::comuna.comuna'>;
     correo_electronico: Schema.Attribute.Email &
@@ -1857,6 +1888,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::banco.banco': ApiBancoBanco;
       'api::carga-familiar.carga-familiar': ApiCargaFamiliarCargaFamiliar;
+      'api::categoria.categoria': ApiCategoriaCategoria;
       'api::ciudad.ciudad': ApiCiudadCiudad;
       'api::comentario.comentario': ApiComentarioComentario;
       'api::comuna.comuna': ApiComunaComuna;
