@@ -16,8 +16,16 @@
     "fecha_nacimiento": { "type": "date", "required": true },
     "correo_electronico": { "type": "email", "required": true, "unique": true },
     "unidad_academica": { "type": "string" },
-    "tipo_contrato": { "type": "enumeration", "enum": ["Planta regular"], "required": true },
-    "jerarquia": { "type": "enumeration", "enum": ["Titular"], "required": true },
+    "tipo_contrato": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::tipo-contrato.tipo-contrato"
+    },
+    "jerarquia": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::jerarquia.jerarquia"
+    },
     "region": {
       "type": "relation",
       "relation": "oneToOne",
@@ -37,8 +45,9 @@
     "telefono": { "type": "string" },
     "banco": { "type": "string" },
     "tipo_cuenta": {
-      "type": "enumeration",
-      "enum": ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"]
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::tipo-cuenta.tipo-cuenta"
     },
     "estado": {
       "type": "enumeration",

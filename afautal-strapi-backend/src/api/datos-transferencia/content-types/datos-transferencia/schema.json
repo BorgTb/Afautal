@@ -25,9 +25,9 @@
       "required": true
     },
     "tipo_cuenta": {
-      "type": "enumeration",
-      "enum": ["Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro"],
-      "required": true
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::tipo-cuenta.tipo-cuenta"
     },
     "numero_cuenta": {
       "type": "string",
