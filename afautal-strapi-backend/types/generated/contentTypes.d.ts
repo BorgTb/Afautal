@@ -503,6 +503,34 @@ export interface ApiCargaFamiliarCargaFamiliar
   };
 }
 
+export interface ApiCategoriaCategoria extends Struct.CollectionTypeSchema {
+  collectionName: 'categorias';
+  info: {
+    displayName: 'Categoria';
+    pluralName: 'categorias';
+    singularName: 'categoria';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::categoria.categoria'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCiudadCiudad extends Struct.CollectionTypeSchema {
   collectionName: 'ciudades';
   info: {
@@ -656,10 +684,10 @@ export interface ApiDatosTransferenciaDatosTransferencia
     numero_cuenta: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     rut: Schema.Attribute.String & Schema.Attribute.Required;
-    tipo_cuenta: Schema.Attribute.Enumeration<
-      ['Cuenta Corriente', 'Cuenta Vista', 'Cuenta RUT', 'Cuenta de Ahorro']
-    > &
-      Schema.Attribute.Required;
+    tipo_cuenta: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::tipo-cuenta.tipo-cuenta'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -789,6 +817,34 @@ export interface ApiHeroNoticiaHeroNoticia extends Struct.SingleTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     resumen: Schema.Attribute.Text;
     titulo: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiJerarquiaJerarquia extends Struct.CollectionTypeSchema {
+  collectionName: 'jerarquias';
+  info: {
+    displayName: 'Jerarquia';
+    pluralName: 'jerarquias';
+    singularName: 'jerarquia';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::jerarquia.jerarquia'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1143,8 +1199,11 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    acepta_descuento: Schema.Attribute.Boolean & Schema.Attribute.Required;
-    banco: Schema.Attribute.String;
+    banco: Schema.Attribute.Relation<'oneToOne', 'api::banco.banco'>;
+    categoria: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::categoria.categoria'
+    >;
     ciudad: Schema.Attribute.Relation<'oneToOne', 'api::ciudad.ciudad'>;
     comuna: Schema.Attribute.Relation<'oneToOne', 'api::comuna.comuna'>;
     correo_electronico: Schema.Attribute.Email &
@@ -1159,8 +1218,10 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.DefaultTo<'pendiente'>;
     fecha_nacimiento: Schema.Attribute.Date & Schema.Attribute.Required;
-    jerarquia: Schema.Attribute.Enumeration<['Titular']> &
-      Schema.Attribute.Required;
+    jerarquia: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::jerarquia.jerarquia'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1177,10 +1238,13 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
         maxLength: 9;
       }>;
     telefono: Schema.Attribute.String;
-    tipo_contrato: Schema.Attribute.Enumeration<['Planta regular']> &
-      Schema.Attribute.Required;
-    tipo_cuenta: Schema.Attribute.Enumeration<
-      ['Cuenta Corriente', 'Cuenta Vista', 'Cuenta RUT', 'Cuenta de Ahorro']
+    tipo_contrato: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::tipo-contrato.tipo-contrato'
+    >;
+    tipo_cuenta: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::tipo-cuenta.tipo-cuenta'
     >;
     unidad_academica: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
@@ -1190,6 +1254,63 @@ export interface ApiSolicitudSolicitud extends Struct.CollectionTypeSchema {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+  };
+}
+
+export interface ApiTipoContratoTipoContrato
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'tipos_contrato';
+  info: {
+    displayName: 'Tipo Contrato';
+    pluralName: 'tipos-contrato';
+    singularName: 'tipo-contrato';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::tipo-contrato.tipo-contrato'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiTipoCuentaTipoCuenta extends Struct.CollectionTypeSchema {
+  collectionName: 'tipos_cuenta';
+  info: {
+    displayName: 'Tipo Cuenta';
+    pluralName: 'tipos-cuenta';
+    singularName: 'tipo-cuenta';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::tipo-cuenta.tipo-cuenta'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1767,6 +1888,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::banco.banco': ApiBancoBanco;
       'api::carga-familiar.carga-familiar': ApiCargaFamiliarCargaFamiliar;
+      'api::categoria.categoria': ApiCategoriaCategoria;
       'api::ciudad.ciudad': ApiCiudadCiudad;
       'api::comentario.comentario': ApiComentarioComentario;
       'api::comuna.comuna': ApiComunaComuna;
@@ -1776,6 +1898,7 @@ declare module '@strapi/strapi' {
       'api::directiva.directiva': ApiDirectivaDirectiva;
       'api::documento.documento': ApiDocumentoDocumento;
       'api::hero-noticia.hero-noticia': ApiHeroNoticiaHeroNoticia;
+      'api::jerarquia.jerarquia': ApiJerarquiaJerarquia;
       'api::mision-vision-valor.mision-vision-valor': ApiMisionVisionValorMisionVisionValor;
       'api::nosotros.nosotros': ApiNosotrosNosotros;
       'api::noticia.noticia': ApiNoticiaNoticia;
@@ -1786,6 +1909,8 @@ declare module '@strapi/strapi' {
       'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;
       'api::solicitud-servicio.solicitud-servicio': ApiSolicitudServicioSolicitudServicio;
       'api::solicitud.solicitud': ApiSolicitudSolicitud;
+      'api::tipo-contrato.tipo-contrato': ApiTipoContratoTipoContrato;
+      'api::tipo-cuenta.tipo-cuenta': ApiTipoCuentaTipoCuenta;
       'api::ventana-gas.ventana-gas': ApiVentanaGasVentanaGas;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

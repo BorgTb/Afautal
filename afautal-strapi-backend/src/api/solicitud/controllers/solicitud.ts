@@ -11,13 +11,15 @@ interface SolicitudRegistroPayload {
 	unidad_academica?: string;
 	fecha_nacimiento?: string;
 	tipo_contrato?: string;
+	categoria?: string;
 	jerarquia?: string;
 	region?: string;
 	comuna?: string;
 	ciudad?: string;
 	direccion_particular?: string;
 	telefono?: string;
-	acepta_descuento?: boolean;
+	banco?: string;
+	tipo_cuenta?: string;
 }
 
 interface SolicitudWriteData {
@@ -26,32 +28,18 @@ interface SolicitudWriteData {
 	correo_electronico: string;
 	unidad_academica: string | null;
 	fecha_nacimiento: string | null;
-	tipo_contrato: 'Planta regular' | null;
-	jerarquia: 'Titular' | null;
+	tipo_contrato: { set: string[] } | null;
+	categoria: { set: string[] } | null;
+	jerarquia: { set: string[] } | null;
 	region: { set: string[] } | null;
 	comuna: { set: string[] } | null;
 	ciudad: { set: string[] } | null;
 	direccion_particular: string | null;
 	telefono: string | null;
-	acepta_descuento: boolean;
+	banco: { set: string[] } | null;
+	tipo_cuenta: { set: string[] } | null;
 	estado: 'pendiente';
 }
-
-const normalizeTipoContrato = (value?: string): 'Planta regular' | null => {
-	if (value === 'Planta regular') {
-		return value;
-	}
-
-	return null;
-};
-
-const normalizeJerarquia = (value?: string): 'Titular' | null => {
-	if (value === 'Titular') {
-		return value;
-	}
-
-	return null;
-};
 
 export default factories.createCoreController('api::solicitud.solicitud', ({ strapi }) => ({
 	async registerFromSolicitud(ctx) {
@@ -97,14 +85,16 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			correo_electronico: correo,
 			unidad_academica: payload.unidad_academica?.trim() || "",
 			fecha_nacimiento: payload.fecha_nacimiento || null,
-			tipo_contrato: normalizeTipoContrato(payload.tipo_contrato),
-			jerarquia: normalizeJerarquia(payload.jerarquia),
+			tipo_contrato: payload.tipo_contrato ? { set: [payload.tipo_contrato] } : null,
+			categoria: payload.categoria ? { set: [payload.categoria] } : null,
+			jerarquia: payload.jerarquia ? { set: [payload.jerarquia] } : null,
 			region: payload.region ? { set: [payload.region] } : null,
 			comuna: payload.comuna ? { set: [payload.comuna] } : null,
 			ciudad: payload.ciudad ? { set: [payload.ciudad] } : null,
 			direccion_particular: payload.direccion_particular?.trim() || null,
 			telefono: payload.telefono?.trim() || null,
-			acepta_descuento: Boolean(payload.acepta_descuento),
+			banco: payload.banco ? { set: [payload.banco] } : null,
+			tipo_cuenta: payload.tipo_cuenta ? { set: [payload.tipo_cuenta] } : null,
 			estado: 'pendiente',
 		};
 
@@ -117,7 +107,7 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 			ok: true,
 			message: 'Tu solicitud de registro ha sido enviada con éxito. Un administrador la revisará pronto.',
 			data: {
-				solicitudId: solicitud.id,
+				solicitudId: solicitud.documentId || solicitud.id,
 			},
 		});
 	},

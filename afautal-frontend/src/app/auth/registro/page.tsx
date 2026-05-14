@@ -14,10 +14,16 @@ export default function RegisterPage() {
 	const [telefono, setTelefono] = useState("");
 	const [unidadAcademica, setUnidadAcademica] = useState("");
 	const [fechaNacimiento, setFechaNacimiento] = useState("");
-	const [tipoContratoOptions, setTipoContratoOptions] = useState<string[]>(["Planta regular"]);
-	const [jerarquiaOptions, setJerarquiaOptions] = useState<string[]>(["Titular"]);
-	const [tipoContrato, setTipoContrato] = useState("Planta regular");
-	const [jerarquia, setJerarquia] = useState("Titular");
+	const [tipoContratoOptions, setTipoContratoOptions] = useState<{ documentId: string; nombre: string }[]>([]);
+	const [categoriaOptions, setCategoriaOptions] = useState<{ documentId: string; nombre: string }[]>([]);
+	const [jerarquiaOptions, setJerarquiaOptions] = useState<{ documentId: string; nombre: string }[]>([]);
+	const [tipoCuentaOptions, setTipoCuentaOptions] = useState<{ documentId: string; nombre: string }[]>([]);
+	const [bancoOptions, setBancoOptions] = useState<{ documentId: string; nombre: string }[]>([]);
+	const [tipoContrato, setTipoContrato] = useState("");
+	const [categoria, setCategoria] = useState("");
+	const [jerarquia, setJerarquia] = useState("");
+	const [tipoCuenta, setTipoCuenta] = useState("");
+	const [banco, setBanco] = useState("");
 	
 	const [regiones, setRegiones] = useState<Region[]>([]);
 	const [ciudades, setCiudades] = useState<Ciudad[]>([]);
@@ -48,13 +54,21 @@ export default function RegisterPage() {
 				]);
 				if (!active) return;
 				
-				if (options.tipo_contrato.length > 0) {
+				if (options.tipo_contrato && options.tipo_contrato.length > 0) {
 					setTipoContratoOptions(options.tipo_contrato);
-					setTipoContrato(options.tipo_contrato[0]);
+					setTipoContrato(options.tipo_contrato[0].documentId);
 				}
-				if (options.jerarquia.length > 0) {
+				if (options.categoria && options.categoria.length > 0) {
+					setCategoriaOptions(options.categoria);
+					setCategoria(options.categoria[0].documentId);
+				}
+				if (options.jerarquia && options.jerarquia.length > 0) {
 					setJerarquiaOptions(options.jerarquia);
-					setJerarquia(options.jerarquia[0]);
+					setJerarquia(options.jerarquia[0].documentId);
+				}
+				if (options.tipo_cuenta && options.tipo_cuenta.length > 0) {
+					setTipoCuentaOptions(options.tipo_cuenta);
+					setTipoCuenta(options.tipo_cuenta[0].documentId);
 				}
 				setRegiones(regs);
 			} catch { /* Fallback */ }
@@ -196,9 +210,9 @@ export default function RegisterPage() {
 				rut, nombre_completo: nombreCompleto, correo_electronico: correo, 
 				telefono: `+569${telefono}`,
 				unidad_academica: unidadAcademica, fecha_nacimiento: fechaNacimiento,
-				tipo_contrato: tipoContrato, jerarquia, region, comuna, ciudad,
+				tipo_contrato: tipoContrato, categoria, jerarquia, region, comuna, ciudad,
 				direccion_particular: direccionParticular || "No especificada",
-				acepta_descuento: aceptaDescuento,
+				banco: banco, tipo_cuenta: tipoCuenta,
 			});
 			setStep(4);
 		} catch (e) {
@@ -343,24 +357,40 @@ export default function RegisterPage() {
 								<div>
 									<label className={labelClasses}>Tipo de Contrato</label>
 									<select value={tipoContrato} onChange={(e) => setTipoContrato(e.target.value)} className={inputClasses}>
-										{tipoContratoOptions.map(opt => <option key={opt} value={opt} className="text-black font-medium">{opt}</option>)}
+										{tipoContratoOptions.map(opt => <option key={opt.documentId} value={opt.documentId} className="text-black font-medium">{opt.nombre}</option>)}
+									</select>
+								</div>
+								<div>
+									<label className={labelClasses}>Categoría</label>
+									<select value={categoria} onChange={(e) => setCategoria(e.target.value)} className={inputClasses}>
+										{categoriaOptions.map(opt => <option key={opt.documentId} value={opt.documentId} className="text-black font-medium">{opt.nombre}</option>)}
 									</select>
 								</div>
 								<div>
 									<label className={labelClasses}>Jerarquía</label>
 									<select value={jerarquia} onChange={(e) => setJerarquia(e.target.value)} className={inputClasses}>
-										{jerarquiaOptions.map(opt => <option key={opt} value={opt} className="text-black font-medium">{opt}</option>)}
+										{jerarquiaOptions.map(opt => <option key={opt.documentId} value={opt.documentId} className="text-black font-medium">{opt.nombre}</option>)}
 									</select>
 								</div>
-								<label htmlFor="aceptaDescuento" className="flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-300 transition-colors mt-2">
-									<input id="aceptaDescuento" type="checkbox" checked={aceptaDescuento} onChange={(e) => setAceptaDescuento(e.target.checked)} className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F]" />
-									<span className="ml-3 text-sm font-bold text-gray-800">Acepto descuento por planilla de mi cuota social</span>
-								</label>
 							</div>
 						)}
 
 						{step === 3 && (
 							<div className="space-y-5">
+								<div>
+									<label className={labelClasses}>Banco (Opcional)</label>
+									<select value={banco} onChange={(e) => setBanco(e.target.value)} className={inputClasses}>
+										<option value="">Seleccionar Banco</option>
+										{bancoOptions.map(opt => <option key={opt.documentId} value={opt.documentId} className="text-black font-medium">{opt.nombre}</option>)}
+									</select>
+								</div>
+								<div>
+									<label className={labelClasses}>Tipo de Cuenta (Opcional)</label>
+									<select value={tipoCuenta} onChange={(e) => setTipoCuenta(e.target.value)} className={inputClasses}>
+										<option value="">Seleccionar Tipo de Cuenta</option>
+										{tipoCuentaOptions.map(opt => <option key={opt.documentId} value={opt.documentId} className="text-black font-medium">{opt.nombre}</option>)}
+									</select>
+								</div>
 								<div>
 									<label className={labelClasses}>Correo Electrónico</label>
 									<input type="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} className={inputClasses} placeholder="ejemplo@correo.cl" disabled={lockedFields.includes("correo")} />

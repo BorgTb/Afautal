@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tipos_contrato",
+  "info": {
+    "singularName": "tipo-contrato",
+    "pluralName": "tipos-contrato",
+    "displayName": "Tipo Contrato"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

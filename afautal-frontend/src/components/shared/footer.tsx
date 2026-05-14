@@ -5,9 +5,9 @@ import Logo from "./logo_negro";
 const quickLinks = [
 	{ label: "Inicio", href: "/" },
 	{ label: "Quienes Somos", href: "/nosotros" },
-	{ label: "Directiva", href: "/directiva" },
+	{ label: "Directiva", href: "/nosotros" },
 	{ label: "Noticias", href: "/news" },
-	{ label: "Contactanos", href: "/contact" },
+	{ label: "Contacto", href: "/contacto" },
 ];
 
 export default function Footer() {

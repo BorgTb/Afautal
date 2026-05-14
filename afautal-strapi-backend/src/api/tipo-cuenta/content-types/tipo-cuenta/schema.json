@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tipos_cuenta",
+  "info": {
+    "singularName": "tipo-cuenta",
+    "pluralName": "tipos-cuenta",
+    "displayName": "Tipo Cuenta"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
