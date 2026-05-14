@@ -201,3 +201,35 @@ export async function changePasswordFirstLogin(
     throw new Error(getErrorMessage(body, "No se pudo cambiar la contraseña."));
   }
 }
+
+export interface ExternalClientData {
+  cli_rut: string;
+  cli_emp_descrip_giro: string;
+  com_idn: string;
+  cli_emp_fono_contacto: string;
+  cli_emp_mail: string;
+  ciud_idn: string;
+  cli_digito: string;
+  cli_nombre: string;
+  cli_emp_direccion: string;
+  ciud_nombre: string;
+  cli_emp_fono: string;
+  cli_emp_nombre_contacto: string;
+  cli_emp_monto_linea_credito: string;
+  cli_emp_clave_interna: string;
+}
+
+export async function fetchExternalClientData(rut: string): Promise<ExternalClientData | null> {
+  try {
+    const response = await fetch(`https://telegestor.cl/afautal-data/index.php?tipo=obtener_cliente&cli_rut=${rut}`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (Array.isArray(data) && data.length > 0) {
+      return data[0] as ExternalClientData;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching external client data:", error);
+    return null;
+  }
+}

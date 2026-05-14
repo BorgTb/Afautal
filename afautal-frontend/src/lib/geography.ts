@@ -45,3 +45,21 @@ export async function fetchComunasByRegion(regionDocumentId: string): Promise<Co
   const data = await response.json();
   return data.data;
 }
+
+export async function fetchCiudadById(id: number): Promise<(Ciudad & { region: Region }) | null> {
+  const response = await fetch(`${STRAPI_URL}/api/ciudades/${id}?populate=region`, {
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.data || null;
+}
+
+export async function fetchComunaById(id: number): Promise<(Comuna & { region: Region }) | null> {
+  const response = await fetch(`${STRAPI_URL}/api/comunas/${id}?populate=region`, {
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.data || null;
+}

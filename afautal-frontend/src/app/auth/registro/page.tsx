@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { fetchRegistroOptions, submitSolicitudRegistro } from "@/lib/auth";
-import { fetchRegiones, fetchCiudadesByRegion, fetchComunasByRegion, type Region, type Ciudad, type Comuna } from "@/lib/geography";
+import { fetchRegistroOptions, submitSolicitudRegistro, fetchExternalClientData } from "@/lib/auth";
+import { fetchRegiones, fetchCiudadesByRegion, fetchComunasByRegion, fetchCiudadById, fetchComunaById, type Region, type Ciudad, type Comuna } from "@/lib/geography";
 
 export default function RegisterPage() {
 	const [step, setStep] = useState(1);
@@ -31,6 +31,10 @@ export default function RegisterPage() {
 	const [aceptaTerminos, setAceptaTerminos] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	const [isFetchingClient, setIsFetchingClient] = useState(false);
+	const [lockedFields, setLockedFields] = useState<string[]>([]);
+	const isAutoPopulating = useRef(false);
 
 	const stepContainerRef = useRef<HTMLDivElement>(null);
 
@@ -70,9 +74,84 @@ export default function RegisterPage() {
 			setCiudades([]);
 			setComunas([]);
 		}
-		setCiudad("");
-		setComuna("");
+		
+		if (!isAutoPopulating.current) {
+			setCiudad("");
+			setComuna("");
+		}
 	}, [region, regiones]);
+
+	// Efecto para buscar datos del cliente por RUT
+	useEffect(() => {
+		const timer = setTimeout(async () => {
+			if (rut.length >= 8) {
+				setIsFetchingClient(true);
+				try {
+					const data = await fetchExternalClientData(rut);
+					if (data) {
+						isAutoPopulating.current = true;
+						const newLocked = [];
+
+						if (data.cli_nombre) {
+							setNombreCompleto(data.cli_nombre);
+							newLocked.push("nombreCompleto");
+						}
+						if (data.cli_emp_mail) {
+							setCorreo(data.cli_emp_mail);
+							newLocked.push("correo");
+						}
+						if (data.cli_emp_direccion) {
+							setDireccionParticular(data.cli_emp_direccion);
+							newLocked.push("direccionParticular");
+						}
+						if (data.cli_emp_descrip_giro) {
+							setUnidadAcademica(data.cli_emp_descrip_giro);
+							newLocked.push("unidadAcademica");
+						}
+						
+						const phone = data.cli_emp_fono_contacto || data.cli_emp_fono;
+						if (phone) {
+							const cleanPhone = phone.replace(/\D/g, "");
+							setTelefono(cleanPhone.slice(-8));
+							newLocked.push("telefono");
+						}
+
+						if (data.ciud_idn) {
+							const ciudadData = await fetchCiudadById(Number(data.ciud_idn));
+							if (ciudadData) {
+								setRegion(ciudadData.region.documentId);
+								setCiudad(ciudadData.documentId);
+								newLocked.push("region", "ciudad");
+							}
+						}
+						if (data.com_idn) {
+							const comunaData = await fetchComunaById(Number(data.com_idn));
+							if (comunaData) {
+								setComuna(comunaData.documentId);
+								newLocked.push("comuna");
+							}
+						}
+						setLockedFields(newLocked);
+						
+						// Pequeño delay para permitir que los efectos de region carguen las listas antes de apagar el flag
+						setTimeout(() => {
+							isAutoPopulating.current = false;
+						}, 500);
+					} else {
+						setLockedFields([]);
+					}
+				} catch (err) {
+					console.error("Error fetching client data:", err);
+				} finally {
+					setIsFetchingClient(false);
+				}
+			} else {
+				setLockedFields([]);
+			}
+		}, 500);
+
+		return () => clearTimeout(timer);
+	}, [rut]);
 
 	// Animación de entrada de cada paso con GSAP
 	useEffect(() => {
@@ -181,21 +260,28 @@ export default function RegisterPage() {
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 								<div className="md:col-span-1">
 									<label className={labelClasses}>RUT (Sin puntos ni guion)</label>
-									<input 
-										type="text" 
-										required 
-										value={rut} 
-										onChange={(e) => {
-											const val = e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9);
-											setRut(val);
-										}} 
-										className={inputClasses} 
-										placeholder="Ej: 123456789" 
-									/>
+									<div className="relative">
+										<input 
+											type="text" 
+											required 
+											value={rut} 
+											onChange={(e) => {
+												const val = e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9);
+												setRut(val);
+											}} 
+											className={inputClasses} 
+											placeholder="Ej: 123456789" 
+										/>
+										{isFetchingClient && (
+											<div className="absolute right-3 top-1/2 -translate-y-1/2">
+												<div className="animate-spin rounded-full h-4 w-4 border-2 border-[#BF0F0F] border-t-transparent"></div>
+											</div>
+										)}
+									</div>
 								</div>
 								<div className="md:col-span-1">
 									<label className={labelClasses}>Nombre Completo</label>
-									<input type="text" required value={nombreCompleto} onChange={(e) => setNombreCompleto(e.target.value)} className={inputClasses} />
+									<input type="text" required value={nombreCompleto} onChange={(e) => setNombreCompleto(e.target.value)} className={inputClasses} disabled={lockedFields.includes("nombreCompleto")} />
 								</div>
 								<div>
 									<label className={labelClasses}>Fecha Nacimiento</label>
@@ -203,46 +289,47 @@ export default function RegisterPage() {
 								</div>
 								<div>
 									<label className={labelClasses}>Teléfono</label>
-									<div className="flex mt-1 rounded-md shadow-sm border border-gray-400 overflow-hidden group focus-within:border-[#BF0F0F] focus-within:ring-1 focus-within:ring-[#BF0F0F] transition-colors">
+									<div className={`flex mt-1 rounded-md shadow-sm border border-gray-400 overflow-hidden group focus-within:border-[#BF0F0F] focus-within:ring-1 focus-within:ring-[#BF0F0F] transition-colors ${lockedFields.includes("telefono") ? "bg-gray-100" : ""}`}>
 										<span className="inline-flex items-center justify-center whitespace-nowrap px-3.5 bg-gray-100 text-gray-800 font-black sm:text-sm border-r border-gray-300 group-focus-within:bg-red-50 group-focus-within:text-[#BF0F0F] group-focus-within:border-[#BF0F0F] transition-colors">
 											+56 9
 										</span>
 										<input 
 											type="tel" 
 											value={telefono} 
+											disabled={lockedFields.includes("telefono")}
 											onChange={(e) => {
 												const val = e.target.value.replace(/\D/g, "").slice(0, 8);
 												setTelefono(val);
 											}} 
-											className="block w-full px-3 py-2 text-black bg-white placeholder-gray-500 sm:text-sm font-medium focus:ring-0 focus:outline-none border-none" 
+											className="block w-full px-3 py-2 text-black bg-white placeholder-gray-500 sm:text-sm font-medium focus:ring-0 focus:outline-none border-none disabled:bg-gray-100" 
 											placeholder="12345678" 
 										/>
 									</div>
 								</div>
 								<div>
 									<label className={labelClasses}>Región</label>
-									<select required value={region} onChange={(e) => setRegion(e.target.value)} className={inputClasses}>
+									<select required value={region} onChange={(e) => setRegion(e.target.value)} className={inputClasses} disabled={lockedFields.includes("region")}>
 										<option value="">Seleccionar Región</option>
 										{regiones.map(r => <option key={r.documentId} value={r.documentId}>{r.nombre}</option>)}
 									</select>
 								</div>
 								<div>
 									<label className={labelClasses}>Ciudad</label>
-									<select required value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={inputClasses} disabled={!region}>
+									<select required value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={inputClasses} disabled={!region || lockedFields.includes("ciudad")}>
 										<option value="">Seleccionar Ciudad</option>
 										{ciudades.map(c => <option key={c.documentId} value={c.documentId}>{c.nombre}</option>)}
 									</select>
 								</div>
 								<div>
 									<label className={labelClasses}>Comuna</label>
-									<select required value={comuna} onChange={(e) => setComuna(e.target.value)} className={inputClasses} disabled={!region}>
+									<select required value={comuna} onChange={(e) => setComuna(e.target.value)} className={inputClasses} disabled={!region || lockedFields.includes("comuna")}>
 										<option value="">Seleccionar Comuna</option>
 										{comunas.map(c => <option key={c.documentId} value={c.documentId}>{c.nombre}</option>)}
 									</select>
 								</div>
 								<div className="md:col-span-2">
 									<label className={labelClasses}>Dirección Particular</label>
-									<input type="text" value={direccionParticular} onChange={(e) => setDireccionParticular(e.target.value)} className={inputClasses} />
+									<input type="text" value={direccionParticular} onChange={(e) => setDireccionParticular(e.target.value)} className={inputClasses} disabled={lockedFields.includes("direccionParticular")} />
 								</div>
 							</div>
 						)}
@@ -251,7 +338,7 @@ export default function RegisterPage() {
 							<div className="space-y-4">
 								<div>
 									<label className={labelClasses}>Unidad Académica (Opcional)</label>
-									<input type="text" value={unidadAcademica} onChange={(e) => setUnidadAcademica(e.target.value)} className={inputClasses} />
+									<input type="text" value={unidadAcademica} onChange={(e) => setUnidadAcademica(e.target.value)} className={inputClasses} disabled={lockedFields.includes("unidadAcademica")} />
 								</div>
 								<div>
 									<label className={labelClasses}>Tipo de Contrato</label>
@@ -276,7 +363,7 @@ export default function RegisterPage() {
 							<div className="space-y-5">
 								<div>
 									<label className={labelClasses}>Correo Electrónico</label>
-									<input type="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} className={inputClasses} placeholder="ejemplo@correo.cl" />
+									<input type="email" required value={correo} onChange={(e) => setCorreo(e.target.value)} className={inputClasses} placeholder="ejemplo@correo.cl" disabled={lockedFields.includes("correo")} />
 								</div>
 								<label htmlFor="aceptaTerminos" className="flex items-start p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-300 transition-colors">
 									<input id="aceptaTerminos" type="checkbox" required checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)} className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F] mt-1" />
