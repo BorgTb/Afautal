@@ -242,7 +242,7 @@ export interface ExternalClientData {
 
 export async function fetchExternalClientData(rut: string): Promise<ExternalClientData | null> {
   try {
-    const response = await fetch(`https://telegestor.cl/afautal-data/index.php?tipo=obtener_cliente&cli_rut=${rut}`);
+    const response = await fetch(`/api/external-data?rut=${rut}`);
     if (!response.ok) return null;
     const data = await response.json();
     if (Array.isArray(data) && data.length > 0) {
