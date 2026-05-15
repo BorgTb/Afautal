@@ -40,6 +40,7 @@ export default function RegisterPage() {
 
 	const [isFetchingClient, setIsFetchingClient] = useState(false);
 	const [lockedFields, setLockedFields] = useState<string[]>([]);
+	const [externalClientFound, setExternalClientFound] = useState(false);
 	const isAutoPopulating = useRef(false);
 
 	const stepContainerRef = useRef<HTMLDivElement>(null);
@@ -103,6 +104,7 @@ export default function RegisterPage() {
 				try {
 					const data = await fetchExternalClientData(rut);
 					if (data) {
+						setExternalClientFound(true);
 						isAutoPopulating.current = true;
 						const newLocked = [];
 
@@ -152,14 +154,17 @@ export default function RegisterPage() {
 							isAutoPopulating.current = false;
 						}, 500);
 					} else {
+						setExternalClientFound(false);
 						setLockedFields([]);
 					}
 				} catch (err) {
+					setExternalClientFound(false);
 					console.error("Error fetching client data:", err);
 				} finally {
 					setIsFetchingClient(false);
 				}
 			} else {
+				setExternalClientFound(false);
 				setLockedFields([]);
 			}
 		}, 500);
@@ -218,18 +223,20 @@ export default function RegisterPage() {
 				banco: banco, tipo_cuenta: tipoCuenta,
 			});
 
-			await registerExternalFuncionario({
-				rut,
-				nombreCompleto,
-				correo,
-				telefono,
-				unidadAcademica,
-				fechaNacimiento,
-				jerarquia,
-				ciudadId: selectedCiudad?.id,
-				comunaId: selectedComuna?.id,
-				direccionParticular,
-			});
+			if (!externalClientFound) {
+				await registerExternalFuncionario({
+					rut,
+					nombreCompleto,
+					correo,
+					telefono,
+					unidadAcademica,
+					fechaNacimiento,
+					jerarquia,
+					ciudadId: selectedCiudad?.id,
+					comunaId: selectedComuna?.id,
+					direccionParticular,
+				});
+			}
 
 			setStep(4);
 		} catch (e) {
