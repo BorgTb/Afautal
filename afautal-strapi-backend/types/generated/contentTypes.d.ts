@@ -506,7 +506,7 @@ export interface ApiCargaFamiliarCargaFamiliar
 export interface ApiCategoriaCategoria extends Struct.CollectionTypeSchema {
   collectionName: 'categorias';
   info: {
-    displayName: 'Categoria';
+    displayName: 'Categoría';
     pluralName: 'categorias';
     singularName: 'categoria';
   };
