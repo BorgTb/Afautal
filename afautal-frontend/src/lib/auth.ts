@@ -240,6 +240,19 @@ export interface ExternalClientData {
   cli_emp_clave_interna: string;
 }
 
+export interface ExternalRegisterFuncionarioPayload {
+  rut: string;
+  nombreCompleto: string;
+  correo: string;
+  telefono?: string;
+  unidadAcademica?: string;
+  fechaNacimiento?: string;
+  jerarquia?: string;
+  ciudadId?: number;
+  comunaId?: number;
+  direccionParticular?: string;
+}
+
 export async function fetchExternalClientData(rut: string): Promise<ExternalClientData | null> {
   try {
     const response = await fetch(`/api/external-data?rut=${rut}`);
@@ -253,4 +266,27 @@ export async function fetchExternalClientData(rut: string): Promise<ExternalClie
     console.error("Error fetching external client data:", error);
     return null;
   }
+}
+
+export async function registerExternalFuncionario(
+  payload: ExternalRegisterFuncionarioPayload
+): Promise<{ ok: boolean; message?: string }> {
+  const response = await fetch("/api/external-data", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const body = await safeJson<{ ok?: boolean; message?: string; error?: string }>(response);
+
+  if (!response.ok) {
+    throw new Error(body.error || body.message || "No se pudo crear el usuario en sistema externo.");
+  }
+
+  return {
+    ok: Boolean(body.ok),
+    message: body.message,
+  };
 }

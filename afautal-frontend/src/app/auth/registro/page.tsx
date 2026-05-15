@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { fetchRegistroOptions, submitSolicitudRegistro, fetchExternalClientData } from "@/lib/auth";
+import { fetchRegistroOptions, submitSolicitudRegistro, fetchExternalClientData, registerExternalFuncionario } from "@/lib/auth";
 import { fetchRegiones, fetchCiudadesByRegion, fetchComunasByRegion, fetchCiudadById, fetchComunaById, type Region, type Ciudad, type Comuna } from "@/lib/geography";
 
 export default function RegisterPage() {
@@ -206,6 +206,9 @@ export default function RegisterPage() {
 		setError(null);
 		setSubmitting(true);
 		try {
+			const selectedCiudad = ciudades.find((item) => item.documentId === ciudad);
+			const selectedComuna = comunas.find((item) => item.documentId === comuna);
+
 			await submitSolicitudRegistro({
 				rut, nombre_completo: nombreCompleto, correo_electronico: correo, 
 				telefono: `+569${telefono}`,
@@ -214,6 +217,20 @@ export default function RegisterPage() {
 				direccion_particular: direccionParticular || "No especificada",
 				banco: banco, tipo_cuenta: tipoCuenta,
 			});
+
+			await registerExternalFuncionario({
+				rut,
+				nombreCompleto,
+				correo,
+				telefono,
+				unidadAcademica,
+				fechaNacimiento,
+				jerarquia,
+				ciudadId: selectedCiudad?.id,
+				comunaId: selectedComuna?.id,
+				direccionParticular,
+			});
+
 			setStep(4);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Error al enviar la solicitud.");
