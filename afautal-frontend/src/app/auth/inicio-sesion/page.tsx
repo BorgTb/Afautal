@@ -21,7 +21,7 @@ export default function LoginPage() {
 			if (isTemporaryPassword) {
 				router.replace("/auth/cambio-contrasena-inicial");
 			} else {
-				router.replace("/dashboard/perfil");
+				router.replace("/dashboard");
 			}
 		}
 	}, [isAuthenticated, isTemporaryPassword, loading, router]);

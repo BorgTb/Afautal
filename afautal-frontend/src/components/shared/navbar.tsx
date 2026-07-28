@@ -31,7 +31,8 @@ const tempAuthLinks: NavLink[] = [
 ];
 
 const staticAuthLinks: NavLink[] = [
-  { name: "Comprar vales", href: "/dashboard/gestion-gas"},
+  { name: "Panel del asociado", href: "/dashboard", icon: User },
+  { name: "Comprar vales", href: "/dashboard/gestion-gas", icon: Flame },
 ];
 
 const desktopActionClass =
@@ -149,19 +150,12 @@ export default function Navbar() {
               
             {!loading && !isAuthenticated && (
               <>
-                <Link href="/auth/registro" className="flex items-center gap-2 rounded-full bg-[#BF0F0F] px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-[#A50D0D] hover:shadow-md active:translate-y-0"
-                >
-                  <UserPlus size={16} />
-                  Hazte Socio
-                </Link>
-
-                <div className="h-8 w-px bg-slate-200" />
-
                 <Link href="/auth/inicio-sesion" className="flex items-center gap-2 rounded-full bg-[#1F2937] px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-[#111827] hover:shadow-md active:translate-y-0"
                 >
                   <User size={16} />
-                  Portal
+                  Area del Asociado
                 </Link>
+
               </>
             )}
             {!loading && isAuthenticated && isTemporaryPassword && tempAuthLinks.map((link) => (

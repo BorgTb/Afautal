@@ -28,7 +28,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     }
 
     if (isAuthenticated && !isTemporaryPassword && inAuthArea && pathname !== "/auth/inicio-sesion") {
-      router.replace("/dashboard/perfil");
+      router.replace("/dashboard");
     }
   }, [isAuthenticated, isTemporaryPassword, loading, pathname, router]);
 

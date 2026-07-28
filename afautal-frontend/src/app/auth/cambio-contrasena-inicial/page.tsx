@@ -23,7 +23,7 @@ export default function FirstPasswordChangePage() {
     }
 
     if (!isTemporaryPassword) {
-      router.replace("/dashboard/perfil");
+      router.replace("/dashboard");
     }
   }, [isAuthenticated, isTemporaryPassword, loading, router]);
 
@@ -45,7 +45,7 @@ export default function FirstPasswordChangePage() {
 
     try {
       await completeFirstPasswordChange(newPassword);
-      router.replace("/dashboard/perfil");
+      router.replace("/dashboard");
     } catch (changeError) {
       const message = changeError instanceof Error ? changeError.message : "No fue posible cambiar la contraseña.";
       setError(message);
