@@ -1,7 +1,7 @@
 import { getStrapiURL } from "./strapi";
 
-export type BloqueTextoRico = {
-  __component: "shared.texto-rico";
+export type BloqueContenido = {
+  __component: "shared.contenido";
   id: number;
   contenido: string;
 };
@@ -14,14 +14,116 @@ export type BloqueAlerta = {
   mensaje: string;
 };
 
-export type CampoFormulario = {
+type Opcion = {
+  id: number;
+  label: string;
+  valor: string;
+};
+
+export type CampoTexto = {
+  __component: "formulario.campo-texto";
   id: number;
   nombre_variable: string;
   etiqueta: string;
-  tipo: "texto" | "textarea" | "fecha" | "seleccion";
-  opciones?: string; // Solo para tipo "seleccion", separado por comas
+  placeholder: string | null;
+  requerido: boolean;
+  valor_defecto: string | null;
+};
+
+export type CampoTextarea = {
+  __component: "formulario.campo-textarea";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  placeholder: string | null;
+  requerido: boolean;
+  filas: number;
+  valor_defecto: string | null;
+};
+
+export type CampoNumero = {
+  __component: "formulario.campo-numero";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  placeholder: string | null;
+  requerido: boolean;
+  min: number | null;
+  max: number | null;
+  valor_defecto: number | null;
+};
+
+export type CampoSelect = {
+  __component: "formulario.campo-select";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  requerido: boolean;
+  opciones: Opcion[];
+  valor_defecto: string | null;
+};
+
+export type CampoRadio = {
+  __component: "formulario.campo-radio";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  requerido: boolean;
+  opciones: Opcion[];
+  valor_defecto: string | null;
+};
+
+export type CampoCheckbox = {
+  __component: "formulario.campo-checkbox";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  requerido: boolean;
+  valor_defecto: boolean;
+};
+
+export type CampoSell = {
+  __component: "formulario.campo-switch";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  valor_defecto: boolean;
+};
+
+export type CampoFecha = {
+  __component: "formulario.campo-fecha";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
   requerido: boolean;
 };
+
+export type CampoUpload = {
+  __component: "formulario.campo-upload";
+  id: number;
+  nombre_variable: string;
+  etiqueta: string;
+  requerido: boolean;
+  multiple: boolean;
+};
+
+export type CampoMensaje = {
+  __component: "formulario.campo-mensaje";
+  id: number;
+  contenido: string;
+};
+
+export type CampoFormulario =
+  | CampoTexto
+  | CampoTextarea
+  | CampoNumero
+  | CampoSelect
+  | CampoRadio
+  | CampoCheckbox
+  | CampoSell
+  | CampoFecha
+  | CampoUpload
+  | CampoMensaje;
 
 export interface Servicio {
   id: number;
@@ -30,14 +132,14 @@ export interface Servicio {
   descripcion: string | null;
   icono: string | null;
   habilitado: boolean;
-  bloques?: (BloqueTextoRico | BloqueAlerta)[];
+  bloques?: (BloqueContenido | BloqueAlerta)[];
   campos_formulario?: CampoFormulario[];
 }
 
 export interface SolicitudServicio {
   id: number;
   mensaje?: string;
-  datos_formulario?: Record<string, string>;
+  datos_formulario?: Record<string, any>;
   estado: "pendiente" | "agendada" | "completada" | "rechazada" | "cancelada";
   fecha_solicitud: string;
   carga_familiar?: {
@@ -47,6 +149,9 @@ export interface SolicitudServicio {
   } | null;
   servicio?: Servicio | null;
 }
+
+export type FormValues = Record<string, any>;
+export type FormFiles = Record<string, File[]>;
 
 export async function fetchServiciosHabilitados(token?: string): Promise<Servicio[]> {
   const headers: HeadersInit = {
@@ -66,11 +171,11 @@ export async function fetchServiciosHabilitados(token?: string): Promise<Servici
   );
 
   if (!res.ok) {
-    throw new Error("Error al obtener los servicios");
+    return [];
   }
 
   const data = await res.json();
-  return data.data.map((item: any) => ({
+  return (data.data || []).map((item: any) => ({
     id: item.id,
     ...(item.attributes || item),
   }));
@@ -85,7 +190,6 @@ export async function fetchServicioBySlug(slug: string, token?: string): Promise
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // Populate dynamic zones (bloques) and repeatable components (campos_formulario)
   const res = await fetch(
     getStrapiURL(`/api/servicios?filters[slug][$eq]=${slug}&populate[bloques][populate]=*&populate[campos_formulario][populate]=*`),
     {
@@ -151,7 +255,7 @@ export async function submitSolicitudServicio(
   token: string,
   payload: {
     mensaje?: string;
-    datos_formulario?: Record<string, string>;
+    datos_formulario?: Record<string, any>;
     servicio: number;
     carga_familiar?: number;
   }

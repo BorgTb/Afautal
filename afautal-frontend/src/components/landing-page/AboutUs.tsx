@@ -139,7 +139,7 @@ export default function AboutUs({ data }: AboutUsProps) {
             ref={sectionRef}
             className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-10"
         >
-            <div ref={imageRef} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
+            <div ref={imageRef} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
                 <img
                     src={imageUrl}
                     alt={imageAlt}

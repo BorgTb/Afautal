@@ -172,16 +172,16 @@ export default function PerfilPage() {
               </div>
               <div className="mt-4 sm:mt-0 sm:pb-4">
                 <h2 className="text-3xl font-black text-slate-900 capitalize">
-                  {user.nombre_completo || "Socio AFAUTAL"}
+                  {user.nombre_completo || solicitud.nombre_completo || "Socio AFAUTAL"}
                 </h2>
-                <p className="text-lg font-bold text-red-700">{solicitud.jerarquia || "Socio Activo"}</p>
+                <p className="text-lg font-bold text-red-700">{getRelationLabel(solicitud.jerarquia) || "Socio Activo"}</p>
               </div>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2 sm:mt-0 sm:pb-4">
               <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-1.5 text-sm font-black text-[#BF0F0F] ring-1 ring-inset ring-red-600/20">
                 <Shield size={16} />
-                {solicitud.tipo_contrato || "Planta"}
+                {getRelationLabel(solicitud.tipo_contrato) || "Planta"}
               </span>
             </div>
           </div>
@@ -204,7 +204,8 @@ export default function PerfilPage() {
               <InfoItem icon={<Calendar className="text-slate-400" />} label="Fecha de Nacimiento" value={formatDate(solicitud.fecha_nacimiento)} />
               <InfoItem icon={<MapPin className="text-slate-400" />} label="Dirección" value={getDireccionCompleta()} />
               <InfoItem icon={<Building className="text-slate-400" />} label="Unidad Académica" value={user.unidad_academica || solicitud.unidad_academica || "No registrada"} />
-              <InfoItem icon={<Briefcase className="text-slate-400" />} label="Tipo de Contrato" value={solicitud.tipo_contrato || "No registrado"} />
+              <InfoItem icon={<Briefcase className="text-slate-400" />} label="Tipo de Contrato" value={getRelationLabel(solicitud.tipo_contrato) || "No registrado"} />
+              <InfoItem icon={<Shield className="text-slate-400" />} label="Categoría" value={getRelationLabel(solicitud.categoria) || "No registrada"} />
             </div>
           </div>
 

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal AFAUTAL</title>
+  <style>
+    :root{
+      --navy:#12345b;
+      --blue:#1f5f99;
+      --sky:#eaf3fb;
+      --gold:#d5a72e;
+      --green:#1f7a55;
+      --red:#b83a3a;
+      --ink:#243447;
+      --muted:#6b7b8c;
+      --line:#dfe7ef;
+      --white:#ffffff;
+      --bg:#f4f7fa;
+      --shadow:0 10px 28px rgba(18,52,91,.10);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      color:var(--ink);
+      background:var(--bg);
+    }
+    a{text-decoration:none;color:inherit}
+    .topbar{
+      background:var(--navy);
+      color:#fff;
+      padding:8px 5%;
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+    }
+    header{
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    .nav{
+      max-width:1200px;
+      margin:auto;
+      padding:14px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+      color:var(--navy);
+    }
+    .brand-mark{
+      width:44px;height:44px;border-radius:50%;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:#fff;font-size:18px;letter-spacing:.5px;
+    }
+    .brand small{display:block;font-weight:500;color:var(--muted)}
+    .menu{
+      display:flex;gap:18px;align-items:center;font-size:14px;font-weight:600;
+    }
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      gap:8px;border:none;border-radius:10px;padding:11px 16px;
+      cursor:pointer;font-weight:700;
+    }
+    .btn-primary{background:var(--gold);color:#17202a}
+    .btn-secondary{background:var(--navy);color:#fff}
+    .btn-light{background:#fff;color:var(--navy);border:1px solid var(--line)}
+    .hero{
+      background:
+        radial-gradient(circle at 80% 20%, rgba(213,167,46,.24), transparent 28%),
+        linear-gradient(135deg,var(--navy),#1a4e7c);
+      color:#fff;
+      padding:68px 20px;
+    }
+    .hero-inner{
+      max-width:1200px;margin:auto;
+      display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center;
+    }
+    .hero h1{font-size:44px;line-height:1.08;margin:0 0 18px}
+    .hero p{font-size:18px;line-height:1.6;color:#dce9f4;max-width:720px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+    .hero-card{
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.20);
+      padding:24px;border-radius:var(--radius);backdrop-filter:blur(8px)
+    }
+    .hero-card h3{margin-top:0}
+    main{max-width:1200px;margin:auto;padding:34px 20px 60px}
+    .section-title{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:10px 0 18px}
+    .section-title h2{margin:0;color:var(--navy)}
+    .section-title p{margin:5px 0 0;color:var(--muted)}
+    .grid{display:grid;gap:18px}
+    .grid-4{grid-template-columns:repeat(4,1fr)}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .grid-2{grid-template-columns:repeat(2,1fr)}
+    .card{
+      background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+      padding:22px;box-shadow:var(--shadow)
+    }
+    .metric .label{color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase}
+    .metric .value{font-size:30px;font-weight:800;color:var(--navy);margin:10px 0 4px}
+    .metric .note{font-size:13px;color:var(--muted)}
+    .icon{
+      width:42px;height:42px;border-radius:12px;background:var(--sky);
+      display:grid;place-items:center;font-size:20px;margin-bottom:16px
+    }
+    .quick-card h3{margin:8px 0;color:var(--navy)}
+    .quick-card p{color:var(--muted);line-height:1.5;min-height:48px}
+    .status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800}
+    .ok{background:#e3f4eb;color:var(--green)}
+    .warn{background:#fff1db;color:#96620b}
+    .bad{background:#fde8e8;color:var(--red)}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left}
+    th{color:var(--muted);font-size:12px;text-transform:uppercase}
+    .amount{text-align:right;font-variant-numeric:tabular-nums}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .tab{
+      border:1px solid var(--line);background:#fff;color:var(--navy);
+      border-radius:999px;padding:9px 14px;font-weight:700;cursor:pointer
+    }
+    .tab.active{background:var(--navy);color:#fff}
+    .panel{display:none}
+    .panel.active{display:block}
+    .progress{height:9px;background:#e8edf3;border-radius:999px;overflow:hidden}
+    .progress span{display:block;height:100%;background:var(--blue)}
+    .agreement{
+      display:flex;justify-content:space-between;gap:20px;align-items:center;
+      border-bottom:1px solid var(--line);padding:16px 0
+    }
+    .agreement:last-child{border-bottom:none}
+    .agreement h4{margin:0 0 5px}
+    .agreement p{margin:0;color:var(--muted);font-size:14px}
+    .callout{
+      background:#eef7ff;border-left:4px solid var(--blue);
+      padding:16px 18px;border-radius:10px;color:#35516b
+    }
+    footer{background:#0d2743;color:#dce7f2;padding:38px 20px}
+    .footer-inner{max-width:1200px;margin:auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:30px}
+    footer h4{color:#fff}
+    footer p,footer li{font-size:14px;line-height:1.7}
+    footer ul{list-style:none;padding:0}
+    @media(max-width:900px){
+      .hero-inner,.grid-4,.grid-3,.grid-2,.footer-inner{grid-template-columns:1fr}
+      .menu{display:none}
+      .hero h1{font-size:35px}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span>Asociación de Funcionarios Académicos de la Universidad de Talca</span>
+    <span>Contacto: contacto@afautal.cl</span>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>AFAUTAL<small>Nunca más solas. Nunca más solos.</small></div>
+      </div>
+      <nav class="menu">
+        <a href="#inicio">Inicio</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#noticias">Noticias</a>
+        <a href="#documentos">Documentos</a>
+        <a href="#contacto">Contacto</a>
+        <button class="btn btn-primary" onclick="document.querySelector('#portal').scrollIntoView({behavior:'smooth'})">
+          Área del asociado
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero" id="inicio">
+    <div class="hero-inner">
+      <div>
+        <span class="status warn">Nuevo portal de servicios</span>
+        <h1>Información, beneficios y transparencia en un solo lugar.</h1>
+        <p>
+          Portal institucional y privado para que las y los asociados de AFAUTAL
+          puedan acceder a convenios, revisar cuotas y deudas, consultar documentos
+          y conocer en línea la situación financiera de la Asociación.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="document.querySelector('#portal').scrollIntoView({behavior:'smooth'})">Ingresar al portal</button>
+          <button class="btn btn-light">Conocer AFAUTAL</button>
+        </div>
+      </div>
+      <div class="hero-card">
+        <h3>Acceso seguro</h3>
+        <p>Ingreso mediante correo institucional, ClaveÚnica o credenciales AFAUTAL.</p>
+        <input aria-label="Correo" placeholder="Correo institucional"
+          style="width:100%;padding:12px;border-radius:9px;border:1px solid #9bb3c8;margin:8px 0">
+        <input aria-label="Contraseña" type="password" placeholder="Contraseña"
+          style="width:100%;padding:12px;border-radius:9px;border:1px solid #9bb3c8;margin:8px 0 14px">
+        <button class="btn btn-primary" style="width:100%">Ingresar</button>
+      </div>
+    </div>
+  </section>
+
+  <main id="portal">
+    <div class="section-title">
+      <div>
+        <h2>Panel del asociado</h2>
+        <p>Vista demostrativa con datos simulados.</p>
+      </div>
+      <span class="status ok">Sesión segura</span>
+    </div>
+
+    <div class="grid grid-4">
+      <div class="card metric"><div class="label">Estado de cuotas</div><div class="value">$0</div><div class="note">Sin deuda vencida</div></div>
+      <div class="card metric"><div class="label">Convenios activos</div><div class="value">4</div><div class="note">2 beneficios utilizados este año</div></div>
+      <div class="card metric"><div class="label">Ingresos acumulados</div><div class="value">$18,4 MM</div><div class="note">Julio 2025 – junio 2026</div></div>
+      <div class="card metric"><div class="label">Saldo disponible</div><div class="value">$9,8 MM</div><div class="note">Actualizado hoy, 11:30</div></div>
+    </div>
+
+    <div class="section-title" style="margin-top:34px">
+      <div><h2>Servicios en línea</h2><p>Accesos principales del área privada.</p></div>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card quick-card">
+        <div class="icon">🤝</div>
+        <h3>Suscribir convenios</h3>
+        <p>Revise beneficios disponibles, condiciones, documentos y adhesión digital.</p>
+        <button class="btn btn-secondary" onclick="showPanel('convenios')">Ver convenios</button>
+      </div>
+      <div class="card quick-card">
+        <div class="icon">🧾</div>
+        <h3>Deudas y cuotas</h3>
+        <p>Consulte cargos, pagos, cuotas pendientes y descargue su certificado.</p>
+        <button class="btn btn-secondary" onclick="showPanel('deudas')">Revisar estado</button>
+      </div>
+      <div class="card quick-card">
+        <div class="icon">📊</div>
+        <h3>Estado de situación</h3>
+        <p>Ingresos, gastos, saldos y ejecución presupuestaria conectados con Telegestor.</p>
+        <button class="btn btn-secondary" onclick="showPanel('finanzas')">Ver finanzas</button>
+      </div>
+    </div>
+
+    <section style="margin-top:34px">
+      <div class="tabs">
+        <button class="tab active" data-panel="convenios" onclick="showPanel('convenios')">Convenios</button>
+        <button class="tab" data-panel="deudas" onclick="showPanel('deudas')">Deudas</button>
+        <button class="tab" data-panel="finanzas" onclick="showPanel('finanzas')">Estado financiero</button>
+      </div>
+
+      <div class="panel active" id="convenios">
+        <div class="card">
+          <div class="section-title">
+            <div><h2>Convenios disponibles</h2><p>Suscripción digital y trazabilidad de aceptación.</p></div>
+            <button class="btn btn-light">Historial de suscripciones</button>
+          </div>
+          <div class="agreement">
+            <div><h4>Seguro complementario de salud</h4><p>Cobertura titular y grupo familiar · Adhesión voluntaria.</p></div>
+            <div><span class="status warn">Disponible</span> <button class="btn btn-primary">Suscribir</button></div>
+          </div>
+          <div class="agreement">
+            <div><h4>Convenio óptica y salud visual</h4><p>Descuentos preferentes para asociados y cargas.</p></div>
+            <div><span class="status ok">Activo</span> <button class="btn btn-light">Ver credencial</button></div>
+          </div>
+          <div class="agreement">
+            <div><h4>Asesoría jurídica gremial</h4><p>Orientación inicial y derivación de casos.</p></div>
+            <div><span class="status ok">Activo</span> <button class="btn btn-light">Solicitar atención</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="deudas">
+        <div class="grid grid-2">
+          <div class="card">
+            <h3 style="color:var(--navy)">Resumen personal</h3>
+            <table>
+              <tr><th>Concepto</th><th>Periodo</th><th class="amount">Monto</th><th>Estado</th></tr>
+              <tr><td>Cuota social</td><td>Junio 2026</td><td class="amount">$26.000</td><td><span class="status ok">Pagada</span></td></tr>
+              <tr><td>Cuota social</td><td>Mayo 2026</td><td class="amount">$26.000</td><td><span class="status ok">Pagada</span></td></tr>
+              <tr><td>Aporte extraordinario</td><td>Abril 2026</td><td class="amount">$0</td><td><span class="status ok">Sin cargo</span></td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy)">Certificados y pagos</h3>
+            <p style="color:var(--muted)">Descargue un certificado de situación o regularice obligaciones pendientes.</p>
+            <button class="btn btn-secondary">Descargar certificado PDF</button>
+            <button class="btn btn-light">Informar un pago</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="finanzas">
+        <div class="callout">
+          Este módulo debe consumir datos desde Telegestor mediante una API autenticada.
+          Nunca debe exponer directamente credenciales, consultas SQL ni páginas internas del sistema contable.
+        </div>
+        <div class="grid grid-2" style="margin-top:18px">
+          <div class="card">
+            <h3 style="color:var(--navy)">Estado de ingresos y gastos</h3>
+            <table>
+              <tr><th>Cuenta</th><th class="amount">Acumulado</th></tr>
+              <tr><td>Cuotas sociales</td><td class="amount">$14.820.000</td></tr>
+              <tr><td>Otros ingresos</td><td class="amount">$3.580.000</td></tr>
+              <tr><td><strong>Total ingresos</strong></td><td class="amount"><strong>$18.400.000</strong></td></tr>
+              <tr><td>Gastos operacionales</td><td class="amount">$5.420.000</td></tr>
+              <tr><td>Beneficios y actividades</td><td class="amount">$3.180.000</td></tr>
+              <tr><td><strong>Total gastos</strong></td><td class="amount"><strong>$8.600.000</strong></td></tr>
+              <tr><td><strong>Superávit del periodo</strong></td><td class="amount"><strong>$9.800.000</strong></td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--navy)">Ejecución presupuestaria</h3>
+            <p>Gastos ejecutados: 56%</p>
+            <div class="progress"><span style="width:56%"></span></div>
+            <p style="margin-top:22px">Beneficios ejecutados: 42%</p>
+            <div class="progress"><span style="width:42%"></span></div>
+            <p style="margin-top:22px">Administración ejecutada: 68%</p>
+            <div class="progress"><span style="width:68%"></span></div>
+            <button class="btn btn-light" style="margin-top:24px">Descargar rendición detallada</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-title" style="margin-top:38px">
+      <div><h2>Arquitectura recomendada</h2><p>Separación entre sitio público, portal privado y sistema contable.</p></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="card"><h3>1. Sitio público</h3><p>Noticias, directiva, documentos públicos, beneficios, contacto y transparencia general.</p></div>
+      <div class="card"><h3>2. Portal privado</h3><p>Identificación del asociado, convenios, deudas, certificados, solicitudes y documentos reservados.</p></div>
+      <div class="card"><h3>3. Integración Telegestor</h3><p>API de solo lectura, datos agregados, bitácora de consultas y actualización programada.</p></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div><h4>AFAUTAL</h4><p>Asociación de Funcionarios Académicos de la Universidad de Talca. Representación, defensa, transparencia y comunidad.</p></div>
+      <div><h4>Accesos</h4><ul><li>Noticias</li><li>Documentos</li><li>Convenios</li><li>Portal del asociado</li></ul></div>
+      <div><h4>Contacto</h4><p>Campus Talca<br>contacto@afautal.cl<br>Lunes a viernes</p></div>
+    </div>
+  </footer>
+
+  <script>
+    function showPanel(id){
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelector('[data-panel="'+id+'"]').classList.add('active');
+      document.querySelector('.tabs').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  </script>
+</body>
+</html>

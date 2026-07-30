@@ -81,7 +81,7 @@ export default function MisionAndValue({ data }: MisionAndValueProps) {
 
 	return (
 		<section ref={sectionRef} className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-10">
-			<div className="rounded-2xl  bg-white p-6 sm:p-8 lg:p-10">
+			<div className="rounded-2xl bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:p-8 lg:p-10">
 				<div ref={headerRef} className="max-w-3xl">
 					<p data-mvv-heading className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">
 						Nuestra Identidad
@@ -101,25 +101,25 @@ export default function MisionAndValue({ data }: MisionAndValueProps) {
 				<div ref={cardsRef} className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
 					<article
 						data-mvv-mision
-						className="rounded-xl border border-slate-200 border-t-4 border-t-red-600 bg-red-50/60 p-5 shadow-sm sm:p-6"
+						className="rounded-xl border border-slate-200 border-t-4 border-t-[#BF0F0F] bg-white p-5 shadow-[0_4px_16px_rgba(191,15,15,0.04)] sm:p-6"
 					>
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-700 text-left">Mision</p>
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#BF0F0F] text-left">Misi&oacute;n</p>
 						<p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base whitespace-pre-line">{mision}</p>
 					</article>
 
 					<article
 						data-mvv-vision
-						className="rounded-xl border border-slate-200 border-t-4 border-t-sky-600 bg-sky-50/60 p-5 shadow-sm sm:p-6"
+						className="rounded-xl border border-slate-200 border-t-4 border-t-[#BF0F0F] bg-white p-5 shadow-[0_4px_16px_rgba(191,15,15,0.04)] sm:p-6"
 					>
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 text-left">Vision</p>
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#BF0F0F] text-left">Visi&oacute;n</p>
 						<p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base whitespace-pre-line">{vision}</p>
 					</article>
 
 					<article
 						data-mvv-valores
-						className="rounded-xl border border-slate-200 border-t-4 border-t-amber-500 bg-amber-50/70 p-5 shadow-sm sm:p-6"
+						className="rounded-xl border border-slate-200 border-t-4 border-t-[#BF0F0F] bg-white p-5 shadow-[0_4px_16px_rgba(191,15,15,0.04)] sm:p-6"
 					>
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 text-left">Valores</p>
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#BF0F0F] text-left">Valores</p>
 						<p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base whitespace-pre-line">{valores}</p>
 					</article>
 				</div>

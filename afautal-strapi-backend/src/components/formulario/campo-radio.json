@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_formulario_campo_radios",
+  "info": {
+    "displayName": "Campo Radio",
+    "icon": "checkCircle",
+    "description": "Grupo de botones de opción (radio buttons)"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": true
+    },
+    "opciones": {
+      "type": "component",
+      "repeatable": true,
+      "component": "formulario.opcion"
+    },
+    "valor_defecto": {
+      "type": "string",
+      "description": "Valor de la opción seleccionada por defecto"
+    }
+  }
+}

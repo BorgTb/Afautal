@@ -430,6 +430,50 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiActividadActividad extends Struct.CollectionTypeSchema {
+  collectionName: 'actividads';
+  info: {
+    displayName: 'Actividades';
+    pluralName: 'actividads';
+    singularName: 'actividad';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descripcion: Schema.Attribute.Text;
+    fecha: Schema.Attribute.Date & Schema.Attribute.Required;
+    hora: Schema.Attribute.String;
+    imagen: Schema.Attribute.Media<'images'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::actividad.actividad'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    tipo: Schema.Attribute.Enumeration<
+      [
+        'Charla',
+        'Reuni\u00F3n',
+        'Taller',
+        'Evento',
+        'Capacitaci\u00F3n',
+        'Asamblea',
+        'Otro',
+      ]
+    >;
+    titulo: Schema.Attribute.String & Schema.Attribute.Required;
+    ubicacion: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiBancoBanco extends Struct.CollectionTypeSchema {
   collectionName: 'bancos';
   info: {
@@ -1066,9 +1110,22 @@ export interface ApiServicioServicio extends Struct.CollectionTypeSchema {
   };
   attributes: {
     bloques: Schema.Attribute.DynamicZone<
-      ['shared.texto-rico', 'shared.alerta']
+      ['shared.contenido', 'shared.alerta']
     >;
-    campos_formulario: Schema.Attribute.Component<'formulario.campo', true>;
+    campos_formulario: Schema.Attribute.DynamicZone<
+      [
+        'formulario.campo-texto',
+        'formulario.campo-textarea',
+        'formulario.campo-numero',
+        'formulario.campo-select',
+        'formulario.campo-radio',
+        'formulario.campo-checkbox',
+        'formulario.campo-switch',
+        'formulario.campo-fecha',
+        'formulario.campo-upload',
+        'formulario.campo-mensaje',
+      ]
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1890,6 +1947,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::actividad.actividad': ApiActividadActividad;
       'api::banco.banco': ApiBancoBanco;
       'api::carga-familiar.carga-familiar': ApiCargaFamiliarCargaFamiliar;
       'api::categoria.categoria': ApiCategoriaCategoria;

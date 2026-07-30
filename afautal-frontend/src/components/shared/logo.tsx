@@ -10,10 +10,10 @@ export default function Logo({ className = "", priority = false }: LogoProps) {
         <Image
             src="/AFAUTAL.svg"
             alt="Afautal Logo"
-            width={220}
-            height={74}
+            width={130}
+            height={44}
             priority={priority}
-            className={`h-auto w-[150px] sm:w-[170px] lg:w-[250px] ${className}`}
+            className={`h-auto w-[110px] sm:w-[130px] ${className}`}
         />
     );
 }

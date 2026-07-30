@@ -32,5 +32,21 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/auth/login-rut',
+      handler: 'api::auth.auth.loginRut',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
+      path: '/auth/complete-external-registration',
+      handler: 'api::auth.auth.completeExternalRegistration',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

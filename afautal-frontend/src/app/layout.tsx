@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
+import Topbar from "@/components/shared/topbar";
 import Navbar from "@/components/shared/navbar";
 import Footer from "@/components/shared/footer";
 import AppAuthProvider from "@/components/shared/auth-provider";
@@ -38,11 +39,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full bg-black flex flex-col">
         <AppAuthProvider>
           <AuthGate>
+            <Topbar />
             <Navbar />
-            <main className="flex-1 mt-16">{children}</main>
+            <main className="flex-1">{children}</main>
             <Footer />
           </AuthGate>
         </AppAuthProvider>

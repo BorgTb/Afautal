@@ -72,7 +72,7 @@ export default function DirectivaSection({ cards }: DirectivaSectionProps) {
       ref={sectionRef}
       className="mx-auto w-full max-w-[1280px] px-4 py-14 sm:px-6 lg:px-10 lg:py-16"
     >
-      <div className="mb-8 max-w-3xl">
+      <div className="mb-8">
         <p
           data-directiva-heading
           className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700"

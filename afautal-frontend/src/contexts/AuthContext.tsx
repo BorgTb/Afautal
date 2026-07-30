@@ -22,11 +22,13 @@ interface AuthContextValue {
   token: string | null;
   isAuthenticated: boolean;
   isTemporaryPassword: boolean;
+  registroIncompleto: boolean;
   loading: boolean;
   loginUser: (identifier: string, password: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   logout: () => void;
   completeFirstPasswordChange: (newPassword: string) => Promise<void>;
+  clearRegistroIncompleto: () => void;
 }
 
 interface StoredAuth {
@@ -72,6 +74,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const registroIncompleto = Boolean((user as any)?.registro_incompleto);
+
+  const clearRegistroIncompleto = useCallback(() => {
+    if (user) {
+      const cleaned = { ...user };
+      delete (cleaned as any).registro_incompleto;
+      setUser(cleaned);
+      if (token) writeStoredAuth({ token, user: cleaned });
+    }
+  }, [user, token]);
 
   const logout = useCallback(() => {
     setUser(null);
@@ -145,13 +158,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token,
       isAuthenticated: Boolean(user && token),
       isTemporaryPassword: Boolean(user?.password_temporal),
+      registroIncompleto,
       loading,
       loginUser,
       refreshUser,
       logout,
       completeFirstPasswordChange,
+      clearRegistroIncompleto,
     }),
-    [completeFirstPasswordChange, loading, loginUser, logout, refreshUser, token, user]
+    [completeFirstPasswordChange, loading, loginUser, logout, refreshUser, token, user, registroIncompleto, clearRegistroIncompleto]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

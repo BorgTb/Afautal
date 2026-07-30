@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_shared_contenidos",
+  "info": {
+    "displayName": "Contenido",
+    "icon": "align-justify",
+    "description": "Bloque de texto con formato libre"
+  },
+  "options": {},
+  "attributes": {
+    "contenido": {
+      "type": "richtext",
+      "required": true
+    }
+  }
+}

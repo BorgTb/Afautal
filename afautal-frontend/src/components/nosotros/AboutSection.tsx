@@ -45,8 +45,8 @@ export default function AboutSection({ descripcion }: AboutSectionProps) {
   }, []);
 
   return (
-    <section className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-10" ref={sectionRef}>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:p-10">
+    <section className="mx-auto w-full max-w-[1280px] px-4 py-14 sm:px-6 lg:px-10 lg:py-16" ref={sectionRef}>
+      <div className="mb-8 ">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">
           Quienes Somos
         </p>

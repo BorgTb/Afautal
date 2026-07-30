@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_formulario_campo_fechas",
+  "info": {
+    "displayName": "Campo Fecha",
+    "icon": "calendar",
+    "description": "Selector de fecha (input type='date')"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

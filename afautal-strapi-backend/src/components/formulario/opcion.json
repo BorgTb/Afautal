@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_formulario_opciones",
+  "info": {
+    "displayName": "Opción",
+    "icon": "bulletList",
+    "description": "Una opción dentro de un select o radio"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "valor": {
+      "type": "string",
+      "required": true,
+      "description": "Valor interno que se guarda en la respuesta"
+    }
+  }
+}
