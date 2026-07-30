@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_formulario_campo_uploads",
+  "info": {
+    "displayName": "Campo Upload",
+    "icon": "upload",
+    "description": "Subida de archivos a la librería multimedia"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": false
+    },
+    "multiple": {
+      "type": "boolean",
+      "default": false,
+      "description": "Permite subir múltiples archivos"
+    }
+  }
+}

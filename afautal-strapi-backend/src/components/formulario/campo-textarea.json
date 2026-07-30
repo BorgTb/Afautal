@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_formulario_campo_textareas",
+  "info": {
+    "displayName": "Campo Textarea",
+    "icon": "fileText",
+    "description": "Campo de texto largo (textarea)"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": true
+    },
+    "filas": {
+      "type": "integer",
+      "default": 4
+    },
+    "valor_defecto": {
+      "type": "string"
+    }
+  }
+}

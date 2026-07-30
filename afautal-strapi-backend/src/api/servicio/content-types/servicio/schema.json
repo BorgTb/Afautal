@@ -39,6 +39,7 @@
       "type": "dynamiczone",
       "components": [
         "shared.texto-rico",
+        "shared.contenido",
         "shared.alerta"
       ]
     },

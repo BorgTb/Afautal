@@ -11,9 +11,12 @@ import {
   cancelarSolicitudServicio, 
   type Servicio, 
   type SolicitudServicio,
-  type CampoFormulario
+  type FormValues,
+  type FormFiles,
 } from "@/lib/servicios";
 import { Eye, CalendarPlus, History, UserCircle, Users, CheckCircle2, XCircle, Info, Stethoscope, BriefcaseMedical, HeartPulse, Activity, AlertTriangle } from "lucide-react";
+import FormRenderer, { getDefaultValues, validate, normalizeCampos } from "@/components/form/FormRenderer";
+import { getStrapiURL } from "@/lib/strapi";
 
 const renderIcon = (iconName: string | null, size = 36, className = "text-[#BF0F0F]") => {
   switch (iconName) {
@@ -26,6 +29,22 @@ const renderIcon = (iconName: string | null, size = 36, className = "text-[#BF0F
       return <Eye size={size} className={className} />;
   }
 };
+
+async function uploadFiles(token: string, files: File[]): Promise<number[]> {
+  if (files.length === 0) return [];
+  const formData = new FormData();
+  for (const f of files) {
+    formData.append("files", f);
+  }
+  const res = await fetch(getStrapiURL("/api/upload"), {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Error al subir archivos");
+  const data = await res.json();
+  return (data as any[]).map((item: any) => item.id);
+}
 
 export default function ServicioPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
@@ -40,8 +59,9 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
   const [notFound, setNotFound] = useState(false);
   
   const [beneficiario, setBeneficiario] = useState<string>("socio");
-  // Estado dinámico para el formulario
-  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [formValues, setFormValues] = useState<FormValues>({});
+  const [formFiles, setFormFiles] = useState<FormFiles>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{
@@ -70,14 +90,8 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
         }
         setServicio(serv);
 
-        // Inicializar estado del formulario con valores por defecto
-        const initialFormState: Record<string, string> = {};
-        if (serv.campos_formulario) {
-          serv.campos_formulario.forEach(campo => {
-            initialFormState[campo.nombre_variable] = "";
-          });
-        }
-        setFormValues(initialFormState);
+        const campos = normalizeCampos(serv.campos_formulario || []);
+        setFormValues(getDefaultValues(campos));
 
         const [c, s] = await Promise.all([
           fetchMisCargas(token),
@@ -96,8 +110,18 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
     void loadData();
   }, [token, slug]);
 
-  const handleFieldChange = (name: string, value: string) => {
+  const handleFieldChange = (name: string, value: any) => {
     setFormValues(prev => ({ ...prev, [name]: value }));
+    if (formErrors[name]) {
+      setFormErrors(prev => { const n = { ...prev }; delete n[name]; return n; });
+    }
+  };
+
+  const handleFilesChange = (name: string, files: File[]) => {
+    setFormFiles(prev => ({ ...prev, [name]: files }));
+    if (formErrors[name]) {
+      setFormErrors(prev => { const n = { ...prev }; delete n[name]; return n; });
+    }
   };
 
   const showModal = (title: string, message: string, type: "success" | "error" | "confirm" = "success", onConfirm?: () => void) => {
@@ -110,28 +134,37 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
     e.preventDefault();
     if (!token || !servicio) return;
 
-    // Validación básica de requeridos
-    if (servicio.campos_formulario) {
-      for (const campo of servicio.campos_formulario) {
-        if (campo.requerido && !formValues[campo.nombre_variable]?.trim()) {
-          showModal("Campos Incompletos", `El campo "${campo.etiqueta}" es obligatorio.`, "error");
-          return;
-        }
-      }
+    const errs = validate(normalizeCampos(servicio.campos_formulario || []), formValues);
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      showModal("Campos Incompletos", "Revisa los campos obligatorios marcados en rojo.", "error");
+      return;
     }
 
     setSubmitting(true);
     try {
       const cargaFamiliarId = beneficiario !== "socio" ? Number(beneficiario) : undefined;
-      
-      // Armamos un resumen en string para la vista rápida de Strapi (opcional, pero útil)
-      const resumenMensaje = Object.entries(formValues)
+
+      const normalized = normalizeCampos(servicio.campos_formulario || []);
+      const datos: FormValues = { ...formValues };
+
+      for (const campo of normalized) {
+        if (campo.__component === "formulario.campo-upload") {
+          const fieldFiles = formFiles[campo.nombre_variable];
+          if (fieldFiles && fieldFiles.length > 0) {
+            const ids = await uploadFiles(token, fieldFiles);
+            datos[campo.nombre_variable] = ids;
+          }
+        }
+      }
+
+      const resumenMensaje = Object.entries(datos)
         .map(([key, val]) => `${key}: ${val}`)
         .join(" | ");
 
       await submitSolicitudServicio(token, {
         mensaje: resumenMensaje || "Solicitud generada dinámicamente",
-        datos_formulario: formValues,
+        datos_formulario: datos,
         servicio: servicio.id,
         carga_familiar: cargaFamiliarId
       });
@@ -139,10 +172,8 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
       const s = await fetchMisSolicitudesServicio(servicio.id, token);
       setSolicitudes(s);
       
-      // Limpiar campos
-      const resetForm: Record<string, string> = {};
-      Object.keys(formValues).forEach(k => resetForm[k] = "");
-      setFormValues(resetForm);
+      setFormValues(getDefaultValues(normalizeCampos(servicio.campos_formulario || [])));
+      setFormFiles({});
       setBeneficiario("socio");
       
       showModal("Solicitud Enviada", "Tu solicitud ha sido enviada exitosamente. Te contactaremos pronto.", "success");
@@ -201,14 +232,12 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
         </div>
       </div>
 
-      {/* Renderizado Dinámico de Bloques de Contenido (Zonas Dinámicas) */}
       {servicio.bloques && servicio.bloques.length > 0 && (
         <div className="space-y-6">
           {servicio.bloques.map((bloque) => {
-            if (bloque.__component === "shared.texto-rico") {
+            if (bloque.__component === "shared.contenido") {
               return (
                 <div key={bloque.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                  {/* Para markdown básico de Strapi */}
                   <div className="prose max-w-none text-gray-700 whitespace-pre-wrap font-medium">
                     {bloque.contenido}
                   </div>
@@ -255,7 +284,6 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
-        {/* Formulario de Solicitud (Dinámico) */}
         <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100">
           <h3 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2 border-b pb-4">
             <CalendarPlus size={22} className="text-[#BF0F0F]" />
@@ -263,7 +291,6 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Campo fijo: Beneficiario */}
             <div>
               <label className="block text-sm font-black text-gray-700 uppercase mb-2">¿Para quién es la hora?</label>
               <div className="space-y-3">
@@ -286,58 +313,16 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
               </div>
             </div>
 
-            {/* Campos Dinámicos */}
-            {servicio.campos_formulario?.map((campo: CampoFormulario) => (
-              <div key={campo.id}>
-                <label className="block text-sm font-black text-gray-700 uppercase mb-2">
-                  {campo.etiqueta} {campo.requerido && <span className="text-red-500">*</span>}
-                </label>
-                
-                {campo.tipo === 'texto' && (
-                  <input 
-                    type="text"
-                    required={campo.requerido}
-                    value={formValues[campo.nombre_variable] || ""}
-                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none"
-                  />
-                )}
-
-                {campo.tipo === 'textarea' && (
-                  <textarea 
-                    required={campo.requerido}
-                    rows={4}
-                    value={formValues[campo.nombre_variable] || ""}
-                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none resize-none"
-                  ></textarea>
-                )}
-
-                {campo.tipo === 'fecha' && (
-                  <input 
-                    type="date"
-                    required={campo.requerido}
-                    value={formValues[campo.nombre_variable] || ""}
-                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none"
-                  />
-                )}
-
-                {campo.tipo === 'seleccion' && (
-                  <select
-                    required={campo.requerido}
-                    value={formValues[campo.nombre_variable] || ""}
-                    onChange={e => handleFieldChange(campo.nombre_variable, e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none"
-                  >
-                    <option value="" disabled>Seleccione una opción</option>
-                    {campo.opciones?.split(',').map((opt, i) => (
-                      <option key={i} value={opt.trim()}>{opt.trim()}</option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            ))}
+            {servicio.campos_formulario && servicio.campos_formulario.length > 0 && (
+              <FormRenderer
+                campos={normalizeCampos(servicio.campos_formulario)}
+                values={formValues}
+                files={formFiles}
+                onFieldChange={handleFieldChange}
+                onFilesChange={handleFilesChange}
+                errors={formErrors}
+              />
+            )}
 
             <button
               type="submit"
@@ -349,7 +334,6 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
           </form>
         </div>
 
-        {/* Historial */}
         <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100 h-full">
           <h3 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2 border-b pb-4">
             <History size={22} className="text-[#BF0F0F]" />
@@ -380,18 +364,17 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
                     </span>
                   </div>
                   
-                  {/* Vista Dinámica de Datos */}
                   <div className="bg-white p-3 rounded-lg border border-gray-100 mt-2">
                     {s.datos_formulario && Object.keys(s.datos_formulario).length > 0 ? (
                       <ul className="space-y-1.5">
                         {Object.entries(s.datos_formulario).map(([key, val]) => {
-                          // Buscar la etiqueta original si existe en la configuración del servicio actual
                           const campoDef = servicio.campos_formulario?.find(c => c.nombre_variable === key);
                           const etiqueta = campoDef ? campoDef.etiqueta : key.replace(/_/g, ' ');
+                          const displayVal = Array.isArray(val) ? val.join(", ") : String(val ?? "-");
                           return (
                             <li key={key} className="text-sm">
                               <span className="font-black text-gray-700 capitalize">{etiqueta}:</span>{' '}
-                              <span className="font-medium text-gray-600">{val || '-'}</span>
+                              <span className="font-medium text-gray-600">{displayVal}</span>
                             </li>
                           );
                         })}
@@ -416,7 +399,6 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
 
       </div>
 
-      {/* Modal */}
       {modalConfig.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">

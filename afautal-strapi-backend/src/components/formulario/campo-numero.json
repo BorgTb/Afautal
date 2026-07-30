@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_formulario_campo_numeros",
+  "info": {
+    "displayName": "Campo Número",
+    "icon": "number",
+    "description": "Campo numérico (input type='number')"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": true
+    },
+    "min": {
+      "type": "decimal"
+    },
+    "max": {
+      "type": "decimal"
+    },
+    "valor_defecto": {
+      "type": "decimal"
+    }
+  }
+}

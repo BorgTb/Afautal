@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_formulario_campo_switches",
+  "info": {
+    "displayName": "Campo Switch",
+    "icon": "toggleLeft",
+    "description": "Interruptor de dos estados (sí/no)"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "valor_defecto": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

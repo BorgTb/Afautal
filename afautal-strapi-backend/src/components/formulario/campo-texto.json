@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_formulario_campo_textos",
+  "info": {
+    "displayName": "Campo Texto",
+    "icon": "cursorText",
+    "description": "Campo de texto corto (input type='text')"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": true
+    },
+    "valor_defecto": {
+      "type": "string"
+    }
+  }
+}

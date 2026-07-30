@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_formulario_campo_checkboxes",
+  "info": {
+    "displayName": "Campo Checkbox",
+    "icon": "checkSquare",
+    "description": "Casilla de verificación única (sí/no)"
+  },
+  "options": {},
+  "attributes": {
+    "nombre_variable": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador interno (minúsculas y guiones bajos)"
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": true,
+      "description": "Texto visible para el usuario"
+    },
+    "requerido": {
+      "type": "boolean",
+      "default": true
+    },
+    "valor_defecto": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

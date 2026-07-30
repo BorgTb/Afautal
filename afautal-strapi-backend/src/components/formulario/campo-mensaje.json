@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_formulario_campo_mensajes",
+  "info": {
+    "displayName": "Campo Mensaje",
+    "icon": "information",
+    "description": "Texto informativo decorativo (no produce input)"
+  },
+  "options": {},
+  "attributes": {
+    "contenido": {
+      "type": "richtext",
+      "required": true,
+      "description": "Contenido del mensaje (puede incluir formato)"
+    }
+  }
+}
