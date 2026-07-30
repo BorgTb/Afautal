@@ -8,7 +8,7 @@ import Comentaries from "@/components/landing-page/Comentaries";
 import type { CommentCardData } from "@/components/landing-page/Comentaries";
 import CalendarActivities from "@/components/landing-page/CalendarActivities";
 import type { CalendarActivityData } from "@/components/landing-page/CalendarActivities";
-import { getCollectionType, getSingleType } from "@/lib/strapi";
+import { getCollectionType, getSingleType, getStrapiMediaURL } from "@/lib/strapi";
 import SectionReveal from "@/components/shared/SectionReveal";
 
 interface StrapiImageAttributes {
@@ -149,6 +149,20 @@ function mapNoticiaToHero(noticia: NoticiaPayload): HeroNewsData {
   };
 }
 
+function getImageData(img: unknown): { url?: string; alternativeText?: string } | null {
+  if (!img) return null;
+  const field = img as Record<string, unknown>;
+  if (field.url) return { url: getStrapiMediaURL(field.url as string), alternativeText: field.alternativeText as string };
+  const data = field.data as Record<string, unknown> | undefined;
+  if (data) {
+    const attrs = data.attributes as Record<string, unknown> | undefined;
+    const url = (attrs?.url ?? data.url) as string | undefined;
+    const alt = (attrs?.alternativeText ?? data.alternativeText) as string | undefined;
+    if (url) return { url: getStrapiMediaURL(url), alternativeText: alt };
+  }
+  return null;
+}
+
 function mapActividadToCalendar(act: ActividadPayload): CalendarActivityData {
   const source = act.attributes ?? act;
   return {
@@ -159,7 +173,7 @@ function mapActividadToCalendar(act: ActividadPayload): CalendarActivityData {
     hora: source.hora ?? "",
     ubicacion: source.ubicacion ?? "",
     tipo: source.tipo ?? "",
-    imagen: source.imagen ?? null,
+    imagen: getImageData(source.imagen),
   };
 }
 
