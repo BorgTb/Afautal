@@ -23,12 +23,12 @@ const navLinks: NavLink[] = [
 ];
 
 const unauthLinks: NavLink[] = [
-  { name: "Área del asociado", href: "/auth/inicio-sesion", icon: User }
+  { name: "Área del asociado", href: "/auth/inicio-sesion"}
 ];
 
 const staticAuthLinks: NavLink[] = [
-  { name: "Panel del asociado", href: "/dashboard", icon: User },
-  { name: "Comprar vales", href: "/dashboard/gestion-gas", icon: Flame },
+  { name: "Panel del asociado", href: "/dashboard" },
+  { name: "Comprar vales", href: "/dashboard/gestion-gas" },
 ];
 
 const desktopActionClass =
