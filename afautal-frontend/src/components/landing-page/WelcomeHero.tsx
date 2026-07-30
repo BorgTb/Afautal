@@ -44,11 +44,16 @@ export default function WelcomeHero() {
 
       window.location.href = "/auth/completar-registro";
     } catch (err) {
-      const externalData = await fetchExternalClientData(cleanRut);
-      if (externalData) {
-        window.location.href = "/auth/registro";
+      const message = err instanceof Error ? err.message : "";
+      if (message === "Contraseña incorrecta.") {
+        setError(message);
       } else {
-        setError(err instanceof Error ? err.message : "Error al iniciar sesión.");
+        const externalData = await fetchExternalClientData(cleanRut);
+        if (externalData) {
+          window.location.href = "/auth/registro";
+        } else {
+          setError(message || "Error al iniciar sesión.");
+        }
       }
     } finally {
       setSubmitting(false);
