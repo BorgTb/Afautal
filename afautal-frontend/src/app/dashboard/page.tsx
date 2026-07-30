@@ -64,8 +64,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Estado de cuotas"
-          value="—"
-          note="Información disponible próximamente"
+          value="Al día"
+          note="Próximo vencimiento: 15-08-2026 (ficticio)"
         />
         <MetricCard
           label="Convenios activos"
@@ -74,13 +74,13 @@ export default function DashboardPage() {
         />
         <MetricCard
           label="Ingresos acumulados"
-          value="—"
-          note="Integración contable pendiente"
+          value="$ 450.000"
+          note="Últimos 12 meses (ficticio)"
         />
         <MetricCard
           label="Saldo disponible"
-          value="—"
-          note="Integración contable pendiente"
+          value="$ 123.500"
+          note="Fondo de bienestar (ficticio)"
         />
       </div>
 
