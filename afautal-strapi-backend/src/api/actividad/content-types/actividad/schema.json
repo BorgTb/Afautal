@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "actividads",
+  "info": {
+    "singularName": "actividad",
+    "pluralName": "actividads",
+    "displayName": "Actividades"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string",
+      "required": true
+    },
+    "descripcion": {
+      "type": "text"
+    },
+    "fecha": {
+      "type": "date",
+      "required": true
+    },
+    "hora": {
+      "type": "string"
+    },
+    "ubicacion": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "enumeration",
+      "enum": [
+        "Charla",
+        "Reuni\u00f3n",
+        "Taller",
+        "Evento",
+        "Capacitaci\u00f3n",
+        "Asamblea",
+        "Otro"
+      ]
+    },
+    "imagen": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

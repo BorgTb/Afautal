@@ -111,13 +111,15 @@ export default async function NosotrosPage() {
 
 	return (
 		<>
-			<DirectivaSection cards={directivaCards} />
+			
 			<AboutSection
 				descripcion={
 					descripcionQuienesSomos ||
 					"AFAUTAL trabaja por el bienestar de sus asociados y su participacion activa en la comunidad."
 				}
 			/>
+
+			<DirectivaSection cards={directivaCards} />
 
 			{misionVisionValores && <MisionAndValue data={misionVisionValores} />}
 		</>

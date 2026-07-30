@@ -3,7 +3,7 @@ import type { Servicio } from "@/lib/servicios";
 import AgreementRow from "../AgreementRow";
 import PanelHeader from "../PanelHeader";
 
-const EXTRA_CONVENIOS = [];
+const EXTRA_CONVENIOS: { nombre: string; descripcion: string; estado: string; slug: string }[] = [];
 
 export default function ConveniosPanel({ servicios }: { servicios: Servicio[] }) {
   const allItems = [

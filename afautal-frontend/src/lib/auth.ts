@@ -162,6 +162,56 @@ export async function fetchRegistroOptions(): Promise<RegistroOptions> {
   };
 }
 
+export async function completeExternalRegistration(
+  token: string,
+  payload: {
+    telefono?: string;
+    fecha_nacimiento?: string;
+    tipo_contrato?: string;
+    categoria?: string;
+    jerarquia?: string;
+    region?: string;
+    comuna?: string;
+    ciudad?: string;
+    direccion_particular?: string;
+    banco?: string;
+    tipo_cuenta?: string;
+    correo_electronico?: string;
+    unidad_academica?: string;
+  }
+): Promise<void> {
+  const response = await fetch(`${STRAPI_URL}/api/auth/complete-external-registration`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const body = await safeJson<{ ok?: boolean; error?: { message?: string } }>(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(body, "No se pudo completar el registro."));
+  }
+}
+
+export async function loginRut(rut: string, password: string): Promise<LoginResponse & { user: AuthUser & { registro_incompleto?: boolean } }> {
+  const response = await fetch(`${STRAPI_URL}/api/auth/login-rut`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rut: rut.trim(), password }),
+  });
+
+  const body = await safeJson<LoginResponse & { error?: { message?: string } }>(response);
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(body, "No se pudo iniciar sesión con RUT."));
+  }
+
+  return body as LoginResponse & { user: AuthUser & { registro_incompleto?: boolean } };
+}
+
 export async function login(identifier: string, password: string): Promise<LoginResponse> {
   const normalizedIdentifier = identifier.trim().toLowerCase();
 

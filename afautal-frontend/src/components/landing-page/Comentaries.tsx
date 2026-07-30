@@ -104,7 +104,7 @@ export default function Comentaries({ comments }: ComentariesProps) {
 					<article
 						data-comment-card
 						key={comment.id}
-						className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-md sm:p-6"
+						className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] sm:p-6"
 					>
 						<div className="relative pl-8">
 							<span

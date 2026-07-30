@@ -66,11 +66,11 @@ export async function fetchServiciosHabilitados(token?: string): Promise<Servici
   );
 
   if (!res.ok) {
-    throw new Error("Error al obtener los servicios");
+    return [];
   }
 
   const data = await res.json();
-  return data.data.map((item: any) => ({
+  return (data.data || []).map((item: any) => ({
     id: item.id,
     ...(item.attributes || item),
   }));
