@@ -2,8 +2,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactCompiler: true,
-  
+  allowedDevOrigins: ['afautal.agustindev.online'],
   async headers() {
     return [
       {
@@ -13,7 +12,7 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: "frame-ancestors 'self' https://*.strapiapp.com https://excellent-nurture-beee0f6ec0.strapiapp.com;"
           }
-        ],
+        ]
       },
     ];
   },

@@ -11,6 +11,7 @@ import {
   cancelarSolicitudServicio, 
   type Servicio, 
   type SolicitudServicio,
+  type CampoFormulario,
   type FormValues,
   type FormFiles,
 } from "@/lib/servicios";
@@ -368,7 +369,7 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
                     {s.datos_formulario && Object.keys(s.datos_formulario).length > 0 ? (
                       <ul className="space-y-1.5">
                         {Object.entries(s.datos_formulario).map(([key, val]) => {
-                          const campoDef = servicio.campos_formulario?.find(c => c.nombre_variable === key);
+                          const campoDef = servicio.campos_formulario?.filter((c): c is CampoFormulario & { nombre_variable: string; etiqueta: string } => 'nombre_variable' in c).find(c => c.nombre_variable === key);
                           const etiqueta = campoDef ? campoDef.etiqueta : key.replace(/_/g, ' ');
                           const displayVal = Array.isArray(val) ? val.join(", ") : String(val ?? "-");
                           return (

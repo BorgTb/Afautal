@@ -96,6 +96,7 @@ export type CampoFecha = {
   nombre_variable: string;
   etiqueta: string;
   requerido: boolean;
+  valor_defecto?: string | null;
 };
 
 export type CampoUpload = {
