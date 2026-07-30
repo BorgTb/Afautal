@@ -16,30 +16,51 @@ type OldCampo = {
   id: number;
   nombre_variable: string;
   etiqueta: string;
-  tipo: "texto" | "textarea" | "fecha" | "seleccion";
+  tipo: "texto" | "textarea" | "numero" | "fecha" | "seleccion" | "radio" | "checkbox" | "switch" | "upload" | "mensaje";
   opciones?: string;
   requerido: boolean;
+  placeholder?: string | null;
+  valor_defecto?: string | null;
+  min?: number | null;
+  max?: number | null;
+  filas?: number;
+  multiple?: boolean;
+  contenido?: string | null;
 };
 
 function isOldFormat(campos: any[]): campos is OldCampo[] {
   return campos.length > 0 && !("__component" in campos[0]);
 }
 
+function splitOps(raw: string | undefined | null): { id: number; label: string; valor: string }[] {
+  return (raw || "").split(",").filter(Boolean).map((o, i) => ({
+    id: i, label: o.trim(), valor: o.trim(),
+  }));
+}
+
 function normalizeCampo(old: OldCampo): CampoFormulario {
-  const base = { id: old.id, nombre_variable: old.nombre_variable, etiqueta: old.etiqueta, requerido: old.requerido };
+  const base = { id: old.id, nombre_variable: old.nombre_variable, etiqueta: old.etiqueta, requerido: old.requerido ?? true };
   switch (old.tipo) {
     case "texto":
-      return { ...base, __component: "formulario.campo-texto" as const, placeholder: null, valor_defecto: null };
+      return { ...base, __component: "formulario.campo-texto" as const, placeholder: old.placeholder ?? null, valor_defecto: old.valor_defecto ?? null };
     case "textarea":
-      return { ...base, __component: "formulario.campo-textarea" as const, placeholder: null, filas: 4, valor_defecto: null };
+      return { ...base, __component: "formulario.campo-textarea" as const, placeholder: old.placeholder ?? null, filas: old.filas ?? 4, valor_defecto: old.valor_defecto ?? null };
+    case "numero":
+      return { ...base, __component: "formulario.campo-numero" as const, placeholder: old.placeholder ?? null, min: old.min ?? null, max: old.max ?? null, valor_defecto: old.valor_defecto ? Number(old.valor_defecto) : null };
     case "fecha":
       return { ...base, __component: "formulario.campo-fecha" as const };
-    case "seleccion": {
-      const opts = (old.opciones || "").split(",").filter(Boolean).map((o, i) => ({
-        id: i, label: o.trim(), valor: o.trim(),
-      }));
-      return { ...base, __component: "formulario.campo-select" as const, opciones: opts, valor_defecto: null };
-    }
+    case "seleccion":
+      return { ...base, __component: "formulario.campo-select" as const, opciones: splitOps(old.opciones), valor_defecto: old.valor_defecto ?? null };
+    case "radio":
+      return { ...base, __component: "formulario.campo-radio" as const, opciones: splitOps(old.opciones), valor_defecto: old.valor_defecto ?? null };
+    case "checkbox":
+      return { ...base, __component: "formulario.campo-checkbox" as const, valor_defecto: old.valor_defecto === "true" };
+    case "switch":
+      return { ...base, __component: "formulario.campo-switch" as const, valor_defecto: old.valor_defecto === "true" };
+    case "upload":
+      return { ...base, __component: "formulario.campo-upload" as const, multiple: old.multiple ?? false };
+    case "mensaje":
+      return { __component: "formulario.campo-mensaje" as const, id: old.id, contenido: old.contenido ?? "" };
   }
 }
 

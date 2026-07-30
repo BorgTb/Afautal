@@ -1112,14 +1112,26 @@ export interface ApiServicioServicio extends Struct.CollectionTypeSchema {
     bloques: Schema.Attribute.DynamicZone<
       ['shared.texto-rico', 'shared.contenido', 'shared.alerta']
     >;
-    campos_formulario: Schema.Attribute.Component<'formulario.campo', true>;
+    campos_formulario: Schema.Attribute.DynamicZone<
+      [
+        'formulario.campo-texto',
+        'formulario.campo-textarea',
+        'formulario.campo-numero',
+        'formulario.campo-select',
+        'formulario.campo-radio',
+        'formulario.campo-checkbox',
+        'formulario.campo-switch',
+        'formulario.campo-fecha',
+        'formulario.campo-upload',
+        'formulario.campo-mensaje',
+      ]
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     descripcion: Schema.Attribute.Text;
     email_notificaciones: Schema.Attribute.Email;
     habilitado: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    icono: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',

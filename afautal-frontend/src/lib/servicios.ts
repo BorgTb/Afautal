@@ -131,7 +131,6 @@ export interface Servicio {
   nombre: string;
   slug: string;
   descripcion: string | null;
-  icono: string | null;
   habilitado: boolean;
   bloques?: (BloqueContenido | BloqueAlerta)[];
   campos_formulario?: CampoFormulario[];

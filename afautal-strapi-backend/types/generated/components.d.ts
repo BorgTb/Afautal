@@ -1,25 +1,5 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
-export interface FormularioCampo extends Struct.ComponentSchema {
-  collectionName: 'components_formulario_campos';
-  info: {
-    description: 'Define un campo din\u00E1mico para el formulario del servicio';
-    displayName: 'Campo de Formulario';
-    icon: 'server';
-  };
-  attributes: {
-    etiqueta: Schema.Attribute.String & Schema.Attribute.Required;
-    nombre_variable: Schema.Attribute.String & Schema.Attribute.Required;
-    opciones: Schema.Attribute.Text;
-    requerido: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    tipo: Schema.Attribute.Enumeration<
-      ['texto', 'textarea', 'fecha', 'seleccion']
-    > &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'texto'>;
-  };
-}
-
 export interface FormularioCampoCheckbox extends Struct.ComponentSchema {
   collectionName: 'components_formulario_campo_checkboxes';
   info: {
@@ -220,7 +200,7 @@ export interface SharedTextoRico extends Struct.ComponentSchema {
   collectionName: 'components_shared_texto_ricos';
   info: {
     description: 'Bloque de texto con formato libre';
-    displayName: 'Texto Rico';
+    displayName: 'Texto';
     icon: 'align-justify';
   };
   attributes: {
@@ -231,7 +211,6 @@ export interface SharedTextoRico extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
-      'formulario.campo': FormularioCampo;
       'formulario.campo-checkbox': FormularioCampoCheckbox;
       'formulario.campo-fecha': FormularioCampoFecha;
       'formulario.campo-mensaje': FormularioCampoMensaje;

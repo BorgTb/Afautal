@@ -15,21 +15,9 @@ import {
   type FormValues,
   type FormFiles,
 } from "@/lib/servicios";
-import { Eye, CalendarPlus, History, UserCircle, Users, CheckCircle2, XCircle, Info, Stethoscope, BriefcaseMedical, HeartPulse, Activity, AlertTriangle } from "lucide-react";
+import { CalendarPlus, History, UserCircle, Users, CheckCircle2, XCircle, Info, AlertTriangle } from "lucide-react";
 import FormRenderer, { getDefaultValues, validate, normalizeCampos } from "@/components/form/FormRenderer";
 import { getStrapiURL } from "@/lib/strapi";
-
-const renderIcon = (iconName: string | null, size = 36, className = "text-[#BF0F0F]") => {
-  switch (iconName) {
-    case "Stethoscope": return <Stethoscope size={size} className={className} />;
-    case "BriefcaseMedical": return <BriefcaseMedical size={size} className={className} />;
-    case "HeartPulse": return <HeartPulse size={size} className={className} />;
-    case "Activity": return <Activity size={size} className={className} />;
-    case "Eye":
-    default:
-      return <Eye size={size} className={className} />;
-  }
-};
 
 async function uploadFiles(token: string, files: File[]): Promise<number[]> {
   if (files.length === 0) return [];
@@ -223,8 +211,7 @@ export default function ServicioPage({ params }: { params: Promise<{ slug: strin
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 flex items-center gap-3">
-            {renderIcon(servicio.icono)}
+          <h1 className="text-4xl font-black text-gray-900">
             {servicio.nombre}
           </h1>
           {servicio.descripcion && (

@@ -23,10 +23,6 @@
     "descripcion": {
       "type": "text"
     },
-    "icono": {
-      "type": "string",
-      "description": "Nombre del ícono de Lucide (ej: 'Eye', 'Stethoscope')"
-    },
     "habilitado": {
       "type": "boolean",
       "default": true
@@ -44,9 +40,19 @@
       ]
     },
     "campos_formulario": {
-      "type": "component",
-      "repeatable": true,
-      "component": "formulario.campo"
+      "type": "dynamiczone",
+      "components": [
+        "formulario.campo-texto",
+        "formulario.campo-textarea",
+        "formulario.campo-numero",
+        "formulario.campo-select",
+        "formulario.campo-radio",
+        "formulario.campo-checkbox",
+        "formulario.campo-switch",
+        "formulario.campo-fecha",
+        "formulario.campo-upload",
+        "formulario.campo-mensaje"
+      ]
     }
   }
 }
