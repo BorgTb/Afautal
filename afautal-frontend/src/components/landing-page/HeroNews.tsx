@@ -256,7 +256,7 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
           </h1>
           <p
             data-hero-text
-            className="mt-6 max-w-[68ch] min-h-0 text-base leading-relaxed text-slate-600 sm:min-h-[128px] sm:text-lg lg:min-h-[136px] lg:max-w-[74ch]"
+            className="mt-6 max-w-[60ch] min-h-0 text-base leading-relaxed text-slate-600 sm:min-h-[128px] sm:text-lg lg:min-h-[136px] lg:max-w-[60ch]"
           >
             {summary}
           </p>
