@@ -32,16 +32,25 @@ export default factories.createCoreController('api::solicitud-servicio.solicitud
     const payload = ctx.request.body.data || {};
 
     const existingEntry = await strapi.db.query('api::solicitud-servicio.solicitud-servicio').findOne({
-      where: { id: numericId, usuario: user.id }
+      where: { id: numericId },
+      populate: ['usuario']
     });
 
     if (!existingEntry) {
+      return ctx.notFound('Solicitud no encontrada');
+    }
+
+    const entryUserId = existingEntry.usuario?.id ?? existingEntry.usuario;
+    if (entryUserId && entryUserId !== user.id) {
       return ctx.notFound('Solicitud no encontrada o no tienes permiso para modificarla');
     }
 
     const updatedEntry = await strapi.db.query('api::solicitud-servicio.solicitud-servicio').update({
       where: { id: numericId },
-      data: payload,
+      data: {
+        ...payload,
+        usuario: entryUserId ? undefined : user.id,
+      },
       populate: ['usuario', 'carga_familiar', 'servicio']
     });
 

@@ -159,8 +159,11 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
   if (!newsItems.length) return null;
 
   const currentItem = newsItems[currentIndex] ?? newsItems[0];
-  const title = truncateText(currentItem.titulo, 170);
-  const summary = truncateText(currentItem.resumen, 420);
+  const MAX_TOTAL_CHARS = 520;
+  const maxTitle = 170;
+  const title = truncateText(currentItem.titulo, maxTitle);
+  const remaining = MAX_TOTAL_CHARS - title.length;
+  const summary = truncateText(currentItem.resumen, Math.max(remaining, 80));
   const imageUrl = getMediaUrlFromField(currentItem.imagen) || "/hero-noticia.jpg";
   const publicationDate = formatDate(currentItem.fechaPublicacion);
   const metaInfo = [currentItem.autor?.trim(), publicationDate].filter(Boolean).join(" • ");
