@@ -1,6 +1,7 @@
 "use client";
 
 import type { Region, Ciudad, Comuna } from "@/lib/geography";
+import { normalizeRut, formatRut, isValidRut } from "@/lib/rut";
 
 export const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:ring-[#BF0F0F] focus:border-[#BF0F0F] text-black bg-white placeholder-gray-500 sm:text-sm font-medium transition-colors";
 export const labelClasses = "block text-sm font-bold text-gray-800 mb-1";
@@ -169,19 +170,17 @@ export function Step1Personal({
 }: Step1PersonalProps) {
   const ic = inputClasses;
   const lc = labelClasses;
+  const showRutError = normalizeRut(rut).length >= 8 && !isValidRut(rut);
 
   return (
     <>
       <div className="md:col-span-1">
-        <label className={lc}>RUT (Sin puntos ni guion)</label>
+        <label className={lc}>RUT (con dígito verificador)</label>
         <div className="relative">
-          <input type="text" required value={rut} readOnly={readOnlyRut}
-            onChange={(e) => {
-              const val = e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9);
-              setRut(val);
-            }}
-            className={ic}
-            placeholder="Ej: 123456789"
+          <input type="text" required value={formatRut(rut)} readOnly={readOnlyRut}
+            onChange={(e) => setRut(formatRut(e.target.value))}
+            className={`${ic} ${showRutError ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}`}
+            placeholder="Ej: 12.345.678-9"
           />
           {isFetchingClient && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -189,6 +188,10 @@ export function Step1Personal({
             </div>
           )}
         </div>
+        <p className="mt-1.5 text-xs text-gray-500">Debes ingresar tu RUT con su dígito verificador (ej: 12.345.678-9).</p>
+        {showRutError && (
+          <p className="mt-1 text-xs font-bold text-red-600">RUT inválido: revisa el dígito verificador.</p>
+        )}
       </div>
       <div className="md:col-span-1">
         <label className={lc}>Nombre Completo</label>

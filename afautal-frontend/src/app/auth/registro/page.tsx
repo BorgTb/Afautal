@@ -5,6 +5,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { fetchRegistroOptions, submitSolicitudRegistro, fetchExternalClientData } from "@/lib/auth";
 import { fetchRegiones, fetchCiudadesByRegion, fetchComunasByRegion, fetchCiudadByNombre, type Region, type Ciudad, type Comuna } from "@/lib/geography";
+import { isValidRut } from "@/lib/rut";
 import { StepIndicator, Step1Personal, Step2Academico, Step3Acceso, NavigationButtons } from "@/components/auth/RegistroShared";
 
 export default function RegisterPage() {
@@ -98,7 +99,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const timer = setTimeout(async () => {
-      if (rut.length >= 8) {
+      if (isValidRut(rut)) {
         setIsFetchingClient(true);
         try {
           const data = await fetchExternalClientData(rut);
@@ -176,7 +177,11 @@ export default function RegisterPage() {
 
   const nextStep = () => {
     if (step === 1) {
-      if (!rut || !nombreCompleto || !ciudad || !comuna || !region || !fechaNacimiento) {
+      if (!isValidRut(rut)) {
+        setError("Ingresa un RUT válido con su dígito verificador (ej: 12.345.678-9).");
+        return;
+      }
+      if (!nombreCompleto || !ciudad || !comuna || !region || !fechaNacimiento) {
         setError("Por favor completa los campos obligatorios.");
         return;
       }

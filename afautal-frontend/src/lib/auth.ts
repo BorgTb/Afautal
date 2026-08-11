@@ -1,3 +1,5 @@
+import { normalizeRut } from "@/lib/rut";
+
 export interface AuthUser {
   id: number;
   username: string;
@@ -102,7 +104,7 @@ function getErrorMessage(body: unknown, fallback: string): string {
 export async function submitSolicitudRegistro(payload: RegistroSolicitudPayload): Promise<{ ok: boolean; message?: string }> {
   const normalizedPayload: RegistroSolicitudPayload = {
     ...payload,
-    rut: payload.rut.trim(),
+    rut: normalizeRut(payload.rut),
     nombre_completo: payload.nombre_completo.trim(),
     correo_electronico: payload.correo_electronico.trim().toLowerCase(),
     unidad_academica: payload.unidad_academica?.trim(),
@@ -201,7 +203,7 @@ export async function loginRut(rut: string, password: string): Promise<LoginResp
   const response = await fetch(`${STRAPI_URL}/api/auth/login-rut`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ rut: rut.trim(), password }),
+    body: JSON.stringify({ rut: normalizeRut(rut), password }),
   });
 
   const body = await safeJson<LoginResponse & { error?: { message?: string } }>(response);

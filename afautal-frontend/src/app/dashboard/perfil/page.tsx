@@ -8,6 +8,7 @@ import { fetchBancos, type Banco } from "@/lib/banco";
 import { fetchTiposCuenta, type TipoCuenta } from "@/lib/tipo-cuenta";
 import { fetchMisCargas, addCarga, deleteCarga, type CargaFamiliar } from "@/lib/carga";
 import { formatRUT, formatPhone } from "@/lib/utils";
+import { normalizeRut, formatRut as formatRutInput, isValidRut } from "@/lib/rut";
 
 const PARENTESCOS = ["Cónyuge", "Conviviente Civil", "Padre/Madre" ,"Hijo/a"];
 
@@ -133,9 +134,14 @@ export default function PerfilPage() {
   const handleAddCarga = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
+    if (!isValidRut(nuevaCarga.rut)) {
+      alert("El RUT debe incluir su dígito verificador (ej: 12.345.678-9).");
+      return;
+    }
     setSavingCarga(true);
     try {
-      const newCarga = await addCarga(token, nuevaCarga as any);
+      const payload = { ...nuevaCarga, rut: normalizeRut(nuevaCarga.rut) };
+      const newCarga = await addCarga(token, payload as any);
       setCargas([newCarga, ...cargas]);
       setIsAddingCarga(false);
       setNuevaCarga({ rut: "", nombre_completo: "", parentesco: "Hijo/a" });
@@ -228,17 +234,16 @@ export default function PerfilPage() {
                 <form onSubmit={handleAddCarga} className="space-y-4">
                   <div className="grid sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">RUT</label>
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">RUT (con dígito verificador)</label>
                       <input 
                         required 
                         type="text" 
-                        value={nuevaCarga.rut} 
+                        value={formatRutInput(nuevaCarga.rut)} 
                         onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9);
-                          setNuevaCarga({...nuevaCarga, rut: val});
+                          setNuevaCarga({...nuevaCarga, rut: formatRutInput(e.target.value)});
                         }} 
                         className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" 
-                        placeholder="Ej: 123456789" 
+                        placeholder="Ej: 12.345.678-9" 
                       />
                     </div>
                     <div>

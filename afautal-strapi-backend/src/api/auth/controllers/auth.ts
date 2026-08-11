@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { normalizeRut, isValidRut } from '../../../utils/rut';
 
 interface ChangePasswordPayload {
   newPassword?: string;
@@ -136,9 +137,9 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
       return ctx.badRequest('Contraseña es obligatoria.');
     }
 
-    const normalizedRut = rut.replace(/[^0-9kK]/g, '');
-    if (normalizedRut.length < 5) {
-      return ctx.badRequest('RUT inválido.');
+    const normalizedRut = normalizeRut(rut);
+    if (!isValidRut(normalizedRut)) {
+      return ctx.badRequest('Debes ingresar tu RUT con su dígito verificador (ej: 12.345.678-9).');
     }
 
     const rutSinDV = normalizedRut.slice(0, -1);
@@ -202,7 +203,9 @@ export default factories.createCoreController('api::solicitud.solicitud', ({ str
 
     // 1. Verificar si el usuario ya existe en Strapi por RUT
     const existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
-      where: { rut: normalizedRut },
+      where: {
+        $or: [{ rut: normalizedRut }, { rut: normalizedRut.toLowerCase() }],
+      },
       populate: { solicitud: true },
     });
 

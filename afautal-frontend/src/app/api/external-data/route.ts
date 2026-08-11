@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isValidRut } from "@/lib/rut";
 
 function normalizeRut(rut: string): string {
   return rut.replace(/[^0-9kK]/g, "");
@@ -19,8 +20,8 @@ export async function GET(request: Request) {
   }
   // Normaliza el RUT y elimina el ultimo caracter (DV) antes de consultar.
   const normalizedRut = normalizeRut(rut);
-  if (normalizedRut.length < 2) {
-    return NextResponse.json({ error: "Invalid RUT" }, { status: 400 });
+  if (!isValidRut(normalizedRut)) {
+    return NextResponse.json({ error: "RUT inválido: debe incluir su dígito verificador (ej: 12.345.678-9)." }, { status: 400 });
   }
   const { rutSinDv } = splitRut(normalizedRut);
 
@@ -59,8 +60,8 @@ export async function POST(request: Request) {
     const payload = (await request.json()) as ExternalRegisterPayload;
     const normalizedRut = normalizeRut(payload.rut ?? "");
 
-    if (normalizedRut.length < 2) {
-      return NextResponse.json({ error: "RUT is required" }, { status: 400 });
+    if (!isValidRut(normalizedRut)) {
+      return NextResponse.json({ error: "RUT inválido: debe incluir su dígito verificador (ej: 12.345.678-9)." }, { status: 400 });
     }
 
     if (!payload.nombreCompleto?.trim()) {

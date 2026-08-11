@@ -740,6 +740,39 @@ export interface ApiDatosTransferenciaDatosTransferencia
   };
 }
 
+export interface ApiDescuentoDescuento extends Struct.CollectionTypeSchema {
+  collectionName: 'descuentos';
+  info: {
+    displayName: 'Descuentos';
+    pluralName: 'descuentos';
+    singularName: 'descuento';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    anio: Schema.Attribute.Integer & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::descuento.descuento'
+    > &
+      Schema.Attribute.Private;
+    mes: Schema.Attribute.Integer & Schema.Attribute.Required;
+    monto: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    nombre_completo: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    rut: Schema.Attribute.String & Schema.Attribute.Required;
+    unidad: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiDetalleQuienesSomosDetalleQuienesSomos
   extends Struct.SingleTypeSchema {
   collectionName: 'detalles_quienes_somos';
@@ -1955,6 +1988,7 @@ declare module '@strapi/strapi' {
       'api::comuna.comuna': ApiComunaComuna;
       'api::contacto.contacto': ApiContactoContacto;
       'api::datos-transferencia.datos-transferencia': ApiDatosTransferenciaDatosTransferencia;
+      'api::descuento.descuento': ApiDescuentoDescuento;
       'api::detalle-quienes-somos.detalle-quienes-somos': ApiDetalleQuienesSomosDetalleQuienesSomos;
       'api::directiva.directiva': ApiDirectivaDirectiva;
       'api::documento.documento': ApiDocumentoDocumento;

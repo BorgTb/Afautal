@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { loginRut, fetchExternalClientData } from "@/lib/auth";
+import { normalizeRut, formatRut, isValidRut } from "@/lib/rut";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 export default function WelcomeHero() {
@@ -15,9 +16,9 @@ export default function WelcomeHero() {
     e.preventDefault();
     setError(null);
 
-    const cleanRut = rut.replace(/[^0-9kK]/g, "");
-    if (cleanRut.length < 5) {
-      setError("Ingresa un RUT válido.");
+    const cleanRut = normalizeRut(rut);
+    if (!isValidRut(cleanRut)) {
+      setError("Ingresa un RUT válido con su dígito verificador (ej: 12.345.678-9).");
       return;
     }
 
@@ -120,9 +121,9 @@ export default function WelcomeHero() {
             )}
 
             <input
-              placeholder="Rut"
+              placeholder="Rut (con dígito verificador)"
               value={rut}
-              onChange={(e) => setRut(e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9))}
+              onChange={(e) => setRut(formatRut(e.target.value))}
               className="w-full px-3 py-3 rounded-[9px] border border-white/30 bg-white/25 text-white placeholder-white/70 mb-2 text-sm outline-none focus:ring-2 focus:ring-white/50"
             />
             <input
@@ -133,7 +134,7 @@ export default function WelcomeHero() {
               className="w-full px-3 py-3 rounded-[9px] border border-white/30 bg-white/25 text-white placeholder-white/70 mb-[14px] text-sm outline-none focus:ring-2 focus:ring-white/50"
             />
             <p className="text-[#dce9f4] text-xs mb-3 -mt-2">
-              Si es tu primer ingreso, tu contraseña son los últimos 4 dígitos de tu RUT.
+              Tu RUT debe incluir su dígito verificador (ej: 12.345.678-9). Si es tu primer ingreso, tu contraseña son los últimos 4 dígitos de tu RUT.
             </p>
             <button
               type="submit"

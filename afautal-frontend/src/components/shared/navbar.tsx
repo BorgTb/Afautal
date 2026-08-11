@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Briefcase, ChevronDown, Clock3, Flame, HeartPulse, LogOut, Menu, User, X, ShieldCheck } from "lucide-react";
+import { Briefcase, ChevronDown, Clock3, Flame, HeartPulse, LogOut, Menu, User, X, ShieldCheck, Receipt } from "lucide-react";
 import Logo from "./logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchServiciosHabilitados } from "@/lib/servicios";
@@ -27,8 +27,9 @@ const unauthLinks: NavLink[] = [
 ];
 
 const staticAuthLinks: NavLink[] = [
-  { name: "Panel del asociado", href: "/dashboard" },
-  { name: "Comprar vales", href: "/dashboard/gestion-gas" },
+  { name: "Panel del asociado", href: "/dashboard", icon: User },
+  { name: "Comprar vales", href: "/dashboard/gestion-gas", icon: Flame },
+  { name: "Mis descuentos", href: "/dashboard/descuentos", icon: Receipt },
 ];
 
 const desktopActionClass =
@@ -202,14 +203,24 @@ export default function Navbar() {
                 </Link>
 
                 {user?.role?.type === 'admin' && (
-                  <Link
-                    href="/dashboard/admin/gas"
-                    className="flex items-center gap-3 px-4 py-3.5 text-[15px] font-semibold text-red-700 hover:bg-red-50 transition-colors"
-                    onClick={() => setIsUserMenuOpen(false)}
-                  >
-                    <ShieldCheck size={18} />
-                    Admin Gas
-                  </Link>
+                  <>
+                    <Link
+                      href="/dashboard/admin/gas"
+                      className="flex items-center gap-3 px-4 py-3.5 text-[15px] font-semibold text-red-700 hover:bg-red-50 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <ShieldCheck size={18} />
+                      Admin Gas
+                    </Link>
+                    <Link
+                      href="/dashboard/admin/descuentos"
+                      className="flex items-center gap-3 px-4 py-3.5 text-[15px] font-semibold text-red-700 hover:bg-red-50 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <ShieldCheck size={18} />
+                      Admin Descuentos
+                    </Link>
+                  </>
                 )}
 
                 <div className="h-px w-full bg-slate-200"></div>
@@ -287,6 +298,16 @@ export default function Navbar() {
 
             {!loading && isAuthenticated && (
               <>
+                {user?.role?.type === 'admin' && (
+                  <>
+                    <Link href="/dashboard/admin/gas" onClick={() => setIsOpen(false)} className={mobileLinkClass}>
+                      <ShieldCheck size={20} /> Admin Gas
+                    </Link>
+                    <Link href="/dashboard/admin/descuentos" onClick={() => setIsOpen(false)} className={mobileLinkClass}>
+                      <ShieldCheck size={20} /> Admin Descuentos
+                    </Link>
+                  </>
+                )}
                 <Link href="/dashboard/perfil" onClick={() => setIsOpen(false)} className={mobileLinkClass}>
                   <User size={20} /> Mi perfil
                 </Link>

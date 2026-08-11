@@ -3,6 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
+import { normalizeRut, isValidRut } from '../../../utils/rut';
 
 interface SolicitudRegistroPayload {
 	rut?: string;
@@ -112,12 +113,16 @@ const resolveRelationDocumentId = async (
 export default factories.createCoreController('api::solicitud.solicitud', ({ strapi }) => ({
 	async registerFromSolicitud(ctx) {
 		const payload = (ctx.request.body ?? {}) as SolicitudRegistroPayload;
-		const rut = payload.rut?.trim();
+		const rut = normalizeRut(payload.rut ?? '');
 		const nombreCompleto = payload.nombre_completo?.trim();
 		const correo = payload.correo_electronico?.trim().toLowerCase();
 
 		if (!rut || !nombreCompleto || !correo) {
 			return ctx.badRequest('rut, nombre_completo y correo_electronico son obligatorios.');
+		}
+
+		if (!isValidRut(rut)) {
+			return ctx.badRequest('Debes ingresar tu RUT con su dígito verificador (ej: 12.345.678-9).');
 		}
 
 		// Verificar si ya existe un usuario activo

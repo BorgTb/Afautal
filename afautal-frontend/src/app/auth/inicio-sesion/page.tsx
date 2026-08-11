@@ -5,6 +5,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { loginRut } from "@/lib/auth";
 import { useAuth } from "@/contexts/AuthContext";
+import { normalizeRut, formatRut, isValidRut } from "@/lib/rut";
 import { AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
@@ -37,9 +38,9 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
 
-    const cleanRut = rut.replace(/[^0-9kK]/g, "");
-    if (cleanRut.length < 5) {
-      setError("Ingresa un RUT válido.");
+    const cleanRut = normalizeRut(rut);
+    if (!isValidRut(cleanRut)) {
+      setError("Ingresa un RUT válido con su dígito verificador (ej: 12.345.678-9).");
       return;
     }
 
@@ -98,16 +99,17 @@ export default function LoginPage() {
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="rut" className={labelClasses}>RUT (Sin puntos ni guión)</label>
+              <label htmlFor="rut" className={labelClasses}>RUT (con dígito verificador)</label>
               <input
                 id="rut"
                 type="text"
                 required
                 value={rut}
-                onChange={(e) => setRut(e.target.value.replace(/[^0-9kK]/g, "").slice(0, 9))}
+                onChange={(e) => setRut(formatRut(e.target.value))}
                 className={inputClasses}
-                placeholder="Ej: 123456789"
+                placeholder="Ej: 12.345.678-9"
               />
+              <p className="mt-1.5 text-xs text-gray-500">Debes ingresar tu RUT con su dígito verificador (ej: 12.345.678-9).</p>
             </div>
             <div>
               <label htmlFor="password" className={labelClasses}>Contraseña</label>

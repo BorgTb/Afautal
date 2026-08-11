@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "descuentos",
+  "info": {
+    "singularName": "descuento",
+    "pluralName": "descuentos",
+    "displayName": "Descuentos"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "rut": {
+      "type": "string",
+      "required": true
+    },
+    "nombre_completo": {
+      "type": "string"
+    },
+    "unidad": {
+      "type": "string"
+    },
+    "anio": {
+      "type": "integer",
+      "required": true
+    },
+    "mes": {
+      "type": "integer",
+      "required": true
+    },
+    "monto": {
+      "type": "decimal",
+      "required": true
+    }
+  }
+}
