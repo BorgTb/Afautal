@@ -232,9 +232,9 @@ export default function PerfilPage() {
             {isAddingCarga && (
               <div className="mb-8 p-6 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
                 <form onSubmit={handleAddCarga} className="space-y-4">
-                  <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="grid sm:grid-cols-3 gap-4 items-start">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">RUT (con dígito verificador)</label>
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1 min-h-[2.5rem] leading-4">RUT (con dígito verificador)</label>
                       <input 
                         required 
                         type="text" 
@@ -242,17 +242,17 @@ export default function PerfilPage() {
                         onChange={(e) => {
                           setNuevaCarga({...nuevaCarga, rut: formatRutInput(e.target.value)});
                         }} 
-                        className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" 
+                        className="w-full h-10 px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" 
                         placeholder="Ej: 12.345.678-9" 
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">Nombre Completo</label>
-                      <input required type="text" value={nuevaCarga.nombre_completo} onChange={e => setNuevaCarga({...nuevaCarga, nombre_completo: e.target.value})} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" />
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1 min-h-[2.5rem] leading-4">Nombre Completo</label>
+                      <input required type="text" value={nuevaCarga.nombre_completo} onChange={e => setNuevaCarga({...nuevaCarga, nombre_completo: e.target.value})} className="w-full h-10 px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase mb-1">Parentesco</label>
-                      <select value={nuevaCarga.parentesco} onChange={e => setNuevaCarga({...nuevaCarga, parentesco: e.target.value as any})} className="w-full p-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none">
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1 min-h-[2.5rem] leading-4">Parentesco</label>
+                      <select value={nuevaCarga.parentesco} onChange={e => setNuevaCarga({...nuevaCarga, parentesco: e.target.value as any})} className="w-full h-10 px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none">
                         {PARENTESCOS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
                     </div>
