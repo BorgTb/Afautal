@@ -6,6 +6,7 @@ export interface CargaFamiliar {
   rut: string;
   nombre_completo: string;
   parentesco: "Cónyuge" | "Hijo/a" | "Padre/Madre" | "Conviviente Civil" | "Otro";
+  fecha_nacimiento?: string;
 }
 
 export async function fetchMisCargas(token: string): Promise<CargaFamiliar[]> {

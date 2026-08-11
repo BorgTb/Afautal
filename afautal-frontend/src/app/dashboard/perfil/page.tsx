@@ -47,7 +47,7 @@ export default function PerfilPage() {
 
   const [cargas, setCargas] = useState<CargaFamiliar[]>([]);
   const [isAddingCarga, setIsAddingCarga] = useState(false);
-  const [nuevaCarga, setNuevaCarga] = useState({ rut: "", nombre_completo: "", parentesco: "Hijo/a" });
+  const [nuevaCarga, setNuevaCarga] = useState({ rut: "", nombre_completo: "", parentesco: "Hijo/a", fecha_nacimiento: "" });
   const [savingCarga, setSavingCarga] = useState(false);
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export default function PerfilPage() {
       const newCarga = await addCarga(token, payload as any);
       setCargas([newCarga, ...cargas]);
       setIsAddingCarga(false);
-      setNuevaCarga({ rut: "", nombre_completo: "", parentesco: "Hijo/a" });
+      setNuevaCarga({ rut: "", nombre_completo: "", parentesco: "Hijo/a", fecha_nacimiento: "" });
     } catch (error) {
       alert("Error al agregar la carga familiar.");
     } finally {
@@ -232,7 +232,7 @@ export default function PerfilPage() {
             {isAddingCarga && (
               <div className="mb-8 p-6 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
                 <form onSubmit={handleAddCarga} className="space-y-4">
-                  <div className="grid sm:grid-cols-3 gap-4 items-start">
+                  <div className="grid sm:grid-cols-2 gap-4 items-start">
                     <div>
                       <label className="block text-xs font-black text-slate-500 uppercase mb-1 min-h-[2.5rem] leading-4">RUT (con dígito verificador)</label>
                       <input 
@@ -255,6 +255,10 @@ export default function PerfilPage() {
                       <select value={nuevaCarga.parentesco} onChange={e => setNuevaCarga({...nuevaCarga, parentesco: e.target.value as any})} className="w-full h-10 px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none">
                         {PARENTESCOS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase mb-1 min-h-[2.5rem] leading-4">Fecha de Nacimiento</label>
+                      <input required type="date" value={nuevaCarga.fecha_nacimiento} onChange={e => setNuevaCarga({...nuevaCarga, fecha_nacimiento: e.target.value})} className="w-full h-10 px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold text-gray-900 bg-white focus:ring-2 focus:ring-[#BF0F0F] outline-none" />
                     </div>
                   </div>
                   <div className="flex gap-2 justify-end pt-2">
@@ -280,6 +284,7 @@ export default function PerfilPage() {
                         <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-black text-blue-700 ring-1 ring-inset ring-blue-700/10">
                           {carga.parentesco}
                         </span>
+                        <span className="text-sm font-semibold text-slate-400">{formatDate(carga.fecha_nacimiento)}</span>
                       </div>
                     </div>
                     <button onClick={() => handleDeleteCarga(carga.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors self-start sm:self-auto" title="Eliminar carga">

@@ -31,10 +31,12 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
+      console.error("External API GET failed:", response.status, response.statusText);
       return NextResponse.json({ error: "Failed to fetch external data" }, { status: response.status });
     }
 
     const data = await response.json();
+    console.log("External API GET response:", response.status, JSON.stringify(data));
     return NextResponse.json(data);
   } catch (error) {
     console.error("Proxy error:", error);
@@ -95,6 +97,7 @@ export async function POST(request: Request) {
     });
 
     const data = await response.json();
+    console.log("External API POST response:", response.status, JSON.stringify(data));
 
     if (!response.ok) {
       return NextResponse.json(

@@ -26,6 +26,9 @@
       "enum": ["Cónyuge", "Hijo/a", "Padre/Madre", "Conviviente Civil", "Otro"],
       "required": true
     },
+    "fecha_nacimiento": {
+      "type": "date"
+    },
     "socio": {
       "type": "relation",
       "relation": "manyToOne",

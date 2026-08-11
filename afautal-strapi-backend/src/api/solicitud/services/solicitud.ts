@@ -93,8 +93,12 @@ export default factories.createCoreService('api::solicitud.solicitud', ({ strapi
         const { rutSinDv, dv } = this.splitRut(solicitud.rut);
         
         let jerarquiaNombre = solicitud.jerarquia ? solicitud.jerarquia.nombre : "";
-        let ciudadCodigo = solicitud.ciudad ? solicitud.ciudad.codigo : "";
-        let comunaCodigo = solicitud.comuna ? solicitud.comuna.codigo : "";
+        let ciudadNombre = solicitud.ciudad ? solicitud.ciudad.nombre : "";
+        let comunaNombre = solicitud.comuna ? solicitud.comuna.nombre : "";
+        let ciudadCodigo = /^\d+$/.test(solicitud.ciudad?.codigo ?? "") ? solicitud.ciudad.codigo : "";
+        let comunaCodigo = /^\d+$/.test(solicitud.comuna?.codigo ?? "") ? solicitud.comuna.codigo : "";
+
+        console.log('Resolved external fields | jerarquia:', jerarquiaNombre, '| ciudad:', ciudadNombre, ciudadCodigo, '| comuna:', comunaNombre, comunaCodigo);
 
         const externalPayload = new URLSearchParams({
           tipo: "registrar_funcionario",
@@ -106,6 +110,8 @@ export default factories.createCoreService('api::solicitud.solicitud', ({ strapi
           unidad_academica: solicitud.unidad_academica || "",
           fecha_nacimiento: solicitud.fecha_nacimiento || "",
           jerarquia: jerarquiaNombre,
+          ciudad: ciudadNombre,
+          comuna: comunaNombre,
           ciudad_id: ciudadCodigo,
           comuna_id: comunaCodigo,
           direccion: solicitud.direccion_particular || "",
@@ -119,10 +125,13 @@ export default factories.createCoreService('api::solicitud.solicitud', ({ strapi
           body: externalPayload,
         });
 
+        const externalBody = await externalResponse.text();
+        console.log(`External API response | status: ${externalResponse.status} | body: ${externalBody}`);
+
         if (!externalResponse.ok) {
-          console.error(`Failed to register in external API: ${externalResponse.status}`);
+          console.error(`Failed to register in external API: ${externalResponse.status} - ${externalBody}`);
         } else {
-          console.log('Successfully registered in external API.');
+          console.log(`Successfully registered in external API: ${externalBody}`);
         }
       } catch (error) {
         console.error('Error while trying to register in external API:', error);
@@ -148,6 +157,8 @@ export default factories.createCoreService('api::solicitud.solicitud', ({ strapi
     } catch (error) {
       strapi.log.error('No fue posible enviar el correo de aprobación.');
       strapi.log.error(error);
+      strapi.log.error(`Contraseña temporal del usuario (para recuperación manual): ${temporaryPassword}`);
+      strapi.log.error(`SMTP config | host=${process.env.SMTP_HOST} | user=${process.env.SMTP_USERNAME ? 'definido' : 'NO DEFINIDO'} | pass=${process.env.SMTP_PASSWORD ? 'definido' : 'NO DEFINIDO'}`);
     }
 
     return { userId };
