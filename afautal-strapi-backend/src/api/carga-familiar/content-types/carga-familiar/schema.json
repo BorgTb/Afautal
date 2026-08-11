@@ -29,6 +29,9 @@
     "fecha_nacimiento": {
       "type": "date"
     },
+    "external_id": {
+      "type": "string"
+    },
     "socio": {
       "type": "relation",
       "relation": "manyToOne",

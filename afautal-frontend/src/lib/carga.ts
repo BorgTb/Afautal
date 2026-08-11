@@ -7,6 +7,7 @@ export interface CargaFamiliar {
   nombre_completo: string;
   parentesco: "Cónyuge" | "Hijo/a" | "Padre/Madre" | "Conviviente Civil" | "Otro";
   fecha_nacimiento?: string;
+  external_id?: string;
 }
 
 export async function fetchMisCargas(token: string): Promise<CargaFamiliar[]> {
@@ -39,6 +40,25 @@ export async function addCarga(token: string, data: Omit<CargaFamiliar, "id" | "
 
   if (!response.ok) {
     throw new Error(body.error?.message || "No se pudo agregar la carga familiar.");
+  }
+
+  return body.data;
+}
+
+export async function updateCarga(token: string, id: number, data: Omit<CargaFamiliar, "id" | "documentId">): Promise<CargaFamiliar> {
+  const response = await fetch(`${STRAPI_URL}/api/cargas-familiares/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ data }),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw new Error(body.error?.message || "No se pudo actualizar la carga familiar.");
   }
 
   return body.data;

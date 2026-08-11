@@ -47,6 +47,75 @@ async function registerCargaExterna(user: { id: number; rut?: string }, payload:
   }
 }
 
+async function postToExternal(params: Record<string, string>): Promise<{ ok: boolean; status: number; data: any }> {
+  const body = new URLSearchParams(params);
+  console.log('PAYLOAD ENVIADO A TELEGESTOR:', Object.fromEntries(body.entries()));
+
+  let response: Response;
+  let text = '';
+  try {
+    response = await fetch(EXTERNAL_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+    text = await response.text();
+  } catch (error) {
+    console.error('Error while calling external API:', error);
+    throw error;
+  }
+
+  let data: any = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = null;
+  }
+
+  console.log(`External API response | status: ${response.status} | body: ${text}`);
+  return { ok: response.ok, status: response.status, data };
+}
+
+async function findExternalCargaId(socioRutFormateado: string, cargaRutFormateado: string): Promise<string | null> {
+  try {
+    const params = new URLSearchParams({ tipo: 'listar_cargas' });
+    const response = await fetch(`${EXTERNAL_API_URL}?${params.toString()}`);
+    if (!response.ok) {
+      console.error(`Failed to list cargas in external API: ${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      return null;
+    }
+
+    const match = data.find(
+      (row: any) =>
+        row.usu_afa_rut === socioRutFormateado && row.car_fam_afa_rut === cargaRutFormateado
+    );
+    return match ? String(match.car_fam_afa_idn) : null;
+  } catch (error) {
+    console.error('Error while listing cargas in external API:', error);
+    return null;
+  }
+}
+
+async function getExternalCargaId(
+  entry: { external_id?: string | null; rut?: string },
+  user: { rut?: string }
+): Promise<string | null> {
+  if (entry.external_id) {
+    return String(entry.external_id);
+  }
+  const socioRutFormateado = formatRut(user.rut || '');
+  const cargaRutFormateado = formatRut(entry.rut || '');
+  if (!socioRutFormateado || !cargaRutFormateado) {
+    console.log('External carga id lookup skipped: rut de socio o carga vacío');
+    return null;
+  }
+  return findExternalCargaId(socioRutFormateado, cargaRutFormateado);
+}
+
 export default factories.createCoreController('api::carga-familiar.carga-familiar', ({ strapi }) => ({
   async create(ctx) {
     const user = ctx.state.user;
@@ -86,6 +155,64 @@ export default factories.createCoreController('api::carga-familiar.carga-familia
     return { data: entries };
   },
 
+  async update(ctx) {
+    const user = ctx.state.user;
+    if (!user) {
+      return ctx.unauthorized('No estás autenticado');
+    }
+
+    const { id } = ctx.params;
+    const numericId = Number(id);
+    const payload = ctx.request.body.data || {};
+
+    const existingEntry = await strapi.db.query('api::carga-familiar.carga-familiar').findOne({
+      where: { id: numericId, socio: user.id }
+    });
+
+    if (!existingEntry) {
+      return ctx.unauthorized('No tienes permiso para modificar esta carga o no existe');
+    }
+
+    const data = { ...payload };
+    if (!data.fecha_nacimiento) {
+      delete data.fecha_nacimiento;
+    }
+
+    const updatedEntry = await strapi.db.query('api::carga-familiar.carga-familiar').update({
+      where: { id: numericId },
+      data
+    });
+
+    try {
+      const externalId = existingEntry.external_id
+        ? String(existingEntry.external_id)
+        : await getExternalCargaId(existingEntry, user);
+
+      if (externalId) {
+        await postToExternal({
+          tipo: 'editar_carga',
+          car_fam_afa_idn: externalId,
+          carga_rut: payload.rut || '',
+          carga_nombre: payload.nombre_completo || '',
+          carga_fecha_nacimiento: payload.fecha_nacimiento || '',
+        });
+
+        if (existingEntry.external_id !== externalId) {
+          await strapi.db.query('api::carga-familiar.carga-familiar').update({
+            where: { id: numericId },
+            data: { external_id: externalId }
+          });
+        }
+      } else {
+        console.log('External carga update skipped: no se encontró car_fam_afa_idn');
+      }
+    } catch (error) {
+      console.error('Error while trying to update carga in external API:', error);
+    }
+
+    return { data: updatedEntry };
+  },
+
   async delete(ctx) {
     const user = ctx.state.user;
     if (!user) {
@@ -101,6 +228,23 @@ export default factories.createCoreController('api::carga-familiar.carga-familia
 
     if (!existingEntry) {
       return ctx.unauthorized('No tienes permiso o no existe la carga');
+    }
+
+    try {
+      const externalId = existingEntry.external_id
+        ? String(existingEntry.external_id)
+        : await getExternalCargaId(existingEntry, user);
+
+      if (externalId) {
+        await postToExternal({
+          tipo: 'eliminar_carga',
+          car_fam_afa_idn: externalId,
+        });
+      } else {
+        console.log('External carga delete skipped: no se encontró car_fam_afa_idn');
+      }
+    } catch (error) {
+      console.error('Error while trying to delete carga in external API:', error);
     }
 
     const deletedEntry = await strapi.db.query('api::carga-familiar.carga-familiar').delete({
