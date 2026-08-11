@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Briefcase, ChevronDown, Clock3, Flame, HeartPulse, LogOut, Menu, User, X, ShieldCheck, Receipt } from "lucide-react";
+import { ChevronDown, LogOut, Menu, User, X, ShieldCheck } from "lucide-react";
 import Logo from "./logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchServiciosHabilitados } from "@/lib/servicios";
@@ -27,9 +27,8 @@ const unauthLinks: NavLink[] = [
 ];
 
 const staticAuthLinks: NavLink[] = [
-  { name: "Panel del asociado", href: "/dashboard", icon: User },
-  { name: "Comprar vales", href: "/dashboard/gestion-gas", icon: Flame },
-  { name: "Mis descuentos", href: "/dashboard/descuentos", icon: Receipt },
+  { name: "Panel del asociado", href: "/dashboard" },
+  { name: "Comprar vales", href: "/dashboard/gestion-gas" },
 ];
 
 const desktopActionClass =
@@ -146,7 +145,6 @@ export default function Navbar() {
                       isServicesMenuOpen ? "text-red-700 after:w-full" : "text-slate-600 after:w-0"
                     }`}
                   >
-                    <Briefcase size={18} />
                     Servicios
                     <ChevronDown size={14} className={`ml-0.5 transition-transform duration-200 ${isServicesMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -282,7 +280,7 @@ export default function Navbar() {
                 {servicesLinks.length > 0 && (
                   <div className="py-2 border-y border-slate-100 my-2 bg-slate-50/50 rounded-xl">
                     <p className="px-4 text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <Briefcase size={14} /> Servicios
+                      Servicios
                     </p>
                     <div className="grid gap-1">
                       {servicesLinks.map((link) => (

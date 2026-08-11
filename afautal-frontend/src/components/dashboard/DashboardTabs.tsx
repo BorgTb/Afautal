@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
 
-export type DashboardTabId = "convenios" | "deudas" | "finanzas";
+export type DashboardTabId = "convenios" | "deudas" | "finanzas" | "descuentos";
 
 const TABS: { id: DashboardTabId; label: string }[] = [
   { id: "convenios", label: "Convenios" },
   { id: "deudas", label: "Deudas" },
   { id: "finanzas", label: "Estado financiero" },
+  { id: "descuentos", label: "Descuentos" },
 ];
 
 export default function DashboardTabs({

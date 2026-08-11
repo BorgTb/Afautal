@@ -12,6 +12,7 @@ import DashboardTabs, { type DashboardTabId } from "@/components/dashboard/Dashb
 import ConveniosPanel from "@/components/dashboard/panels/ConveniosPanel";
 import DeudasPanel from "@/components/dashboard/panels/DeudasPanel";
 import FinanzasPanel from "@/components/dashboard/panels/FinanzasPanel";
+import DescuentosPanel from "@/components/dashboard/panels/DescuentosPanel";
 
 export default function DashboardPage() {
   const { user, token, loading } = useAuth();
@@ -122,6 +123,7 @@ export default function DashboardPage() {
             convenios: <ConveniosPanel servicios={servicios} />,
             deudas: <DeudasPanel />,
             finanzas: <FinanzasPanel />,
+            descuentos: <DescuentosPanel />,
           }}
         />
       </div>
