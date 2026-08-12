@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://*.strapiapp.com https://excellent-nurture-beee0f6ec0.strapiapp.com;"
+            value: "frame-ancestors 'self' https://strapi-afautal.telepyme.cl;"
           }
         ]
       },
