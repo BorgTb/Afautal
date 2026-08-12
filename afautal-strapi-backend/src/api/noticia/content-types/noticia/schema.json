@@ -17,6 +17,13 @@
     "cuerpo_noticia": {
       "type": "text"
     },
+    "foto_portada_noticia": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
     "foto_noticia": {
       "type": "media",
       "multiple": true,

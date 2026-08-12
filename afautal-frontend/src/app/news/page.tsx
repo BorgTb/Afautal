@@ -38,6 +38,7 @@ interface NoticiaPayload {
     documentId?: string;
     titulo_noticia?: string;
     cuerpo_noticia?: string;
+    foto_portada_noticia?: NewsMediaValue;
     foto_noticia?: NewsMediaValue;
     autor_noticia?: string;
     fecha_publicacion?: string;
@@ -45,6 +46,7 @@ interface NoticiaPayload {
     attributes?: {
         titulo_noticia?: string;
         cuerpo_noticia?: string;
+        foto_portada_noticia?: NewsMediaValue;
         foto_noticia?: NewsMediaValue;
         autor_noticia?: string;
         fecha_publicacion?: string;
@@ -110,7 +112,11 @@ function extractFirstMedia(field?: NewsMediaValue): MediaNode | undefined {
     return undefined;
 }
 
-function getNewsImage(field: NewsMediaValue): string {
+function getNewsImage(field: NewsMediaValue, coverField: NewsMediaValue): string {
+    const cover = extractFirstMedia(coverField);
+    if (cover?.url || cover?.attributes?.url) {
+        return getStrapiMediaURL(cover.url ?? cover.attributes?.url) || "/hero-noticia.jpg";
+    }
     const media = extractFirstMedia(field);
     const url = media?.url ?? media?.attributes?.url;
     return getStrapiMediaURL(url) || "/hero-noticia.jpg";
@@ -136,7 +142,7 @@ function formatDate(value?: string): string {
 export default async function NewsPage() {
     const result = await getCollectionType<NoticiaPayload>(
         "noticias",
-        "populate=foto_noticia&sort=noticia_principal:desc&sort=fecha_publicacion:desc"
+        "populate[foto_portada_noticia]=true&populate[foto_noticia]=true&sort=noticia_principal:desc&sort=fecha_publicacion:desc"
     ).catch(() => ({ data: [] as NoticiaPayload[] }));
 
     const noticias = result.data;
@@ -172,7 +178,7 @@ export default async function NewsPage() {
                                 style={{ "--stagger": `${index * 90}ms` } as CSSProperties}
                             >
                                 <img
-                                    src={getNewsImage(source.foto_noticia)}
+                                    src={getNewsImage(source.foto_noticia, source.foto_portada_noticia)}
                                     alt={getNewsAlt(mediaField, titulo)}
                                     className="h-48 w-full object-cover"
                                 />

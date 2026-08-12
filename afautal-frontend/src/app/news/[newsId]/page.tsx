@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { draftMode } from "next/headers";
 import { strapiFetch, StrapiSingleResponse, getStrapiMediaURL } from "@/lib/strapi";
+import NewsGallery from "@/components/news/NewsGallery";
+import type { NewsGalleryImage } from "@/components/news/NewsGallery";
 
 interface NewsMediaAttributes {
   url?: string;
@@ -30,6 +32,7 @@ interface NoticiaPayload {
   documentId?: string;
   titulo_noticia?: string;
   cuerpo_noticia?: string;
+  foto_portada_noticia?: NewsMediaValue;
   foto_noticia?: NewsMediaValue;
   autor_noticia?: string;
   fecha_publicacion?: string;
@@ -37,6 +40,7 @@ interface NoticiaPayload {
   attributes?: {
     titulo_noticia?: string;
     cuerpo_noticia?: string;
+    foto_portada_noticia?: NewsMediaValue;
     foto_noticia?: NewsMediaValue;
     autor_noticia?: string;
     fecha_publicacion?: string;
@@ -101,15 +105,56 @@ function extractFirstMedia(field?: NewsMediaValue): MediaNode | undefined {
   return undefined;
 }
 
-function getNewsImage(field: NewsMediaValue): string {
-  const media = extractFirstMedia(field);
-  const url = media?.url ?? media?.attributes?.url;
-  return getStrapiMediaURL(url) || "/hero-noticia.jpg";
+function extractMediaNode(node: unknown): MediaNode | undefined {
+  if (!node || typeof node !== "object") return undefined;
+
+  const asNode = node as MediaNode;
+
+  if (asNode.url || asNode.alternativeText || asNode.attributes?.url || asNode.attributes?.alternativeText) {
+    return asNode;
+  }
+
+  const asWithData = node as { data?: unknown };
+
+  if (asWithData && typeof asWithData.data === "object" && asWithData.data !== null) {
+    return extractMediaNode(asWithData.data);
+  }
+
+  return undefined;
 }
 
-function getNewsAlt(field: NewsMediaValue, fallback: string): string {
-  const media = extractFirstMedia(field);
-  return media?.alternativeText ?? media?.attributes?.alternativeText ?? fallback;
+function extractAllMedia(field?: NewsMediaValue): NewsGalleryImage[] {
+  if (!field) return [];
+
+  const rawNodes: unknown[] = [];
+
+  if (Array.isArray(field)) {
+    field.forEach((item) => {
+      if (Array.isArray(item?.data)) item.data.forEach((n) => rawNodes.push(n));
+      else rawNodes.push(item);
+    });
+  } else {
+    const rawData = field.data as unknown;
+    if (Array.isArray(rawData)) {
+      rawData.forEach((n) => rawNodes.push(n));
+    } else {
+      rawNodes.push(field);
+    }
+  }
+
+  const urls: NewsGalleryImage[] = [];
+
+  rawNodes.forEach((node) => {
+    const media = extractMediaNode(node);
+    const url = getStrapiMediaURL(media?.url ?? media?.attributes?.url);
+    if (!url) return;
+    urls.push({
+      url,
+      alt: media?.alternativeText ?? media?.attributes?.alternativeText ?? null,
+    });
+  });
+
+  return urls;
 }
 
 function formatDate(value?: string): string {
@@ -134,7 +179,9 @@ export default async function NewsDetailPage({
   const isEnabled = draft.isEnabled;
 
   // En Strapi v5 usamos status=draft para traer borradores
-  const query = isEnabled ? "populate=foto_noticia&status=draft" : "populate=foto_noticia";
+  const query = isEnabled
+    ? "populate[foto_portada_noticia]=true&populate[foto_noticia]=true&status=draft"
+    : "populate[foto_portada_noticia]=true&populate[foto_noticia]=true";
 
   const result = await strapiFetch<StrapiSingleResponse<NoticiaPayload>>(
     `/api/noticias/${newsId}`,
@@ -156,6 +203,17 @@ export default async function NewsDetailPage({
   const fecha = formatDate(source.fecha_publicacion);
   const meta = [autor, fecha].filter(Boolean).join(" • ");
 
+  const galleryImages = extractAllMedia(source.foto_noticia);
+  const coverMedia = extractFirstMedia(source.foto_portada_noticia);
+  const coverUrl = getStrapiMediaURL(coverMedia?.url ?? coverMedia?.attributes?.url);
+
+  const images: NewsGalleryImage[] =
+    galleryImages.length > 0
+      ? galleryImages
+      : coverUrl
+        ? [{ url: coverUrl, alt: coverMedia?.alternativeText ?? coverMedia?.attributes?.alternativeText ?? null }]
+        : [{ url: "/hero-noticia.jpg", alt: titulo }];
+
   return (
     <>
       {isEnabled && (
@@ -176,11 +234,7 @@ export default async function NewsDetailPage({
 
         <section className="news-reveal news-delay-1 mt-5 px-6">
           <div className="mx-auto w-full max-w-5xl bg-slate-50 p-2 sm:p-3">
-            <img
-              src={getNewsImage(source.foto_noticia)}
-              alt={getNewsAlt(source.foto_noticia, titulo)}
-              className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full object-contain"
-            />
+            <NewsGallery images={images} />
           </div>
         </section>
 

@@ -1015,6 +1015,7 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
+    foto_portada_noticia: Schema.Attribute.Media<'images'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',

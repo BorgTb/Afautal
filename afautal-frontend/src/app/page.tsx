@@ -90,6 +90,7 @@ interface NoticiaPayload {
   documentId?: string;
   titulo_noticia?: string;
   cuerpo_noticia?: string;
+  foto_portada_noticia?: NoticiaMediaField;
   foto_noticia?: NoticiaMediaField;
   autor_noticia?: string;
   fecha_publicacion?: string;
@@ -97,6 +98,7 @@ interface NoticiaPayload {
   attributes?: {
     titulo_noticia?: string;
     cuerpo_noticia?: string;
+    foto_portada_noticia?: NoticiaMediaField;
     foto_noticia?: NoticiaMediaField;
     autor_noticia?: string;
     fecha_publicacion?: string;
@@ -143,7 +145,7 @@ function mapNoticiaToHero(noticia: NoticiaPayload): HeroNewsData {
     id: String(noticia.documentId ?? noticia.id ?? ""),
     titulo: source.titulo_noticia ?? "",
     resumen: source.cuerpo_noticia ?? "",
-    imagen: source.foto_noticia,
+    imagen: source.foto_portada_noticia ?? source.foto_noticia,
     autor: source.autor_noticia,
     fechaPublicacion: source.fecha_publicacion,
   };
@@ -182,7 +184,7 @@ export default async function Home() {
     await Promise.allSettled([
       getCollectionType<NoticiaPayload>(
         "noticias",
-        "populate=foto_noticia&sort=noticia_principal:desc&sort=fecha_publicacion:desc&pagination[limit]=20"
+        "populate[foto_portada_noticia]=true&populate[foto_noticia]=true&sort=noticia_principal:desc&sort=fecha_publicacion:desc&pagination[limit]=20"
       ),
       getSingleType<AboutUsPayload>("nosotros", "populate=*"),
       getSingleType<MisionVisionValoresPayload>("mision-vision-valor"),
