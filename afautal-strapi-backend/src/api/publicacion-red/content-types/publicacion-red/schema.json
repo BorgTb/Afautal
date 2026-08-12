@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "publicaciones_redes",
+  "info": {
+    "singularName": "publicacion-red",
+    "pluralName": "publicaciones-redes",
+    "displayName": "Publicaciones Redes",
+    "description": "Versiones de noticias generadas por IA para aprobar y publicar en redes sociales"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "comment": ""
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo_original": {
+      "type": "string"
+    },
+    "enlace_noticia": {
+      "type": "string"
+    },
+    "imagen_portada_url": {
+      "type": "string"
+    },
+    "texto_facebook": {
+      "type": "text"
+    },
+    "texto_instagram": {
+      "type": "text"
+    },
+    "texto_linkedin": {
+      "type": "text"
+    },
+    "texto_twitter": {
+      "type": "text"
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": [
+        "pendiente",
+        "aprobado",
+        "publicado",
+        "error"
+      ],
+      "default": "pendiente"
+    },
+    "detalle_error": {
+      "type": "text"
+    },
+    "redes_publicadas": {
+      "type": "json"
+    }
+  }
+}

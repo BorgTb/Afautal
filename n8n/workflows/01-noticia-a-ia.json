@@ -1,0 +1,252 @@
+{
+  "name": "01 - Noticia Strapi -> IA -> Pendiente",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "description": "Fase 1-2: recibe entry.publish de Strapi, popula la imagen, genera 4 versiones con IA y crea un registro publicacion-red en estado pendiente"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "strapi-noticia",
+        "responseMode": "onReceived",
+        "authentication": "headerAuth",
+        "httpHeader": {
+          "name": "X-AFAUTAL-Token",
+          "value": "={{ $env.STAPI_WEBHOOK_SECRET }}"
+        },
+        "options": {}
+      },
+      "id": "9a1c0001-1000-4000-8000-000000000001",
+      "name": "01 - Webhook (Strapi)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "strapi-noticia"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.STRAPI_PUBLIC_URL }}/api/noticias/{{ $json.body.entry.documentId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "populate",
+              "value": "foto_portada_noticia"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9a1c0002-1000-4000-8000-000000000002",
+      "name": "02 - GET noticia + imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.data || {};\nconst titulo = data.titulo_noticia || '';\nconst cuerpo = data.cuerpo_noticia || '';\nconst documentId = data.documentId || '';\n\n// La portada viene poblada (single media) desde el GET de Strapi.\nconst portada = data.foto_portada_noticia || null;\nlet imagenUrl = '';\nif (portada) {\n  const f = portada.formats || {};\n  imagenUrl = (f.medium && f.medium.url) || (f.large && f.large.url) || portada.url || '';\n  if (imagenUrl && !imagenUrl.startsWith('http')) {\n    imagenUrl = $env.STRAPI_PUBLIC_URL + imagenUrl;\n  }\n}\n\nconst baseFront = ($env.FRONTEND_URL || '').replace(/\\/+$/, '');\nconst enlace = baseFront + '/news/' + documentId;\n\nconst tit = titulo;\nconst cue = cuerpo;\nconst lin = enlace;\nconst img = imagenUrl;\n\nconst prompt = `Sos el community manager de la Asociacion de Futbol de AFAUTAL. Recibis una noticia institucional y tenes que generar UNA version de post por red social, en tono oficial, serio pero cercano, sin sensacionalismo.\n\nNOTICIA:\n- Titulo: ${tit}\n- Cuerpo: ${cue}\n- Enlace noticia completa: ${lin}\n- Imagen portada (URL publica): ${img}\n\nREGLAS:\n1. Tono institucional de AFAUTAL, espanol chileno neutro.\n2. Longitudes maximas:\n   - twitter: max 280 caracteres (incluye el enlace).\n   - instagram: max 2200 caracteres (caption, pocos hashtags).\n   - facebook: max 5000 caracteres (resumen completo).\n   - linkedin: max 3000 caracteres (tono profesional).\n3. Cada version invita a leer la noticia completa incluyendo el enlace.\n4. No inventar datos que no esten en la noticia. Respetar fechas/horarios/lugares si aparecen.\n\nRespondé SOLO con JSON valido (sin markdown, sin texto alrededor), con este esquema exacto:\n{\n  \"twitter\": \"...\",\n  \"instagram\": \"...\",\n  \"facebook\": \"...\",\n  \"linkedin\": \"...\"\n}`;\n\nconst provider = String($env.AI_PROVIDER || 'anthropic').toLowerCase();\nconst model = $env.AI_MODEL || (provider === 'openai' ? 'gpt-4o-mini' : 'claude-sonnet-4-20250514');\nconst maxTokens = Number($env.AI_MAX_TOKENS || 2000);\n\nlet payload;\nif (provider === 'openai') {\n  payload = { model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] };\n} else {\n  payload = { model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] };\n}\n\nreturn [{ json: { titulo, cuerpo, documentId, imagenUrl, enlace, prompt, payload } }];\n"
+      },
+      "id": "9a1c0003-1000-4000-8000-000000000003",
+      "name": "03 - Armar request IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.AI_PROVIDER === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://api.anthropic.com/v1/messages' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.AI_PROVIDER === 'anthropic' ? $env.AI_API_KEY : '' }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "={{ $env.AI_PROVIDER === 'anthropic' ? '2023-06-01' : '' }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $env.AI_PROVIDER === 'openai' ? 'Bearer ' + $env.AI_API_KEY : '' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "9a1c0004-1000-4000-8000-000000000004",
+      "name": "04 - Llamada IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Toma de nuevo el item de '03' para conservar titulo/enlace/imagen.\nlet prev = {};\ntry { prev = $('03 - Armar request IA').first().json; } catch (e) {}\n\nconst res = $json;\nlet content = '';\nif (String($env.AI_PROVIDER).toLowerCase() === 'openai') {\n  content = (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content) || '';\n} else {\n  content = (res.content && res.content[0] && res.content[0].text) || (typeof res.content === 'string' ? res.content : '');\n}\n\nlet versions = null;\nlet errorMsg = null;\ntry {\n  const raw = String(content)\n    .replace(/^\\s*```(?:json)?\\s*/i, '')\n    .replace(/\\s*```\\s*$/, '')\n    .trim();\n  versions = JSON.parse(raw);\n  if (!versions || typeof versions.twitter !== 'string') {\n    throw new Error('la IA no devolvio las 4 versiones esperadas');\n  }\n} catch (e) {\n  errorMsg = (e && e.message ? e.message : 'JSON invalido') + ' | respuesta IA: ' + String(content).slice(0, 400);\n}\n\nconst okItem = { ...prev, versions, parseOk: true, parseError: null };\nconst errItem = { ...prev, versions, parseOk: false, parseError: errorMsg };\nreturn [[{ json: okItem }], [{ json: errItem }]];\n"
+      },
+      "id": "9a1c0005-1000-4000-8000-000000000005",
+      "name": "05 - Parsear respuesta IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $('03 - Armar request IA').first().json;\nconst v = $json.versions || {};\n\nconst bodyToCreate = {\n  titulo_original: t.titulo,\n  enlace_noticia: t.enlace,\n  imagen_portada_url: t.imagenUrl,\n  estado: 'pendiente',\n  texto_facebook: (v.facebook || '').toString(),\n  texto_instagram: (v.instagram || '').toString(),\n  texto_linkedin: (v.linkedin || '').toString(),\n  texto_twitter: (v.twitter || '').toString()\n};\n\nreturn [{ json: { bodyToCreate } }];\n"
+      },
+      "id": "9a1c0006-1000-4000-8000-000000000006",
+      "name": "06 - Mapear a Strapi POST",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, -240]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.STRAPI_PUBLIC_URL }}/api/publicaciones-redes",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.bodyToCreate) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "9a1c0007-1000-4000-8000-000000000007",
+      "name": "07 - Crear publicacion-red",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, -240]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.SMTP_FROM }}",
+        "toEmail": "={{ $env.ADMIN_EMAIL }}",
+        "subject": "NOTICIA lista para aprobar: {{ $('03 - Armar request IA').first().json.titulo }}",
+        "emailFormat": "text",
+        "text": "Se generaron las 4 versiones para redes. Revisar y aprobar aca:\n{{ $env.STRAPI_PUBLIC_URL }}/admin/content-manager/collection-types/api::publicacion-red.publicacion-red\n\nTWITTER/X:\n{{ $('05 - Parsear respuesta IA').first().json.versions.twitter }}\n\nINSTAGRAM:\n{{ $('05 - Parsear respuesta IA').first().json.versions.instagram }}\n\nFACEBOOK:\n{{ $('05 - Parsear respuesta IA').first().json.versions.facebook }}\n\nLINKEDIN:\n{{ $('05 - Parsear respuesta IA').first().json.versions.linkedin }}"
+      },
+      "id": "9a1c0008-1000-4000-8000-000000000008",
+      "name": "08 - Aviso aprobacion (email)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.2,
+      "position": [1680, -240]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.SMTP_FROM }}",
+        "toEmail": "={{ $env.ADMIN_EMAIL }}",
+        "subject": "ERROR generando posts IA | noticia: {{ $('03 - Armar request IA').first().json.titulo }}",
+        "emailFormat": "text",
+        "text": "La IA no devolvio un JSON valido. Detalle:\n{{ $json.parseError }}"
+      },
+      "id": "9a1c0009-1000-4000-8000-000000000009",
+      "name": "09 - Aviso error IA (email)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.2,
+      "position": [1200, 240]
+    }
+  ],
+  "connections": {
+    "01 - Webhook (Strapi)": {
+      "main": [
+        [
+          {
+            "node": "02 - GET noticia + imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02 - GET noticia + imagen": {
+      "main": [
+        [
+          {
+            "node": "03 - Armar request IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "03 - Armar request IA": {
+      "main": [
+        [
+          {
+            "node": "04 - Llamada IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04 - Llamada IA": {
+      "main": [
+        [
+          {
+            "node": "05 - Parsear respuesta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "05 - Parsear respuesta IA": {
+      "main": [
+        [
+          {
+            "node": "06 - Mapear a Strapi POST",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "09 - Aviso error IA (email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "06 - Mapear a Strapi POST": {
+      "main": [
+        [
+          {
+            "node": "07 - Crear publicacion-red",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "07 - Crear publicacion-red": {
+      "main": [
+        [
+          {
+            "node": "08 - Aviso aprobacion (email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

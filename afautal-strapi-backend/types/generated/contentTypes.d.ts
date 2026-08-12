@@ -1099,6 +1099,49 @@ export interface ApiPrecioGasPrecioGas extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPublicacionRedPublicacionRed
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'publicaciones_redes';
+  info: {
+    description: 'Versiones de noticias generadas por IA para aprobar y publicar en redes sociales';
+    displayName: 'Publicaciones Redes';
+    pluralName: 'publicaciones-redes';
+    singularName: 'publicacion-red';
+  };
+  options: {
+    comment: '';
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    detalle_error: Schema.Attribute.Text;
+    enlace_noticia: Schema.Attribute.String;
+    estado: Schema.Attribute.Enumeration<
+      ['pendiente', 'aprobado', 'publicado', 'error']
+    > &
+      Schema.Attribute.DefaultTo<'pendiente'>;
+    imagen_portada_url: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::publicacion-red.publicacion-red'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    redes_publicadas: Schema.Attribute.JSON;
+    texto_facebook: Schema.Attribute.Text;
+    texto_instagram: Schema.Attribute.Text;
+    texto_linkedin: Schema.Attribute.Text;
+    texto_twitter: Schema.Attribute.Text;
+    titulo_original: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiRegionRegion extends Struct.CollectionTypeSchema {
   collectionName: 'regiones';
   info: {
@@ -2002,6 +2045,7 @@ declare module '@strapi/strapi' {
       'api::noticia.noticia': ApiNoticiaNoticia;
       'api::plantilla-correo-gas.plantilla-correo-gas': ApiPlantillaCorreoGasPlantillaCorreoGas;
       'api::precio-gas.precio-gas': ApiPrecioGasPrecioGas;
+      'api::publicacion-red.publicacion-red': ApiPublicacionRedPublicacionRed;
       'api::region.region': ApiRegionRegion;
       'api::servicio.servicio': ApiServicioServicio;
       'api::solicitud-gas.solicitud-gas': ApiSolicitudGasSolicitudGas;

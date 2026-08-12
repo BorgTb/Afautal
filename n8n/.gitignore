@@ -1,0 +1,15 @@
+# Secretos y datos locales — NUNCA subir
+.env
+.env.*
+!.env.example
+
+# Volúmenes montados
+n8n_data/
+caddy_data/
+caddy_config/
+dumps/
+*.sql.gz
+
+# Locales
+Thumbs.db
+Desktop.ini

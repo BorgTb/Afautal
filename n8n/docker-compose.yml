@@ -1,0 +1,123 @@
+name: afautal-n8n
+
+services:
+  n8n:
+    image: n8nio/n8n:${N8N_IMAGE_VERSION:-latest}
+    container_name: afautal-n8n
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      # Solo necesario si quieres entrar directo por IP:puerto.
+      # Con el perfil "proxy" (Caddy), el puerto queda solo interno.
+      - "${N8N_EDITOR_PORT:-5678}:5678"
+    environment:
+      # --- Base n8n ---
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-n8n}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER:-n8n}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en .env}
+      - N8N_HOST=${N8N_HOST:-afautal-n8n}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-https}
+      # CRÍTICO para que los webhooks funcionen desde afuera (Fase 1):
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:?Definir N8N_WEBHOOK_URL en .env}
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-America/Santiago}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?Definir N8N_ENCRYPTION_KEY en .env}
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_TELEMETRY=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      # Permite leer estas variables desde los workflows via {{ $env.X }}
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      # --- Variables del proyecto (expuestas a los workflows) ---
+      - STRAPI_PUBLIC_URL=${STRAPI_PUBLIC_URL:-https://strapi-afautal.telepyme.cl}
+      - STRAPI_API_TOKEN=${STRAPI_API_TOKEN}
+      - FRONTEND_URL=${FRONTEND_URL:-https://afautal.vercel.app}
+      - STAPI_WEBHOOK_SECRET=${STAPI_WEBHOOK_SECRET:?Definir STAPI_WEBHOOK_SECRET en .env}
+      # IA (provider configurable: anthropic | openai)
+      - AI_PROVIDER=${AI_PROVIDER:-anthropic}
+      - AI_MODEL=${AI_MODEL:-claude-sonnet-4-20250514}
+      - AI_API_KEY=${AI_API_KEY}
+      - AI_MAX_TOKENS=${AI_MAX_TOKENS:-2000}
+      # Redes sociales (toggle por red — Fase 4, una a la vez)
+      - SOCIAL_ENABLED_FACEBOOK=${SOCIAL_ENABLED_FACEBOOK:-false}
+      - SOCIAL_ENABLED_INSTAGRAM=${SOCIAL_ENABLED_INSTAGRAM:-false}
+      - SOCIAL_ENABLED_LINKEDIN=${SOCIAL_ENABLED_LINKEDIN:-false}
+      - SOCIAL_ENABLED_X=${SOCIAL_ENABLED_X:-false}
+      - FACEBOOK_PAGE_ID=${FACEBOOK_PAGE_ID}
+      - FACEBOOK_PAGE_ACCESS_TOKEN=${FACEBOOK_PAGE_ACCESS_TOKEN}
+      - INSTAGRAM_BUSINESS_ID=${INSTAGRAM_BUSINESS_ID}
+      - INSTAGRAM_ACCESS_TOKEN=${INSTAGRAM_ACCESS_TOKEN}
+      - LINKEDIN_ORGANIZATION_ID=${LINKEDIN_ORGANIZATION_ID}
+      - LINKEDIN_ACCESS_TOKEN=${LINKEDIN_ACCESS_TOKEN}
+      - X_APP_ID=${X_APP_ID}
+      - X_OAUTH_TOKEN=${X_OAUTH_TOKEN}
+      # Notificaciones (correo al admin para aprobación + errores)
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM:-noreply@afautal.cl}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:?Definir ADMIN_EMAIL (a dónde llegan avisos) en .env}
+      # Aprobación: intervalo (minutos) del polling que detecta "aprobado"
+      - APPROVAL_POLL_MINUTES=${APPROVAL_POLL_MINUTES:-5}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - afautal-n8n-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: afautal-n8n-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-n8n}
+      - POSTGRES_USER=${POSTGRES_USER:-n8n}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-n8n} -d ${POSTGRES_DB:-n8n}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - afautal-n8n-net
+
+  # Proxy HTTPS opcional. Levantar con: docker compose --profile proxy up -d
+  # Configura el subdominio (N8N_DOMAIN en .env) y emite Let's Encrypt automáticamente.
+  caddy:
+    image: caddy:2-alpine
+    container_name: afautal-n8n-caddy
+    restart: unless-stopped
+    profiles: ["proxy"]
+    depends_on:
+      - n8n
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      - N8N_DOMAIN=${N8N_DOMAIN:-n8n.afautal.cl}
+      - N8N_EMAIL=${N8N_EMAIL:-admin@afautal.cl}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - afautal-n8n-net
+
+volumes:
+  n8n_data:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  afautal-n8n-net:

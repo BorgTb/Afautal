@@ -1,0 +1,47 @@
+{
+  "name": "03 - Error handler (avisos)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "description": "Fase 5: se activa como 'Error Workflow' desde Settings de n8n. Si cualquier workflow falla, avisa al admin por email con el detalle del error."
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "9a1c0201-1000-4000-8000-000000000001",
+      "name": "01 - Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.SMTP_FROM }}",
+        "toEmail": "={{ $env.ADMIN_EMAIL }}",
+        "subject": "AFAUTAL n8n | ERROR en workflow {{ $json.name || 'desconocido' }}",
+        "emailFormat": "text",
+        "text": "POST {{ $json.error && $json.error.message ? $json.error.message : 'sin mensaje' }}"
+      },
+      "id": "9a1c0202-1000-4000-8000-000000000002",
+      "name": "02 - Aviso de error (email)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.2,
+      "position": [240, 0]
+    }
+  ],
+  "connections": {
+    "01 - Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "02 - Aviso de error (email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

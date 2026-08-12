@@ -1,0 +1,17 @@
+# Caddyfile — proxy HTTPS hacia n8n.
+# Los valores vienen del entorno del contenedor (docker-compose -> $N8N_DOMAIN/$N8N_EMAIL).
+# Local: para probar sin dominio real, comenta {$N8N_DOMAIN} y usa:
+#   grep -v "tls.*internal" ... o cambia el dominio a "localhost" y usa tls internal.
+{$N8N_DOMAIN} {
+	encode gzip
+	tls {
+		# Renueva automáticamente con Let's Encrypt (dominio público).
+		# Para LOCAL sin dominio usa en su lugar:  tls internal
+	}
+
+	# El puerto/protocolo que n8n espera detrás de un proxy reverso.
+	reverse_proxy n8n:5678
+
+	# Habilita WebSockets (requerido por la UI de n8n).
+	request_header X-Forwarded-Proto https
+}
