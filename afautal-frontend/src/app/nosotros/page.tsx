@@ -8,6 +8,10 @@ import {
 	getSingleType,
 	getStrapiMediaURL,
 } from "@/lib/strapi";
+import {
+	normalizeRedesSociales,
+	type ContactoRedesPayload,
+} from "@/lib/redes-sociales";
 
 interface StrapiMediaAttributes {
 	url?: string;
@@ -84,7 +88,7 @@ function normalizeMisionVisionValores(
 }
 
 export default async function NosotrosPage() {
-	const [directivaResult, detalleResult, misionVisionResult] =
+	const [directivaResult, detalleResult, misionVisionResult, contactoResult] =
 		await Promise.allSettled([
 			getCollectionType<DirectivaPayload>(
 				"directivas",
@@ -92,6 +96,7 @@ export default async function NosotrosPage() {
 			),
 			getSingleType<DetalleQuienesSomosPayload>("detalle-quienes-somos"),
 			getSingleType<MisionVisionValoresPayload>("mision-vision-valor"),
+			getSingleType<ContactoRedesPayload>("contacto"),
 		]);
 
 	const directivaCards =
@@ -109,10 +114,16 @@ export default async function NosotrosPage() {
 			? normalizeMisionVisionValores(misionVisionResult.value.data)
 			: null;
 
+	const redes =
+		contactoResult.status === "fulfilled"
+			? normalizeRedesSociales(contactoResult.value.data)
+			: [];
+
 	return (
 		<>
 			
 			<AboutSection
+				redes={redes}
 				descripcion={
 					descripcionQuienesSomos ||
 					"AFAUTAL trabaja por el bienestar de sus asociados y su participacion activa en la comunidad."

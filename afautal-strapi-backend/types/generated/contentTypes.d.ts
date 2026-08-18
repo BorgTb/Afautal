@@ -694,6 +694,7 @@ export interface ApiContactoContacto extends Struct.SingleTypeSchema {
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     telefono: Schema.Attribute.String;
+    test: Schema.Attribute.Component<'shared.red-social', true>;
     ubicacion: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

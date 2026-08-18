@@ -1,36 +1,25 @@
 import type { CSSProperties } from "react";
-import { Instagram } from "lucide-react";
 import { getSingleType } from "@/lib/strapi";
 import { formatPhone } from "@/lib/utils";
-
-interface ContactoPayload {
-	ubicacion?: string;
-	telefono?: string | number;
-	email?: string;
-	url_instagram?: string;
-	attributes?: {
-		ubicacion?: string;
-		telefono?: string | number;
-		email?: string;
-		url_instagram?: string;
-	};
-}
+import SocialLinks from "@/components/shared/SocialLinks";
+import {
+	normalizeRedesSociales,
+	type ContactoRedesPayload,
+} from "@/lib/redes-sociales";
 
 interface ContactoData {
 	ubicacion: string;
 	telefono: string;
 	email: string;
-	urlInstagram: string;
 }
 
 const defaultContacto: ContactoData = {
 	ubicacion: "",
 	telefono: "",
 	email: "",
-	urlInstagram: "",
 };
 
-function normalizeContacto(payload: ContactoPayload | null): ContactoData {
+function normalizeContacto(payload: ContactoRedesPayload | null): ContactoData {
 	if (!payload) return defaultContacto;
 	const source = payload.attributes ?? payload;
 
@@ -38,7 +27,6 @@ function normalizeContacto(payload: ContactoPayload | null): ContactoData {
 		ubicacion: (source.ubicacion ?? "").trim(),
 		telefono: source.telefono !== undefined && source.telefono !== null ? String(source.telefono).replace(/\D/g, "") : "",
 		email: (source.email ?? "").trim(),
-		urlInstagram: (source.url_instagram ?? "").trim(),
 	};
 }
 
@@ -58,19 +46,13 @@ function mapExternalUrl(address: string): string {
 	return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
-function normalizeInstagramUrl(value: string): string {
-	if (!value) return "";
-	if (value.startsWith("http://") || value.startsWith("https://")) return value;
-	return `https://${value}`;
-}
-
 export default async function ContactoPage() {
-	const contactResult = await getSingleType<ContactoPayload>("contacto").catch(() => ({ data: null }));
+	const contactResult = await getSingleType<ContactoRedesPayload>("contacto").catch(() => ({ data: null }));
 	const contacto = normalizeContacto(contactResult.data);
+	const redes = normalizeRedesSociales(contactResult.data);
 
 	const embedUrl = mapEmbedUrl(contacto.ubicacion);
 	const mapsUrl = mapExternalUrl(contacto.ubicacion);
-	const instagramUrl = normalizeInstagramUrl(contacto.urlInstagram);
 	const phoneDisplay = formatPhone(contacto.telefono);
 	const phoneHref = getChilePhoneHref(contacto.telefono);
 
@@ -149,17 +131,9 @@ export default async function ContactoPage() {
 
 							<div>
 								<p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Redes sociales</p>
-								{instagramUrl ? (
-									<div className="mt-2 flex items-center gap-3">
-										<a
-											href={instagramUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											aria-label="Instagram"
-											className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition-colors hover:border-[#BF0F0F] hover:text-[#BF0F0F]"
-										>
-											<Instagram className="h-5 w-5" aria-hidden="true" />
-										</a>
+								{redes.length > 0 ? (
+									<div className="mt-2">
+										<SocialLinks redes={redes} variant="light" />
 									</div>
 								) : (
 									<p className="mt-1 text-gray-400">No disponible</p>

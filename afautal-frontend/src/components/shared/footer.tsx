@@ -1,6 +1,12 @@
 import Link from "next/link";
-import { Instagram, Mail, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import Logo from "./logo_negro";
+import SocialLinks from "./SocialLinks";
+import { getSingleType } from "@/lib/strapi";
+import {
+	normalizeRedesSociales,
+	type ContactoRedesPayload,
+} from "@/lib/redes-sociales";
 
 const quickLinks = [
 	{ label: "Inicio", href: "/" },
@@ -10,8 +16,19 @@ const quickLinks = [
 	{ label: "Contacto", href: "/contacto" },
 ];
 
-export default function Footer() {
+const defaultUbicacion = "Campus Talca, Universidad de Talca, Chile";
+const defaultEmail = "contacto@afautal.cl";
+
+export default async function Footer() {
 	const currentYear = new Date().getFullYear();
+
+	const contactoResult = await getSingleType<ContactoRedesPayload>("contacto").catch(() => ({
+		data: null as ContactoRedesPayload | null,
+	}));
+	const source = contactoResult.data?.attributes ?? contactoResult.data;
+	const redes = normalizeRedesSociales(contactoResult.data);
+	const ubicacion = source?.ubicacion?.trim() || defaultUbicacion;
+	const email = source?.email?.trim() || defaultEmail;
 
 	return (
 		<footer className="mt-16 text-white" style={{ backgroundColor: "lab(0 0 0 / 0.84)" }}>
@@ -45,31 +62,25 @@ export default function Footer() {
 						<div className="mt-4 space-y-3 text-sm text-white">
 							<p className="flex items-start gap-2.5">
 								<MapPin className="mt-0.5 h-4 w-4 text-red-300" aria-hidden="true" />
-								<span>Campus Talca, Universidad de Talca, Chile</span>
+								<span>{ubicacion}</span>
 							</p>
 							<a
-								href="mailto:contacto@afautal.cl"
+								href={`mailto:${email}`}
 								className="inline-flex items-center gap-2.5 transition-colors hover:text-red-300"
 							>
 								<Mail className="h-4 w-4 text-red-300" aria-hidden="true" />
-								<span>contacto@afautal.cl</span>
+								<span>{email}</span>
 							</a>
 						</div>
 					</section>
 
 					<section>
 						<h3 className="text-sm font-bold uppercase tracking-[0.14em] text-white">Siguenos</h3>
-						<div className="mt-4 flex items-center gap-3">
-							<a
-								href="https://www.instagram.com/afautal/"
-								target="_blank"
-								rel="noreferrer"
-								aria-label="Instagram AFAUTAL"
-								className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white bg-black-800 text-white visited:text-white transition-colors hover:border-red-300 hover:text-red-300"
-							>
-								<Instagram className="h-5 w-5" />
-							</a>
-						</div>
+						{redes.length > 0 ? (
+							<div className="mt-4">
+								<SocialLinks redes={redes} variant="dark" />
+							</div>
+						) : null}
 						<p className="mt-5 text-sm leading-relaxed text-white">
 							Lunes a Viernes
 							<br />

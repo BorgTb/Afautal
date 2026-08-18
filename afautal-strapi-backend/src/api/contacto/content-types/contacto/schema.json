@@ -22,6 +22,11 @@
     },
     "url_instagram": {
       "type": "string"
+    },
+    "test": {
+      "type": "component",
+      "component": "shared.red-social",
+      "repeatable": true
     }
   }
 }

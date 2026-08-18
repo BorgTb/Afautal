@@ -196,6 +196,19 @@ export interface SharedContenido extends Struct.ComponentSchema {
   };
 }
 
+export interface SharedRedSocial extends Struct.ComponentSchema {
+  collectionName: 'components_shared_red_sociales';
+  info: {
+    description: 'Enlace a una red social de la asociaci\u00F3n';
+    displayName: 'Red Social';
+    icon: 'share-alt';
+  };
+  attributes: {
+    nombre: Schema.Attribute.String & Schema.Attribute.Required;
+    url: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface SharedTextoRico extends Struct.ComponentSchema {
   collectionName: 'components_shared_texto_ricos';
   info: {
@@ -224,6 +237,7 @@ declare module '@strapi/strapi' {
       'formulario.opcion': FormularioOpcion;
       'shared.alerta': SharedAlerta;
       'shared.contenido': SharedContenido;
+      'shared.red-social': SharedRedSocial;
       'shared.texto-rico': SharedTextoRico;
     }
   }
