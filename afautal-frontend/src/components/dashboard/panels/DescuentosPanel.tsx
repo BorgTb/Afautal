@@ -10,6 +10,9 @@ const formatoMonto = (monto: number): string => {
   return `$${monto.toLocaleString("es-CL")}`;
 };
 
+const cuotaDe = (d: Descuento): number => d.cuota_asociacion ?? 0;
+const seguroDe = (d: Descuento): number => d.seguro_salud ?? 0;
+
 export default function DescuentosPanel() {
   const { token } = useAuth();
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
@@ -40,9 +43,8 @@ export default function DescuentosPanel() {
     [descuentos]
   );
 
-  const montoDelMes = (anio: number, mes: number) => {
-    const encontrado = descuentos.find((d) => d.anio === anio && d.mes === mes);
-    return encontrado?.monto ?? 0;
+  const mesDe = (anio: number, mes: number) => {
+    return descuentos.find((d) => d.anio === anio && d.mes === mes);
   };
 
   return (
@@ -73,9 +75,10 @@ export default function DescuentosPanel() {
       ) : (
         <div className="space-y-6">
           {gruposPorAnio.map(({ anio, meses }) => {
-            const totalAnio = descuentos
-              .filter((d) => d.anio === anio)
-              .reduce((acc, d) => acc + d.monto, 0);
+            const descuentosAnio = descuentos.filter((d) => d.anio === anio);
+            const totalAnio = descuentosAnio.reduce((acc, d) => acc + d.monto, 0);
+            const sumaCuotaAnio = descuentosAnio.reduce((acc, d) => acc + cuotaDe(d), 0);
+            const sumaSeguroAnio = descuentosAnio.reduce((acc, d) => acc + seguroDe(d), 0);
 
             return (
               <div key={anio} className="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
@@ -89,16 +92,41 @@ export default function DescuentosPanel() {
                   </span>
                 </div>
                 <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <th className="px-6 py-3">Mes</th>
+                      <th className="px-6 py-3 text-right">Cuota asociación</th>
+                      <th className="px-6 py-3 text-right">Seguro de salud</th>
+                      <th className="px-6 py-3 text-right">Total</th>
+                    </tr>
+                  </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {meses.map((mes) => (
-                      <tr key={mes} className="hover:bg-slate-50/60">
-                        <td className="px-6 py-4 font-bold text-slate-700 capitalize">{MESES[mes - 1]}</td>
-                        <td className="px-6 py-4 text-right font-black text-slate-900">
-                          {formatoMonto(montoDelMes(anio, mes))}
-                        </td>
-                      </tr>
-                    ))}
+                    {meses.map((mes) => {
+                      const d = mesDe(anio, mes);
+                      return (
+                        <tr key={mes} className="hover:bg-slate-50/60">
+                          <td className="px-6 py-4 font-bold text-slate-700 capitalize">{MESES[mes - 1]}</td>
+                          <td className="px-6 py-4 text-right font-semibold text-slate-600">
+                            {d ? formatoMonto(cuotaDe(d)) : "-"}
+                          </td>
+                          <td className="px-6 py-4 text-right font-semibold text-slate-600">
+                            {d ? formatoMonto(seguroDe(d)) : "-"}
+                          </td>
+                          <td className="px-6 py-4 text-right font-black text-slate-900">
+                            {d ? formatoMonto(d.monto) : "-"}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-slate-200 bg-slate-50/40">
+                      <td className="px-6 py-3 font-black text-slate-800">Total {anio}</td>
+                      <td className="px-6 py-3 text-right font-black text-slate-800">{formatoMonto(sumaCuotaAnio)}</td>
+                      <td className="px-6 py-3 text-right font-black text-slate-800">{formatoMonto(sumaSeguroAnio)}</td>
+                      <td className="px-6 py-3 text-right font-black text-[#BF0F0F]">{formatoMonto(totalAnio)}</td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             );

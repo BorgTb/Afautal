@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Handshake, Receipt, BarChart3, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchServiciosHabilitados, type Servicio } from "@/lib/servicios";
+import { fetchEstadoFinanciero, type EstadoFinanciero } from "@/lib/descuentos";
 import PanelHeader, { SecureSessionBadge } from "@/components/dashboard/PanelHeader";
 import MetricCard from "@/components/dashboard/MetricCard";
 import QuickServiceCard from "@/components/dashboard/QuickServiceCard";
@@ -17,6 +18,7 @@ import DescuentosPanel from "@/components/dashboard/panels/DescuentosPanel";
 export default function DashboardPage() {
   const { user, token, loading } = useAuth();
   const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [estadoFinanciero, setEstadoFinanciero] = useState<EstadoFinanciero | null>(null);
   const [activeTab, setActiveTab] = useState<DashboardTabId>("convenios");
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -24,6 +26,13 @@ export default function DashboardPage() {
     if (!token) return;
     fetchServiciosHabilitados(token)
       .then(setServicios)
+      .catch(console.error);
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    fetchEstadoFinanciero(token)
+      .then(setEstadoFinanciero)
       .catch(console.error);
   }, [token]);
 
@@ -43,6 +52,14 @@ export default function DashboardPage() {
   }
 
   const conveniosCount = servicios.length + 1; // +1 plan complementario
+
+  const anioActual = new Date().getFullYear();
+  const totalIngresos = estadoFinanciero?.totalesGlobales.monto ?? null;
+  const totalAnioActual =
+    estadoFinanciero?.totalesPorAnio.find((a) => a.anio === anioActual)?.monto ?? null;
+  const formatoMonto = (monto: number | null): string => {
+    return monto === null ? "…" : `$${monto.toLocaleString("es-CL")}`;
+  };
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -75,13 +92,23 @@ export default function DashboardPage() {
         />
         <MetricCard
           label="Ingresos acumulados"
-          value="$ 450.000"
-          note="Últimos 12 meses (ficticio)"
+          value={formatoMonto(totalIngresos)}
+          note={
+            totalIngresos === null
+              ? "Cargando datos…"
+              : totalIngresos === 0
+              ? "Aún no hay descuentos cargados"
+              : "Cuota social + seguro de salud (histórico)"
+          }
         />
         <MetricCard
           label="Saldo disponible"
-          value="$ 123.500"
-          note="Fondo de bienestar (ficticio)"
+          value={formatoMonto(totalAnioActual)}
+          note={
+            totalAnioActual === null
+              ? "Cargando datos…"
+              : `Ingresos de ${anioActual} (sin egresos registrados)`
+          }
         />
       </div>
 

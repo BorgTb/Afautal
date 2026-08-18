@@ -757,17 +757,21 @@ export interface ApiDescuentoDescuento extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    cuota_asociacion: Schema.Attribute.Decimal;
+    division: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::descuento.descuento'
     > &
       Schema.Attribute.Private;
+    mail: Schema.Attribute.String;
     mes: Schema.Attribute.Integer & Schema.Attribute.Required;
     monto: Schema.Attribute.Decimal & Schema.Attribute.Required;
     nombre_completo: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     rut: Schema.Attribute.String & Schema.Attribute.Required;
+    seguro_salud: Schema.Attribute.Decimal;
     unidad: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

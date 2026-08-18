@@ -24,5 +24,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/descuentos/estado',
+      handler: 'descuento.estado',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

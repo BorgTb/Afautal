@@ -18,6 +18,12 @@
     "nombre_completo": {
       "type": "string"
     },
+    "mail": {
+      "type": "string"
+    },
+    "division": {
+      "type": "string"
+    },
     "unidad": {
       "type": "string"
     },
@@ -28,6 +34,12 @@
     "mes": {
       "type": "integer",
       "required": true
+    },
+    "cuota_asociacion": {
+      "type": "decimal"
+    },
+    "seguro_salud": {
+      "type": "decimal"
     },
     "monto": {
       "type": "decimal",
