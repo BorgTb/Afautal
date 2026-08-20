@@ -253,13 +253,13 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
           </p>
           <h1
             data-hero-text
-            className="max-w-[24ch] min-h-0 text-3xl font-bold leading-tight text-slate-900 sm:min-h-[94px] sm:text-4xl lg:min-h-[120px] lg:max-w-[30ch] lg:text-5xl"
+            className="max-w-[24ch] line-clamp-2 break-words text-[clamp(1.5rem,3vw+0.5rem,2rem)] font-bold leading-tight text-slate-900 sm:min-h-[76px] sm:text-[clamp(1.75rem,1.2vw+1.25rem,3rem)] lg:min-h-[96px] lg:max-w-[30ch] lg:text-[clamp(1.875rem,1.6vw+1.25rem,3rem)]"
           >
             {title}
           </h1>
           <p
             data-hero-text
-            className="mt-6 max-w-[60ch] min-h-0 text-base leading-relaxed text-slate-600 sm:min-h-[128px] sm:text-lg lg:min-h-[136px] lg:max-w-[60ch]"
+            className="mt-6 max-w-[60ch] line-clamp-3 break-words text-[clamp(0.875rem,0.8vw+0.5rem,1rem)] leading-relaxed text-slate-600 sm:min-h-[80px] sm:text-[clamp(0.9375rem,0.5vw+0.75rem,1.125rem)] lg:min-h-[88px] lg:max-w-[60ch]"
           >
             {summary}
           </p>
