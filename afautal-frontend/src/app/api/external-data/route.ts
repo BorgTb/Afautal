@@ -87,6 +87,11 @@ export async function POST(request: Request) {
       direccion: payload.direccionParticular?.trim() ?? "",
     });
 
+    if (process.env.DEV_MODE === 'true') {
+      console.log('[DEV_MODE] Saltando escritura a Telegestor (registrar_funcionario)');
+      return NextResponse.json({ ok: true, dev_mode: true });
+    }
+
     const response = await fetch("https://telegestor.cl/afautal-data/index.php", {
       method: "POST",
       headers: {

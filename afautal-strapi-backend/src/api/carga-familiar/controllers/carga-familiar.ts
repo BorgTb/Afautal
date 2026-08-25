@@ -12,6 +12,11 @@ function formatRut(rut: string): string {
 }
 
 async function registerCargaExterna(user: { id: number; rut?: string }, payload: Record<string, any>) {
+  if (process.env.DEV_MODE === 'true') {
+    console.log('[DEV_MODE] Saltando escritura a Telegestor (registrar_carga)');
+    return;
+  }
+
   const rutFuncionario = formatRut(user.rut || '');
   if (!rutFuncionario) {
     console.log('External carga registration skipped: socio sin rut');
@@ -48,6 +53,11 @@ async function registerCargaExterna(user: { id: number; rut?: string }, payload:
 }
 
 async function postToExternal(params: Record<string, string>): Promise<{ ok: boolean; status: number; data: any }> {
+  if (process.env.DEV_MODE === 'true') {
+    console.log('[DEV_MODE] Saltando escritura a Telegestor:', params.tipo);
+    return { ok: true, status: 200, data: null };
+  }
+
   const body = new URLSearchParams(params);
   console.log('PAYLOAD ENVIADO A TELEGESTOR:', Object.fromEntries(body.entries()));
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import "@/lib/gsap-setup";
 import gsap from "gsap";
 import { loginRut } from "@/lib/auth";
 import { useAuth } from "@/contexts/AuthContext";

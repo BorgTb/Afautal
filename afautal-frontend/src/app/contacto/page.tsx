@@ -6,6 +6,7 @@ import {
 	normalizeRedesSociales,
 	type ContactoRedesPayload,
 } from "@/lib/redes-sociales";
+import WhatsAppGrupoButton from "@/components/contacto/WhatsAppGrupoButton";
 
 interface ContactoData {
 	ubicacion: string;
@@ -46,10 +47,15 @@ function mapExternalUrl(address: string): string {
 	return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
+interface ContactoPayload extends ContactoRedesPayload {
+	link_grupo_whatsapp?: string;
+}
+
 export default async function ContactoPage() {
-	const contactResult = await getSingleType<ContactoRedesPayload>("contacto").catch(() => ({ data: null }));
+	const contactResult = await getSingleType<ContactoPayload>("contacto").catch(() => ({ data: null }));
 	const contacto = normalizeContacto(contactResult.data);
 	const redes = normalizeRedesSociales(contactResult.data);
+	const whatsappLink = contactResult.data?.link_grupo_whatsapp?.trim() || null;
 
 	const embedUrl = mapEmbedUrl(contacto.ubicacion);
 	const mapsUrl = mapExternalUrl(contacto.ubicacion);
@@ -139,6 +145,8 @@ export default async function ContactoPage() {
 									<p className="mt-1 text-gray-400">No disponible</p>
 								)}
 							</div>
+
+							<WhatsAppGrupoButton link={whatsappLink} />
 						</div>
 					</article>
 				</div>

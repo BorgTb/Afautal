@@ -20,10 +20,8 @@ import {
 } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Calendar } from "lucide-react";
+import "@/lib/gsap-setup";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export interface CalendarActivityData {
   id: string;
@@ -303,6 +301,7 @@ export default function CalendarActivities({ data, hideTitle, detailed }: Props)
   const listRef = useRef<HTMLDivElement>(null);
   const calendarWrapRef = useRef<HTMLDivElement>(null);
   const monthLabelRef = useRef<HTMLHeadingElement>(null);
+  const ctxRef = useRef<gsap.Context | null>(null);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -336,68 +335,109 @@ export default function CalendarActivities({ data, hideTitle, detailed }: Props)
       .sort((a, b) => parseISO(a.fecha).getTime() - parseISO(b.fecha).getTime());
   }, [data, selectedDate]);
 
-  const animateCards = useCallback(() => {
-    const cards = sectionRef.current?.querySelectorAll(".act-card");
-    if (cards && cards.length > 0) {
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 24, scale: 0.97 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.5,
-          stagger: 0.06,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: cards[0],
-            start: "top 85%",
-          },
-        }
-      );
-    }
-  }, []);
-
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (!detailed && gridRef.current) {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const ctx = gsap.context(() => {}, section);
+    ctxRef.current = ctx;
+
+    if (!detailed) {
+      if (gridRef.current) {
+        ctx.add(() => {
+          gsap.fromTo(
+            gridRef.current,
+            { opacity: 0, x: -20 },
+            { opacity: 1, x: 0, duration: 0.6, ease: "power2.out",
+              scrollTrigger: { trigger: section, start: "top 80%" }
+            }
+          );
+        });
+      }
+      if (listRef.current) {
+        ctx.add(() => {
+          gsap.fromTo(
+            listRef.current,
+            { opacity: 0, x: 20 },
+            { opacity: 1, x: 0, duration: 0.6, ease: "power2.out",
+              scrollTrigger: { trigger: section, start: "top 80%" }
+            }
+          );
+        });
+      }
+    }
+
+    const cards = section.querySelectorAll(".act-card");
+    if (cards.length > 0) {
+      ctx.add(() => {
         gsap.fromTo(
-          gridRef.current,
-          { opacity: 0, x: -20 },
-          { opacity: 1, x: 0, duration: 0.6, ease: "power2.out",
-            scrollTrigger: { trigger: sectionRef.current, start: "top 80%" }
+          cards,
+          { opacity: 0, y: 24, scale: 0.97 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.5,
+            stagger: 0.06,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: cards[0],
+              start: "top 85%",
+            },
           }
         );
-      }
-      if (!detailed && listRef.current) {
-        gsap.fromTo(
-          listRef.current,
-          { opacity: 0, x: 20 },
-          { opacity: 1, x: 0, duration: 0.6, ease: "power2.out",
-            scrollTrigger: { trigger: sectionRef.current, start: "top 80%" }
-          }
-        );
-      }
-      animateCards();
-    }, sectionRef);
-    return () => ctx.revert();
-  }, [detailed, animateCards]);
-
-  useEffect(() => {
-    if (!animating) {
-      const timer = setTimeout(() => animateCards(), 100);
-      return () => clearTimeout(timer);
+      });
     }
-  }, [selectedDate, filteredActivities, animating, animateCards]);
+
+    return () => {
+      ctx.revert();
+      ctxRef.current = null;
+    };
+  }, [detailed]);
 
   useEffect(() => {
+    if (animating || !ctxRef.current) return;
+
+    const timer = setTimeout(() => {
+      if (!ctxRef.current) return;
+      const section = sectionRef.current;
+      if (!section) return;
+      const cards = section.querySelectorAll(".act-card");
+      if (cards.length > 0) {
+        ctxRef.current.add(() => {
+          gsap.fromTo(
+            cards,
+            { opacity: 0, y: 24, scale: 0.97 },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.5,
+              stagger: 0.06,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: cards[0],
+                start: "top 85%",
+              },
+            }
+          );
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [selectedDate, filteredActivities, animating]);
+
+  useEffect(() => {
+    if (!ctxRef.current) return;
     const cells = gridRef.current?.querySelectorAll("button");
     if (cells && cells.length > 0) {
-      gsap.fromTo(
-        cells,
-        { opacity: 0, y: 6 },
-        { opacity: 1, y: 0, duration: 0.25, stagger: 0.015, ease: "power2.out" }
-      );
+      ctxRef.current.add(() => {
+        gsap.fromTo(
+          cells,
+          { opacity: 0, y: 6 },
+          { opacity: 1, y: 0, duration: 0.25, stagger: 0.015, ease: "power2.out" }
+        );
+      });
     }
   }, [currentMonth]);
 
@@ -405,43 +445,50 @@ export default function CalendarActivities({ data, hideTitle, detailed }: Props)
     if (animating) return;
     setAnimating(true);
     const grid = gridRef.current;
-    if (grid) {
-      gsap.to(grid, {
-        opacity: 0,
-        y: dir === "next" ? -12 : 12,
-        duration: 0.15,
-        ease: "power2.in",
-        onComplete: () => {
-          setCurrentMonth((m) => (dir === "next" ? addMonths(m, 1) : subMonths(m, 1)));
-          if (monthLabelRef.current) {
-            gsap.fromTo(
-              monthLabelRef.current,
-              { opacity: 0, y: dir === "next" ? -8 : 8 },
-              { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }
-            );
-          }
-          gsap.set(grid, { y: dir === "next" ? 12 : -12 });
-          gsap.to(grid, {
-            opacity: 1,
-            y: 0,
-            duration: 0.25,
-            ease: "power2.out",
-            onComplete: () => setAnimating(false),
-          });
-        },
+    if (grid && ctxRef.current) {
+      ctxRef.current.add(() => {
+        gsap.to(grid, {
+          opacity: 0,
+          y: dir === "next" ? -12 : 12,
+          duration: 0.15,
+          ease: "power2.in",
+          onComplete: () => {
+            setCurrentMonth((m) => (dir === "next" ? addMonths(m, 1) : subMonths(m, 1)));
+            if (monthLabelRef.current) {
+              gsap.fromTo(
+                monthLabelRef.current,
+                { opacity: 0, y: dir === "next" ? -8 : 8 },
+                { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }
+              );
+            }
+            gsap.set(grid, { y: dir === "next" ? 12 : -12 });
+            gsap.to(grid, {
+              opacity: 1,
+              y: 0,
+              duration: 0.25,
+              ease: "power2.out",
+              onComplete: () => setAnimating(false),
+            });
+          },
+        });
       });
     }
   }, [animating]);
 
   const handleDateSelect = useCallback((day: Date) => {
     setSelectedDate(day);
-    const cards = sectionRef.current?.querySelectorAll(".act-card");
-    if (cards && cards.length > 0) {
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 16, scale: 0.97 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.4, stagger: 0.05, ease: "power3.out" }
-      );
+    if (!ctxRef.current) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    const cards = section.querySelectorAll(".act-card");
+    if (cards.length > 0) {
+      ctxRef.current.add(() => {
+        gsap.fromTo(
+          cards,
+          { opacity: 0, y: 16, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.4, stagger: 0.05, ease: "power3.out" }
+        );
+      });
     }
   }, []);
 

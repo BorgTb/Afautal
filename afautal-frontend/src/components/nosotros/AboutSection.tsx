@@ -1,17 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import SocialLinks from "@/components/shared/SocialLinks";
-import type { RedSocialEnlace } from "@/lib/redes-sociales";
 
 interface AboutSectionProps {
   descripcion: string;
-  redes?: RedSocialEnlace[];
 }
 
-export default function AboutSection({ descripcion, redes }: AboutSectionProps) {
+export default function AboutSection({ descripcion }: AboutSectionProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -21,10 +18,10 @@ export default function AboutSection({ descripcion, redes }: AboutSectionProps) 
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (mediaQuery.matches) return;
 
-    gsap.registerPlugin(ScrollTrigger);
-
     const heading = section.querySelector("[data-about-title]");
     const text = section.querySelector("[data-about-description]");
+
+    if (!heading || !text) return;
 
     const ctx = gsap.context(() => {
       gsap
@@ -65,14 +62,6 @@ export default function AboutSection({ descripcion, redes }: AboutSectionProps) 
         >
           {descripcion}
         </p>
-        {redes && redes.length > 0 ? (
-          <div className="mt-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-700">
-              Síguenos
-            </p>
-            <SocialLinks redes={redes} variant="light" className="mt-3" />
-          </div>
-        ) : null}
       </div>
     </section>
   );

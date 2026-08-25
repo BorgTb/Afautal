@@ -88,53 +88,57 @@ export default factories.createCoreService('api::solicitud.solicitud', ({ strapi
     });
 
     if (solicitud.es_nuevo_externo) {
-      try {
-        console.log('Solicitud is marked as new for external DB, registering in telegestor...');
-        const { rutSinDv, dv } = this.splitRut(solicitud.rut);
-        
-        let jerarquiaNombre = solicitud.jerarquia ? solicitud.jerarquia.nombre : "";
-        let ciudadNombre = solicitud.ciudad ? solicitud.ciudad.nombre : "";
-        let comunaNombre = solicitud.comuna ? solicitud.comuna.nombre : "";
-        let ciudadCodigo = /^\d+$/.test(solicitud.ciudad?.codigo ?? "") ? solicitud.ciudad.codigo : "";
-        let comunaCodigo = /^\d+$/.test(solicitud.comuna?.codigo ?? "") ? solicitud.comuna.codigo : "";
+      if (process.env.DEV_MODE === 'true') {
+        console.log('[DEV_MODE] Saltando escritura a Telegestor (registrar_funcionario)');
+      } else {
+        try {
+          console.log('Solicitud is marked as new for external DB, registering in telegestor...');
+          const { rutSinDv, dv } = this.splitRut(solicitud.rut);
+          
+          let jerarquiaNombre = solicitud.jerarquia ? solicitud.jerarquia.nombre : "";
+          let ciudadNombre = solicitud.ciudad ? solicitud.ciudad.nombre : "";
+          let comunaNombre = solicitud.comuna ? solicitud.comuna.nombre : "";
+          let ciudadCodigo = /^\d+$/.test(solicitud.ciudad?.codigo ?? "") ? solicitud.ciudad.codigo : "";
+          let comunaCodigo = /^\d+$/.test(solicitud.comuna?.codigo ?? "") ? solicitud.comuna.codigo : "";
 
-        console.log('Resolved external fields | jerarquia:', jerarquiaNombre, '| ciudad:', ciudadNombre, ciudadCodigo, '| comuna:', comunaNombre, comunaCodigo);
+          console.log('Resolved external fields | jerarquia:', jerarquiaNombre, '| ciudad:', ciudadNombre, ciudadCodigo, '| comuna:', comunaNombre, comunaCodigo);
 
-        const externalPayload = new URLSearchParams({
-          tipo: "registrar_funcionario",
-          rut: rutSinDv,
-          dv: dv,
-          nombre: solicitud.nombre_completo,
-          correo: solicitud.correo_electronico,
-          telefono: (solicitud.telefono ?? "").replace(/\D/g, "").slice(-8),
-          unidad_academica: solicitud.unidad_academica || "",
-          fecha_nacimiento: solicitud.fecha_nacimiento || "",
-          jerarquia: jerarquiaNombre,
-          ciudad: ciudadNombre,
-          comuna: comunaNombre,
-          ciudad_id: ciudadCodigo,
-          comuna_id: comunaCodigo,
-          direccion: solicitud.direccion_particular || "",
-        });
-        
-        console.log("PAYLOAD ENVIADO A TELEGESTOR: ", Object.fromEntries(externalPayload.entries()));
+          const externalPayload = new URLSearchParams({
+            tipo: "registrar_funcionario",
+            rut: rutSinDv,
+            dv: dv,
+            nombre: solicitud.nombre_completo,
+            correo: solicitud.correo_electronico,
+            telefono: (solicitud.telefono ?? "").replace(/\D/g, "").slice(-8),
+            unidad_academica: solicitud.unidad_academica || "",
+            fecha_nacimiento: solicitud.fecha_nacimiento || "",
+            jerarquia: jerarquiaNombre,
+            ciudad: ciudadNombre,
+            comuna: comunaNombre,
+            ciudad_id: ciudadCodigo,
+            comuna_id: comunaCodigo,
+            direccion: solicitud.direccion_particular || "",
+          });
+          
+          console.log("PAYLOAD ENVIADO A TELEGESTOR: ", Object.fromEntries(externalPayload.entries()));
 
-        const externalResponse = await fetch("https://telegestor.cl/afautal-data/index.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: externalPayload,
-        });
+          const externalResponse = await fetch("https://telegestor.cl/afautal-data/index.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: externalPayload,
+          });
 
-        const externalBody = await externalResponse.text();
-        console.log(`External API response | status: ${externalResponse.status} | body: ${externalBody}`);
+          const externalBody = await externalResponse.text();
+          console.log(`External API response | status: ${externalResponse.status} | body: ${externalBody}`);
 
-        if (!externalResponse.ok) {
-          console.error(`Failed to register in external API: ${externalResponse.status} - ${externalBody}`);
-        } else {
-          console.log(`Successfully registered in external API: ${externalBody}`);
+          if (!externalResponse.ok) {
+            console.error(`Failed to register in external API: ${externalResponse.status} - ${externalBody}`);
+          } else {
+            console.log(`Successfully registered in external API: ${externalBody}`);
+          }
+        } catch (error) {
+          console.error('Error while trying to register in external API:', error);
         }
-      } catch (error) {
-        console.error('Error while trying to register in external API:', error);
       }
     }
 

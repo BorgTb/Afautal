@@ -27,11 +27,9 @@ import {
   X,
   CalendarDays,
 } from "lucide-react";
+import "@/lib/gsap-setup";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { CalendarActivityData } from "@/components/landing-page/CalendarActivities";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const TIPO_COLORS: Record<string, string> = {
   Charla: "bg-blue-100 text-blue-800",
@@ -57,6 +55,7 @@ export default function ActividadesView({ data, monthStats, typeStats, totalCoun
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsGridRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const ctxRef = useRef<gsap.Context | null>(null);
 
   const activityDates = useMemo(() => {
     const set = new Set<string>();
@@ -94,17 +93,22 @@ export default function ActividadesView({ data, monthStats, typeStats, totalCoun
   };
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (headerRef.current) {
+    const ctx = gsap.context(() => {}, cardsGridRef);
+    ctxRef.current = ctx;
+
+    if (headerRef.current) {
+      ctx.add(() => {
         gsap.fromTo(
-          headerRef.current.children,
+          headerRef.current!.children,
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power3.out",
             scrollTrigger: { trigger: headerRef.current, start: "top 85%" }
           }
         );
-      }
-      if (calendarRef.current) {
+      });
+    }
+    if (calendarRef.current) {
+      ctx.add(() => {
         gsap.fromTo(
           calendarRef.current,
           { opacity: 0, x: 30 },
@@ -112,21 +116,41 @@ export default function ActividadesView({ data, monthStats, typeStats, totalCoun
             scrollTrigger: { trigger: calendarRef.current, start: "top 80%" }
           }
         );
-      }
-    });
-    return () => ctx.revert();
+      });
+    }
+
+    const cards = cardsGridRef.current?.querySelectorAll(".act-card-item");
+    if (cards && cards.length > 0) {
+      ctx.add(() => {
+        gsap.fromTo(
+          cards,
+          { opacity: 0, y: 24, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.07, ease: "power3.out",
+            scrollTrigger: { trigger: cardsGridRef.current, start: "top 85%" }
+          }
+        );
+      });
+    }
+
+    return () => {
+      ctx.revert();
+      ctxRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
+    if (!ctxRef.current) return;
     const cards = cardsGridRef.current?.querySelectorAll(".act-card-item");
     if (cards && cards.length > 0) {
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 24, scale: 0.97 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.07, ease: "power3.out",
-          scrollTrigger: { trigger: cardsGridRef.current, start: "top 85%" }
-        }
-      );
+      ctxRef.current.add(() => {
+        gsap.fromTo(
+          cards,
+          { opacity: 0, y: 24, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.07, ease: "power3.out",
+            scrollTrigger: { trigger: cardsGridRef.current, start: "top 85%" }
+          }
+        );
+      });
     }
   }, [filteredActivities]);
 

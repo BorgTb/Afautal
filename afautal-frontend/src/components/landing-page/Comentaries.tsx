@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getStrapiMediaURL } from "@/lib/strapi";
 
 interface CommentAuthorPhoto {
@@ -61,7 +61,7 @@ export default function Comentaries({ comments }: ComentariesProps) {
 		const headingItems = header.querySelectorAll("[data-comment-heading]");
 		const cards = list.querySelectorAll("[data-comment-card]");
 
-		gsap.registerPlugin(ScrollTrigger);
+		if (headingItems.length === 0 || cards.length === 0) return;
 
 		const ctx = gsap.context(() => {
 			const timeline = gsap.timeline({

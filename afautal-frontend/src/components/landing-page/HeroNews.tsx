@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
 import { getStrapiMediaURL } from "@/lib/strapi";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -127,6 +128,8 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
     const textItems = text.querySelectorAll("[data-hero-text]");
     const ctaButton = text.querySelector("[data-hero-button]");
 
+    if (textItems.length === 0) return;
+
     const ctx = gsap.context(() => {
       if (mediaQuery.matches) {
         gsap.set([image, textItems, ctaButton], { clearProps: "all" });
@@ -217,7 +220,7 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="group relative mx-auto grid w-[calc(100%-1rem)] max-w-none grid-cols-1 gap-8 px-4 py-16 sm:w-[calc(100%-2rem)] sm:px-6 lg:w-[calc(100%-3rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)] lg:gap-12 lg:px-10 xl:w-[calc(100%-4rem)] xl:px-14 2xl:px-20"
+      className="group relative mx-auto grid w-[calc(100%-1rem)] max-w-none grid-cols-1 gap-8 px-4 py-16 sm:w-[calc(100%-2rem)] sm:px-6 lg:w-[calc(100%-3rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)] lg:gap-12 lg:px-10 xl:w-[calc(100%-4rem)] xl:px-20"
     >
       {hasManyItems && (
         <>
@@ -264,13 +267,6 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
             {summary}
           </p>
         </div>
-        <Link
-          data-hero-button
-          href={detailHref}
-          className="mt-8 inline-flex w-fit px-8 py-3 border-2 border-[#BF0F0F] text-[#BF0F0F] font-bold hover:bg-[#A61B26] hover:text-white transition-colors duration-300 uppercase tracking-widest text-sm"
-        >
-          Ver Más →
-        </Link>
       </div>
       <div
         ref={imageRef}

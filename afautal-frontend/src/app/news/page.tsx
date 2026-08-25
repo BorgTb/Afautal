@@ -112,14 +112,46 @@ function extractFirstMedia(field?: NewsMediaValue): MediaNode | undefined {
     return undefined;
 }
 
-function getNewsImage(field: NewsMediaValue, coverField: NewsMediaValue): string {
-    const cover = extractFirstMedia(coverField);
-    if (cover?.url || cover?.attributes?.url) {
-        return getStrapiMediaURL(cover.url ?? cover.attributes?.url) || "/hero-noticia.jpg";
+function isVideoUrl(url: string): boolean {
+    const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv"];
+    const videoDomains = ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com"];
+
+    const lowerUrl = url.toLowerCase();
+
+    // Check by extension
+    for (const ext of videoExtensions) {
+        if (lowerUrl.endsWith(ext)) return true;
     }
+
+    // Check by domain
+    for (const domain of videoDomains) {
+        if (lowerUrl.includes(domain)) return true;
+    }
+
+    return false;
+}
+
+function getNewsMediaType(field: NewsMediaValue): "image" | "video" {
     const media = extractFirstMedia(field);
-    const url = media?.url ?? media?.attributes?.url;
-    return getStrapiMediaURL(url) || "/hero-noticia.jpg";
+    if (!media) return "image";
+
+    if (isVideoUrl(media.url ?? "")) return "video";
+    if (media.attributes?.url && isVideoUrl(media.attributes.url)) return "video";
+
+    return "image";
+}
+
+function getNewsImage(field: NewsMediaValue, coverField: NewsMediaValue): { url: string; type: "image" | "video"; alt: string } {
+    const cover = extractFirstMedia(coverField);
+    const media = extractFirstMedia(field);
+
+    const url = (media?.url ?? media?.attributes?.url ?? (cover?.url ?? cover?.attributes?.url));
+    const type = getNewsMediaType(field);
+    const alt = getNewsAlt(field, "Imagen de la noticia");
+
+    const displayUrl = url ? getStrapiMediaURL(url) : "/hero-noticia.jpg";
+
+    return { url: displayUrl, type, alt };
 }
 
 function getNewsAlt(field: NewsMediaValue, fallback: string): string {
@@ -163,6 +195,7 @@ export default async function NewsPage() {
                     {noticias.map((item, index) => {
                         const source = item.attributes ?? item;
                         const mediaField = source.foto_noticia;
+                        const mediaType = getNewsMediaType(mediaField);
                         const titulo = source.titulo_noticia ?? `Noticia ${index + 1}`;
                         const descripcionCompleta = normalizeText(source.cuerpo_noticia);
                         const descripcion = truncateText(descripcionCompleta, 180);
@@ -171,17 +204,31 @@ export default async function NewsPage() {
                         const meta = [autor, fecha].filter(Boolean).join(" • ");
                         const newsId = String(item.documentId ?? item.id ?? `noticia-${index}`);
 
+                        const mediaInfo = mediaType === "video"
+                            ? { type: "video", url: "", alt: getNewsAlt(mediaField, titulo) }
+                            : getNewsImage(source.foto_noticia, source.foto_portada_noticia);
+
                         return (
                             <article
                                 key={newsId}
                                 className="news-card-reveal overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
                                 style={{ "--stagger": `${index * 90}ms` } as CSSProperties}
                             >
-                                <img
-                                    src={getNewsImage(source.foto_noticia, source.foto_portada_noticia)}
-                                    alt={getNewsAlt(mediaField, titulo)}
-                                    className="h-48 w-full object-cover"
-                                />
+                                {mediaType === "video" ? (
+                                    <video
+                                        src={mediaInfo.url || "/hero-noticia.mp4"}
+                                        className="h-48 w-full object-cover"
+                                        controls
+                                        autoPlay
+                                        muted
+                                    />
+                                ) : (
+                                    <img
+                                        src={mediaInfo.url}
+                                        alt={mediaInfo.alt}
+                                        className="h-48 w-full object-cover"
+                                    />
+                                )}
                                 <div className="p-6">
                                     {source.noticia_principal && (
                                         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#BF0F0F]">Noticia principal</p>
@@ -204,4 +251,3 @@ export default async function NewsPage() {
         </div>
     );
 }
-

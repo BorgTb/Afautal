@@ -35,7 +35,7 @@ export default factories.createCoreController('api::ventana-gas.ventana-gas', ({
           data: {
             estado: 'cerrada',
             fecha_fin: new Date().toISOString(),
-          },
+          } as any,
         });
       }
 

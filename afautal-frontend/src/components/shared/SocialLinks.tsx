@@ -1,7 +1,8 @@
-import type { RedSocialEnlace } from "@/lib/redes-sociales";
+import type { RedSocialData } from "@/lib/redes-sociales";
+import { resolveIcon } from "@/lib/redes-sociales";
 
 interface SocialLinksProps {
-	redes: RedSocialEnlace[];
+	redes: RedSocialData[];
 	variant?: "light" | "dark";
 	className?: string;
 }
@@ -20,19 +21,22 @@ export default function SocialLinks({
 
 	return (
 		<div className={`flex items-center gap-3 ${className}`}>
-			{redes.map(({ nombre, label, url, Icon }) => (
-				<a
-					key={nombre}
-					href={url}
-					target="_blank"
-					rel="noopener noreferrer"
-					aria-label={label}
-					title={label}
-					className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${variantStyles[variant]}`}
-				>
-					<Icon className="h-5 w-5" aria-hidden="true" />
-				</a>
-			))}
+			{redes.map(({ nombre, label, url, iconKey }) => {
+				const Icon = resolveIcon(iconKey);
+				return (
+					<a
+						key={nombre}
+						href={url}
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label={label}
+						title={label}
+						className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${variantStyles[variant]}`}
+					>
+						<Icon className="h-5 w-5" aria-hidden="true" />
+					</a>
+				);
+			})}
 		</div>
 	);
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export interface DirectivaCard {
   id: string;
@@ -35,10 +35,10 @@ export default function DirectivaSection({ cards }: DirectivaSectionProps) {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (mediaQuery.matches) return;
 
-    gsap.registerPlugin(ScrollTrigger);
-
     const headingItems = section.querySelectorAll("[data-directiva-heading]");
     const cardItems = section.querySelectorAll("[data-directiva-card]");
+
+    if (headingItems.length === 0 || cardItems.length === 0) return;
 
     const ctx = gsap.context(() => {
       const timeline = gsap.timeline({

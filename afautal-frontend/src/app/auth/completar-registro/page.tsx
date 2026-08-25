@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import "@/lib/gsap-setup";
 import gsap from "gsap";
 import { completeExternalRegistration, fetchRegistroOptions } from "@/lib/auth";
 import { fetchRegiones, fetchCiudadesByRegion, fetchComunasByRegion, type Region, type Ciudad, type Comuna } from "@/lib/geography";

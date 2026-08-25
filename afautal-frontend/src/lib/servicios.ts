@@ -162,19 +162,25 @@ export async function fetchServiciosHabilitados(token?: string): Promise<Servici
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(
-    getStrapiURL("/api/servicios?filters[habilitado][$eq]=true&sort=nombre:asc"),
-    {
-      headers,
-      cache: "no-store",
-    }
-  );
+  let data: { data?: any[] };
+  try {
+    const res = await fetch(
+      getStrapiURL("/api/servicios?filters[habilitado][$eq]=true&sort=nombre:asc"),
+      {
+        headers,
+        cache: "no-store",
+      }
+    );
 
-  if (!res.ok) {
+    if (!res.ok) {
+      return [];
+    }
+
+    data = await res.json();
+  } catch {
+    // Backend no disponible: devolver lista vacía sin romper la UI
     return [];
   }
-
-  const data = await res.json();
   return (data.data || []).map((item: any) => ({
     id: item.id,
     ...(item.attributes || item),

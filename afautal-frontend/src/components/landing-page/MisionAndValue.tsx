@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 interface MisionVisionValoresData {
 	mision?: string;
@@ -38,7 +38,7 @@ export default function MisionAndValue({ data }: MisionAndValueProps) {
 		const visionCard = cards.querySelector("[data-mvv-vision]");
 		const valuesCard = cards.querySelector("[data-mvv-valores]");
 
-		gsap.registerPlugin(ScrollTrigger);
+		if (headingItems.length === 0 || !missionCard || !visionCard || !valuesCard) return;
 
 		const ctx = gsap.context(() => {
 			const timeline = gsap.timeline({

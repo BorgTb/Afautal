@@ -8,6 +8,13 @@ export interface RedSocialEnlace {
 	Icon: LucideIcon;
 }
 
+export interface RedSocialData {
+	nombre: string;
+	label: string;
+	url: string;
+	iconKey: string;
+}
+
 interface RedSocialPayload {
 	nombre?: string;
 	url?: string;
@@ -40,6 +47,19 @@ const SOCIAL_NETWORKS: Record<string, { label: string; Icon: LucideIcon }> = {
 
 const GENERIC_ICON: LucideIcon = Globe;
 
+export const ICON_MAP: Record<string, LucideIcon> = {
+	Instagram,
+	Facebook,
+	LinkedIn: Linkedin,
+	"X (Twitter)": Twitter,
+	YouTube: Youtube,
+	Globe,
+};
+
+export function resolveIcon(key: string): LucideIcon {
+	return ICON_MAP[key] ?? Globe;
+}
+
 function prettifyNombre(nombre: string): string {
 	return nombre
 		.replace(/[_-]+/g, " ")
@@ -55,11 +75,11 @@ export function normalizeSocialUrl(value: string): string {
 	return `https://${trimmed}`;
 }
 
-export function normalizeRedesSociales(payload: ContactoRedesPayload | null): RedSocialEnlace[] {
+export function normalizeRedesSociales(payload: ContactoRedesPayload | null): RedSocialData[] {
 	if (!payload) return [];
 	const source = payload.attributes ?? payload;
 
-	const redes: RedSocialEnlace[] = [];
+	const redes: RedSocialData[] = [];
 	const seen = new Set<string>();
 
 	const push = (nombre?: string, url?: string) => {
@@ -70,11 +90,12 @@ export function normalizeRedesSociales(payload: ContactoRedesPayload | null): Re
 		if (seen.has(key)) return;
 		seen.add(key);
 		const known = SOCIAL_NETWORKS[key];
+		const label = known?.label ?? prettifyNombre(raw);
 		redes.push({
 			nombre: raw,
-			label: known?.label ?? prettifyNombre(raw),
+			label,
 			url: cleanUrl,
-			Icon: known?.Icon ?? GENERIC_ICON,
+			iconKey: label,
 		});
 	};
 

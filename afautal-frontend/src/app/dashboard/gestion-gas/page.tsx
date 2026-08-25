@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchPreciosGas, submitSolicitudGas, fetchMySolicitudesGas, fetchDatosTransferencia, uploadComprobante, updateSolicitudGas, fetchActiveWindow, type PrecioGas, type SolicitudGas, type DatosTransferencia, type VentanaGas } from "@/lib/gas";
 import { fetchBancos, type Banco } from "@/lib/banco";
 import { formatRUT } from "@/lib/utils";
+import "@/lib/gsap-setup";
 import gsap from "gsap";
 import { Flame, ShoppingCart, History, Info, ExternalLink, CheckCircle2, UploadCloud, FileCheck, Filter, XCircle, CreditCard, Lock } from "lucide-react";
 

@@ -48,7 +48,7 @@ export default async function Footer() {
 						<h3 className="text-sm font-bold uppercase tracking-[0.14em] text-white">Enlaces Rapidos</h3>
 						<ul className="mt-4 space-y-2.5 text-sm">
 							{quickLinks.map((link) => (
-								<li key={link.href}>
+								<li key={link.label}>
 									<Link href={link.href} className="text-white transition-colors hover:text-red-300">
 										{link.label}
 									</Link>
