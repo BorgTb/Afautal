@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 interface StrapiMedia {
     url?: string;
@@ -93,7 +93,7 @@ export default function AboutUs({ data }: AboutUsProps) {
 
         const textItems = text.querySelectorAll("[data-about-text]");
 
-        gsap.registerPlugin(ScrollTrigger);
+        if (textItems.length === 0) return;
 
         const ctx = gsap.context(() => {
             const timeline = gsap.timeline({

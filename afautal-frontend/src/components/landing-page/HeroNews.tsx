@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
 import { getStrapiMediaURL } from "@/lib/strapi";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -127,6 +128,8 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
     const textItems = text.querySelectorAll("[data-hero-text]");
     const ctaButton = text.querySelector("[data-hero-button]");
 
+    if (textItems.length === 0) return;
+
     const ctx = gsap.context(() => {
       if (mediaQuery.matches) {
         gsap.set([image, textItems, ctaButton], { clearProps: "all" });
@@ -217,7 +220,7 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="group relative mx-auto grid w-[calc(100%-1rem)] max-w-none grid-cols-1 gap-8 px-4 py-16 sm:w-[calc(100%-2rem)] sm:px-6 lg:w-[calc(100%-3rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)] lg:gap-12 lg:px-10 xl:w-[calc(100%-4rem)] xl:px-14 2xl:px-20"
+      className="group relative mx-auto grid w-[calc(100%-1rem)] max-w-none grid-cols-1 gap-8 px-4 py-16 sm:w-[calc(100%-2rem)] sm:px-6 lg:w-[calc(100%-3rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)] lg:gap-12 lg:px-10 xl:w-[calc(100%-4rem)] xl:px-20"
     >
       {hasManyItems && (
         <>
@@ -253,24 +256,17 @@ export default function HeroNoticia({ data, autoplayInterval = 5000 }: HeroNewsP
           </p>
           <h1
             data-hero-text
-            className="max-w-[24ch] min-h-0 text-3xl font-bold leading-tight text-slate-900 sm:min-h-[94px] sm:text-4xl lg:min-h-[120px] lg:max-w-[30ch] lg:text-5xl"
+            className="max-w-[24ch] line-clamp-2 break-words text-[clamp(1.5rem,3vw+0.5rem,2rem)] font-bold leading-tight text-slate-900 sm:min-h-[76px] sm:text-[clamp(1.75rem,1.2vw+1.25rem,3rem)] lg:min-h-[96px] lg:max-w-[30ch] lg:text-[clamp(1.875rem,1.6vw+1.25rem,3rem)]"
           >
             {title}
           </h1>
           <p
             data-hero-text
-            className="mt-6 max-w-[60ch] min-h-0 text-base leading-relaxed text-slate-600 sm:min-h-[128px] sm:text-lg lg:min-h-[136px] lg:max-w-[60ch]"
+            className="mt-6 max-w-[60ch] line-clamp-3 break-words text-[clamp(0.875rem,0.8vw+0.5rem,1rem)] leading-relaxed text-slate-600 sm:min-h-[80px] sm:text-[clamp(0.9375rem,0.5vw+0.75rem,1.125rem)] lg:min-h-[88px] lg:max-w-[60ch]"
           >
             {summary}
           </p>
         </div>
-        <Link
-          data-hero-button
-          href={detailHref}
-          className="mt-8 inline-flex w-fit px-8 py-3 border-2 border-[#BF0F0F] text-[#BF0F0F] font-bold hover:bg-[#A61B26] hover:text-white transition-colors duration-300 uppercase tracking-widest text-sm"
-        >
-          Ver Más →
-        </Link>
       </div>
       <div
         ref={imageRef}

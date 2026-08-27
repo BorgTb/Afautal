@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 interface DocumentsPreviewCard {
 	id: string;
@@ -60,7 +60,7 @@ export default function Documents({ cards }: DocumentsProps) {
 		const cta = content.querySelector("[data-doc-cta]");
 		const cards = cardsContainer.querySelectorAll("[data-doc-card]");
 
-		gsap.registerPlugin(ScrollTrigger);
+		if (textItems.length === 0 || !cta || cards.length === 0) return;
 
 		const ctx = gsap.context(() => {
 			const timeline = gsap.timeline({

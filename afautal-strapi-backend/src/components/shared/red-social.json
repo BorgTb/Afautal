@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_shared_red_sociales",
+  "info": {
+    "displayName": "Red Social",
+    "icon": "share-alt",
+    "description": "Enlace a una red social de la asociación"
+  },
+  "options": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "description": "Identificador de la red (ej: linkedin, x_twitter, tiktok, whatsapp, telegram...)"
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

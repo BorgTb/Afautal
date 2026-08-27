@@ -18,6 +18,16 @@ export default factories.createCoreController('api::solicitud-servicio.solicitud
       populate: ['usuario', 'carga_familiar', 'servicio']
     });
 
+    // Enviar notificación por correo al email configurado del servicio
+    try {
+      const servicioId = entry.servicio?.id || entry.servicio?.data?.id;
+      if (servicioId) {
+        await enviarNotificacionServicio(servicioId, entry.datos_formulario || {}, user.id);
+      }
+    } catch (emailError) {
+      strapi.log.error('Error en notificación de servicio:', emailError);
+    }
+
     return { data: entry };
   },
 
@@ -57,3 +67,59 @@ export default factories.createCoreController('api::solicitud-servicio.solicitud
     return { data: updatedEntry };
   }
 }));
+
+async function enviarNotificacionServicio(
+  servicioId: number,
+  datosFormulario: Record<string, any>,
+  userId: number
+) {
+  try {
+    const serv = await strapi.db.query('api::servicio.servicio').findOne({
+      where: { id: servicioId },
+      populate: ['email_notificaciones', 'campos_formulario']
+    });
+
+    if (!serv?.attributes?.email_notificaciones) return;
+
+    const emailNotif = serv.attributes.email_notificaciones;
+    const servicioNombre = serv.attributes.nombre;
+
+    // Formatear datos del formulario de forma amigable
+    const datosFormateados = Object.entries(datosFormulario)
+      .map(([key, val]) => {
+        const campo = serv.attributes.campos_formulario?.find(
+          (c: any) => c.nombre_variable === key
+        );
+        const etiqueta = campo?.etiqueta || key.replace(/_/g, ' ');
+        const valor = Array.isArray(val) ? val.join(', ') : (val ?? '-');
+        return `- ${etiqueta}: ${valor}`;
+      })
+      .join('\n');
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    const emailBody = [
+      'Ha recibido una nueva solicitud de servicio.',
+      '',
+      `Servicio: ${servicioNombre}`,
+      `Fecha: ${new Date().toLocaleDateString()}`,
+      '',
+      'Detalles del formulario:',
+      datosFormateados,
+      '',
+      'Mensaje adicional:',
+      datosFormulario.mensaje || 'Ninguno',
+      '',
+      'Solicitud enviada desde: ' + frontendUrl,
+    ].join('\n');
+
+    await strapi.plugin('email').service('email').send({
+      to: emailNotif,
+      from: 'noreply@afautal.cl',
+      subject: `Nueva solicitud de servicio: ${servicioNombre}`,
+      text: emailBody,
+    });
+  } catch (error) {
+    strapi.log.error('Error enviando notificación de servicio:', error);
+  }
+}

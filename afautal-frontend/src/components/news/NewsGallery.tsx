@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export interface NewsGalleryImage {
   url: string;
   alt?: string | null;
+  type?: "image" | "video";
 }
 
 interface NewsGalleryProps {
@@ -70,12 +71,23 @@ export default function NewsGallery({ images }: NewsGalleryProps) {
       className="relative"
     >
       <div className="relative flex h-[240px] w-full items-center justify-center overflow-hidden bg-slate-50 sm:h-[320px] lg:h-[400px]">
-        <img
-          key={currentImage.url}
-          src={currentImage.url}
-          alt={currentImage.alt ?? "Imagen de la noticia"}
-          className="h-full w-full animate-[gallery-fade_0.35s_ease-out] object-contain"
-        />
+        {currentImage.type === "video" ? (
+          <video
+            key={currentImage.url}
+            src={currentImage.url || "/hero-noticia.mp4"}
+            className="h-full w-full animate-[gallery-fade_0.35s_ease-out] object-contain"
+            controls
+            autoPlay
+            muted
+          />
+        ) : (
+          <img
+            key={currentImage.url}
+            src={currentImage.url}
+            alt={currentImage.alt ?? "Imagen de la noticia"}
+            className="h-full w-full animate-[gallery-fade_0.35s_ease-out] object-contain"
+          />
+        )}
 
         {hasManyImages && (
           <>

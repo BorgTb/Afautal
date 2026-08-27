@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminGate } from "@/components/shared/admin-gate";
 import {
@@ -11,6 +11,7 @@ import {
   DescuentosConflictError,
   type ExcelParseResult,
   type PeriodoCargado,
+  type DescuentoRow,
 } from "@/lib/descuentos";
 import {
   FileSpreadsheet,
@@ -39,11 +40,14 @@ export default function AdminDescuentosPage() {
   const { token } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const fechaActual = new Date();
+  const [mesSeleccionado, setMesSeleccionado] = useState<number>(fechaActual.getMonth() + 1);
+  const [anioSeleccionado, setAnioSeleccionado] = useState<number>(fechaActual.getFullYear());
+
   const [parsed, setParsed] = useState<ExcelParseResult | null>(null);
   const [parsing, setParsing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [periodosCargados, setPeriodosCargados] = useState<PeriodoCargado[]>([]);
   const [conflictPeriodos, setConflictPeriodos] = useState<PeriodoCargado[]>([]);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -71,7 +75,6 @@ export default function AdminDescuentosPage() {
     try {
       const result = await parseDescuentosExcel(file);
       setParsed(result);
-      setSelectedPeriod(result.periodos[0] ? `${result.periodos[0].anio}-${result.periodos[0].mes}` : "");
     } catch (e) {
       setParsed(null);
       setErrorMsg(e instanceof Error ? e.message : "No se pudo leer el archivo.");
@@ -97,17 +100,35 @@ export default function AdminDescuentosPage() {
     }
   };
 
+  const registrosConPeriodo = (): DescuentoRow[] | null => {
+    if (!parsed) return null;
+    if (mesSeleccionado < 1 || mesSeleccionado > 12 || anioSeleccionado < 2000 || anioSeleccionado > 2100) {
+      return null;
+    }
+    return parsed.registros.map((r) => ({
+      ...r,
+      anio: anioSeleccionado,
+      mes: mesSeleccionado,
+    }));
+  };
+
   const handleSubmit = async (sobrescribir: boolean) => {
     if (!token || !parsed) return;
+
+    const registros = registrosConPeriodo();
+    if (!registros) {
+      setErrorMsg("Indica el mes y año del archivo antes de subirlo.");
+      return;
+    }
 
     setSubmitting(true);
     setErrorMsg(null);
     setSuccessMsg(null);
 
     try {
-      const res = await importarDescuentos(token, parsed.registros, sobrescribir);
+      const res = await importarDescuentos(token, registros, sobrescribir);
       setSuccessMsg(
-        `Se importaron ${res.insertados} registros en ${res.periodos.length} periodo${res.periodos.length !== 1 ? "s" : ""}${
+        `Se importaron ${res.insertados} registros para ${nombrePeriodo(anioSeleccionado, mesSeleccionado)}${
           res.reemplazados ? " (sobrescribiendo datos existentes)." : "."
         }`
       );
@@ -126,13 +147,6 @@ export default function AdminDescuentosPage() {
     }
   };
 
-  const detalle = useMemo(() => {
-    if (!parsed) return [];
-    if (!selectedPeriod) return parsed.registros;
-    const [anio, mes] = selectedPeriod.split("-").map(Number);
-    return parsed.registros.filter((r) => r.anio === anio && r.mes === mes);
-  }, [parsed, selectedPeriod]);
-
   return (
     <AdminGate>
       <div className="mx-auto max-w-6xl space-y-10 pb-20 text-black">
@@ -143,7 +157,7 @@ export default function AdminDescuentosPage() {
               Administración de Descuentos
             </h1>
             <p className="mt-1 font-medium text-gray-500">
-              Sube el archivo mensual de descuentos, previsualiza los datos y publícalos a los trabajadores.
+              Sube el archivo de solicitud de descuentos del mes, previsualiza los datos y publícalos a los trabajadores.
             </p>
           </div>
           <span className="hidden items-center gap-2 rounded-full bg-red-50 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#BF0F0F] ring-1 ring-inset ring-red-600/20 sm:inline-flex">
@@ -174,6 +188,43 @@ export default function AdminDescuentosPage() {
             <p className="font-black text-green-800">{successMsg}</p>
           </div>
         )}
+
+        {/* Período del archivo */}
+        <section className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-xl sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="flex items-center gap-2 text-xl font-black text-gray-800">
+              <CalendarDays size={20} className="text-[#BF0F0F]" />
+              Período del archivo
+            </h2>
+            <p className="mt-1 text-sm font-medium text-gray-500">
+              Indica el mes y año al que corresponden los descuentos del archivo.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <select
+              value={mesSeleccionado}
+              onChange={(e) => setMesSeleccionado(Number(e.target.value))}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-black text-gray-800 outline-none focus:border-[#BF0F0F]"
+            >
+              {MESES.map((m, i) => (
+                <option key={m} value={i + 1}>
+                  {m}
+                </option>
+              ))}
+            </select>
+            <select
+              value={anioSeleccionado}
+              onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-black text-gray-800 outline-none focus:border-[#BF0F0F]"
+            >
+              {Array.from({ length: 21 }, (_, i) => fechaActual.getFullYear() - 10 + i).map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </div>
+        </section>
 
         {/* Área de subida */}
         <section
@@ -206,9 +257,9 @@ export default function AdminDescuentosPage() {
             {parsing ? "Leyendo archivo..." : "Arrastra tu Excel aquí o haz clic para seleccionarlo"}
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm font-medium text-gray-400">
-            Formato esperado: columnas &quot;Número de personal&quot;, &quot;Apellido Nombre&quot; y una o más columnas de
-            periodo en formato <strong>YYYYMM</strong> (ej. 202601, 202602). La fila &quot;Total general&quot; se descarta
-            automáticamente.
+            Formato esperado: hoja con las columnas &quot;NRO. PERSONAL&quot; (RUT), &quot;APELLIDO NOMBRE&quot;,
+            &quot;Cuota Asociación&quot; y &quot;Seguro Salud&quot; de la solicitud de descuentos del mes. La fila de
+            totales se descarta automáticamente.
           </p>
         </section>
 
@@ -223,74 +274,65 @@ export default function AdminDescuentosPage() {
                     {parsed.filename}
                   </h2>
                   <p className="mt-1 text-sm font-medium text-gray-500">
-                    {parsed.totalRegistros.toLocaleString("es-CL")} registros en{" "}
-                    {parsed.periodos.length} periodo{parsed.periodos.length !== 1 ? "s" : ""}
+                    {parsed.totalRegistros.toLocaleString("es-CL")} registros para{" "}
+                    <span className="font-black text-gray-700">
+                      {nombrePeriodo(anioSeleccionado, mesSeleccionado)}
+                    </span>
                   </p>
                 </div>
                 <button
                   onClick={() => handleSubmit(false)}
-                  disabled={submitting}
+                  disabled={submitting || !registrosConPeriodo()}
                   className="flex items-center justify-center gap-2 rounded-xl bg-[#BF0F0F] px-6 py-3 font-black text-white shadow-lg transition-all hover:bg-red-800 active:scale-95 disabled:opacity-50"
                 >
                   <Save size={18} />
-                  {submitting ? "Subiendo..." : `Subir ${parsed.totalRegistros.toLocaleString("es-CL")} registros`}
+                  {submitting
+                    ? "Subiendo..."
+                    : `Subir ${parsed.totalRegistros.toLocaleString("es-CL")} registros`}
                 </button>
               </div>
 
-              {/* Resumen por periodo */}
+              {/* Resumen del archivo */}
               <div className="p-6">
                 <h3 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-widest text-gray-400">
                   <CalendarDays size={16} />
-                  Resumen por periodo
+                  Resumen del archivo
                 </h3>
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-left">
                     <thead className="bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400">
                       <tr>
-                        <th className="px-4 py-3">Periodo</th>
-                        <th className="px-4 py-3 text-right">Registros</th>
-                        <th className="px-4 py-3 text-right">Suma total</th>
+                        <th className="px-4 py-3">Registros</th>
+                        <th className="px-4 py-3 text-right">Suma cuota asociación</th>
+                        <th className="px-4 py-3 text-right">Suma seguro de salud</th>
+                        <th className="px-4 py-3 text-right">Total descuentos</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {parsed.periodos.map((p) => (
-                        <tr key={`${p.anio}-${p.mes}`} className="hover:bg-gray-50/60">
-                          <td className="px-4 py-3 font-bold text-gray-800">{nombrePeriodo(p.anio, p.mes)}</td>
-                          <td className="px-4 py-3 text-right font-bold text-gray-600">{p.cant.toLocaleString("es-CL")}</td>
-                          <td className="px-4 py-3 text-right font-black text-gray-900">{formatoMonto(p.suma)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="border-t-2 border-gray-200">
-                        <td className="px-4 py-3 font-black text-gray-900">Total</td>
-                        <td className="px-4 py-3 text-right font-black text-gray-900">{parsed.totalRegistros.toLocaleString("es-CL")}</td>
+                    <tbody>
+                      <tr className="hover:bg-gray-50/60">
+                        <td className="px-4 py-3 font-bold text-gray-800">
+                          {parsed.totalRegistros.toLocaleString("es-CL")}
+                        </td>
                         <td className="px-4 py-3 text-right font-black text-gray-900">
-                          {formatoMonto(parsed.periodos.reduce((acc, p) => acc + p.suma, 0))}
+                          {formatoMonto(parsed.sumas.cuota)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-black text-gray-900">
+                          {formatoMonto(parsed.sumas.seguro)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-black text-gray-900">
+                          {formatoMonto(parsed.sumas.total)}
                         </td>
                       </tr>
-                    </tfoot>
+                    </tbody>
                   </table>
                 </div>
               </div>
 
               {/* Detalle */}
               <div className="border-t p-6">
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-gray-400">Detalle de registros</h3>
-                  <select
-                    value={selectedPeriod}
-                    onChange={(e) => setSelectedPeriod(e.target.value)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-800 outline-none focus:border-[#BF0F0F]"
-                  >
-                    <option value="">Todos los periodos</option>
-                    {parsed.periodos.map((p) => (
-                      <option key={`${p.anio}-${p.mes}`} value={`${p.anio}-${p.mes}`}>
-                        {nombrePeriodo(p.anio, p.mes)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-gray-400">
+                  Detalle de registros
+                </h3>
                 <div className="max-h-[480px] overflow-auto rounded-xl border border-gray-100">
                   <table className="w-full border-collapse text-left">
                     <thead className="sticky top-0 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400">
@@ -298,20 +340,24 @@ export default function AdminDescuentosPage() {
                         <th className="px-4 py-3">RUT</th>
                         <th className="px-4 py-3">Nombre</th>
                         <th className="px-4 py-3">Unidad</th>
-                        <th className="px-4 py-3">Periodo</th>
-                        <th className="px-4 py-3 text-right">Monto</th>
+                        <th className="px-4 py-3 text-right">Cuota asociación</th>
+                        <th className="px-4 py-3 text-right">Seguro de salud</th>
+                        <th className="px-4 py-3 text-right">Total</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {detalle.map((r, i) => (
+                      {parsed.registros.map((r, i) => (
                         <tr key={i} className="hover:bg-gray-50/60">
                           <td className="whitespace-nowrap px-4 py-2.5 font-mono font-bold text-gray-700">
                             {formatearRutCuerpo(r.rut)}
                           </td>
                           <td className="px-4 py-2.5 font-medium text-gray-700">{r.nombre_completo}</td>
                           <td className="px-4 py-2.5 text-sm text-gray-500">{r.unidad}</td>
-                          <td className="whitespace-nowrap px-4 py-2.5 text-sm font-bold text-gray-600">
-                            {nombrePeriodo(r.anio, r.mes)}
+                          <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold text-gray-700">
+                            {formatoMonto(r.cuota_asociacion)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold text-gray-700">
+                            {formatoMonto(r.seguro_salud)}
                           </td>
                           <td className="whitespace-nowrap px-4 py-2.5 text-right font-black text-gray-900">
                             {formatoMonto(r.monto)}

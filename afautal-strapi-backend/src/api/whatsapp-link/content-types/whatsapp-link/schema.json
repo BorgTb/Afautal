@@ -1,0 +1,19 @@
+{
+  "kind": "singleType",
+  "collectionName": "whatsapp_links",
+  "info": {
+    "singularName": "whatsapp-link",
+    "pluralName": "whatsapp-links",
+    "displayName": "Configuración de WhatsApp"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "link": {
+      "type": "string",
+      "description": "URL del grupo de WhatsApp (ej: https://wa.me/56912345678)",
+      "required": true
+    }
+  }
+}

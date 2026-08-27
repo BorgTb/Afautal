@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "@/lib/gsap-setup";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 interface AboutSectionProps {
   descripcion: string;
@@ -18,10 +18,10 @@ export default function AboutSection({ descripcion }: AboutSectionProps) {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (mediaQuery.matches) return;
 
-    gsap.registerPlugin(ScrollTrigger);
-
     const heading = section.querySelector("[data-about-title]");
     const text = section.querySelector("[data-about-description]");
+
+    if (!heading || !text) return;
 
     const ctx = gsap.context(() => {
       gsap

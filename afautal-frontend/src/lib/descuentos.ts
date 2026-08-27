@@ -20,9 +20,13 @@ export const MESES = [
 export interface DescuentoRow {
   rut: string;
   nombre_completo: string;
+  mail: string;
+  division: string;
   unidad: string;
   anio: number;
   mes: number;
+  cuota_asociacion: number;
+  seguro_salud: number;
   monto: number;
 }
 
@@ -47,10 +51,39 @@ export interface PeriodoCargado {
   total: number;
 }
 
+export interface MesEstadoFinanciero {
+  anio: number;
+  mes: number;
+  cuota: number;
+  seguro: number;
+  monto: number;
+  registros: number;
+}
+
+export interface AnioEstadoFinanciero {
+  anio: number;
+  cuota: number;
+  seguro: number;
+  monto: number;
+  registros: number;
+}
+
+export interface EstadoFinanciero {
+  meses: MesEstadoFinanciero[];
+  totalesPorAnio: AnioEstadoFinanciero[];
+  totalesGlobales: AnioEstadoFinanciero;
+}
+
+export interface SumasDescuento {
+  cuota: number;
+  seguro: number;
+  total: number;
+}
+
 export interface ExcelParseResult {
   filename: string;
   registros: DescuentoRow[];
-  periodos: PeriodoInfo[];
+  sumas: SumasDescuento;
   totalRegistros: number;
 }
 
@@ -67,135 +100,147 @@ export function normalizeRutBody(value: string | number): string {
   return cuerpo.replace(/^0+/, "") || "";
 }
 
-function parsePeriodo(value: string | number): { anio: number; mes: number } | null {
-  const raw = String(value).trim();
-  const match = raw.match(/^(\d{4})(\d{2})$/);
-  if (!match) return null;
+const normalizarTexto = (value: unknown): string => {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
 
-  const anio = Number(match[1]);
-  const mes = Number(match[2]);
-  if (anio < 2000 || anio > 2100 || mes < 1 || mes > 12) return null;
-  return { anio, mes };
+const numeroDe = (value: unknown): number => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+interface CabeceraEncontrada {
+  sheetName: string;
+  rows: string[][];
+  headerIndex: number;
+  cols: Record<string, number>;
 }
 
+const localizarCabecera = (rows: unknown[][]): CabeceraEncontrada | null => {
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    const row = rows[i] ?? [];
+    const norm = row.map(normalizarTexto);
+
+    const colNro = norm.findIndex((c) => c.includes("nro") && c.includes("personal"));
+    const colApellido = norm.findIndex((c) => c.includes("apellido"));
+    const colCuota = norm.findIndex((c) => c.includes("cuota"));
+
+    if (colNro === -1 || colApellido === -1 || colCuota === -1) continue;
+
+    const cols: Record<string, number> = {};
+    norm.forEach((c, idx) => {
+      if (!c) return;
+      if (c.includes("nro") && c.includes("personal")) cols.nro = idx;
+      else if (c.includes("apellido")) cols.apellido = idx;
+      else if (c.includes("mail")) cols.mail = idx;
+      else if (c.includes("division")) cols.division = idx;
+      else if (c.includes("unidad")) cols.unidad = idx;
+      else if (c.includes("cuota")) cols.cuota = idx;
+      else if (c.includes("seguro")) cols.seguro = idx;
+      else if (c.includes("total")) cols.total = idx;
+    });
+
+    return { sheetName: "", rows: rows as string[][], headerIndex: i, cols };
+  }
+
+  return null;
+};
+
 /**
- * Parsea un Excel de descuentos en formato pivote (1 fila por trabajador,
- * columnas por periodo YYYYMM). Devuelve los registros normalizados
- * (rut, mes, año, monto) agrupables por periodo.
+ * Parsea un Excel de "Solicitud de descuentos" (un mes por archivo):
+ * una fila por trabajador con columnas "NRO. PERSONAL" (RUT), "APELLIDO NOMBRE",
+ * "MAIL", "DIVISION SUPERIOR", "UNIDAD PERTENCIA", "Cuota Asociación",
+ * "Seguro Salud" y "Total descuentos". Se selecciona automáticamente la hoja
+ * que contiene los montos y se descartan las filas de totales.
  */
 export async function parseDescuentosExcel(file: File): Promise<ExcelParseResult> {
   const arrayBuffer = await file.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer, { type: "array" });
-  const sheetName = workbook.SheetNames[0];
 
-  if (!sheetName) {
+  if (workbook.SheetNames.length === 0) {
     throw new Error("El archivo no contiene hojas.");
   }
 
-  const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, defval: "" });
+  const candidatas: CabeceraEncontrada[] = [];
 
-  if (!Array.isArray(rows) || rows.length === 0) {
-    throw new Error("El archivo está vacío.");
-  }
-
-  // Localizar la fila de encabezados ("Número de personal")
-  let headerIndex = -1;
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i] ?? [];
-    const a = String(row[0] ?? "").trim();
-    const b = String(row[1] ?? "").trim();
-    if (a.toLowerCase().includes("texto expl") && b.toLowerCase().includes("número de personal")) {
-      headerIndex = i;
-      break;
+  for (const name of workbook.SheetNames) {
+    const sheet = workbook.Sheets[name];
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "" });
+    const cabecera = localizarCabecera(rows);
+    if (cabecera) {
+      candidatas.push({ ...cabecera, sheetName: name });
     }
   }
 
-  if (headerIndex === -1) {
+  if (candidatas.length === 0) {
     throw new Error(
-      "No se encontró la fila de encabezados. Verifica que el archivo tenga las columnas 'Texto expl.CC-nómina', 'Número de personal', 'Apellido Nombre' y una o más columnas de periodo (YYYYMM)."
+      "No se encontró la fila de encabezados. Verifica que el archivo tenga las columnas 'NRO. PERSONAL', 'APELLIDO NOMBRE' y 'Cuota Asociación'."
     );
   }
 
-  const headerRow = rows[headerIndex] ?? [];
-  const periodos: { index: number; anio: number; mes: number }[] = [];
+  // Priorizar la hoja que tenga montos (cuota o seguro mayor a 0), como Hoja2;
+  // la hoja estructural sin montos (Hoja1) queda descartada.
+  const conMontos = candidatas.find((c) =>
+    c.rows.slice(c.headerIndex + 1).some((row) => {
+      const cuota = numeroDe(row[c.cols.cuota]);
+      const seguro = numeroDe(row[c.cols.seguro]);
+      return cuota > 0 || seguro > 0;
+    })
+  );
+  const elegida = conMontos ?? candidatas[0];
 
-  for (let c = 3; c < headerRow.length; c++) {
-    const p = parsePeriodo(headerRow[c]);
-    if (p) {
-      periodos.push({ index: c, ...p });
-    }
-  }
-
-  if (periodos.length === 0) {
-    throw new Error(
-      "No se encontraron columnas de periodo (formato YYYYMM) en el encabezado. Se esperan columnas como 202601, 202602, etc."
-    );
-  }
-
+  const { rows, headerIndex, cols } = elegida;
   const registros: DescuentoRow[] = [];
-  let unidadActual = "";
 
   for (let i = headerIndex + 1; i < rows.length; i++) {
     const row = rows[i] ?? [];
 
-    const a = String(row[0] ?? "").trim();
-    const b = row[1] ?? "";
-    const c = String(row[2] ?? "").trim();
-
-    // Fila de totales ("Total general") o fin de los datos
-    if (a.toLowerCase().startsWith("total")) break;
-    if (b === "" && c === "") continue;
-
-    const rut = normalizeRutBody(b);
+    const rut = normalizeRutBody(row[cols.nro]);
     if (!rut) continue;
 
-    if (a) unidadActual = a;
+    const cuota = numeroDe(row[cols.cuota]);
+    const seguro = numeroDe(row[cols.seguro]);
+    const totalCol = numeroDe(row[cols.total]);
+    const monto = totalCol > 0 ? totalCol : cuota + seguro;
 
-    for (const p of periodos) {
-      const raw = row[p.index];
-      if (raw === "" || raw === null || raw === undefined) continue;
+    if (monto <= 0 && cuota <= 0 && seguro <= 0) continue;
 
-      const monto = Number(raw);
-      if (!Number.isFinite(monto) || monto <= 0) continue;
-
-      registros.push({
-        rut,
-        nombre_completo: c,
-        unidad: unidadActual,
-        anio: p.anio,
-        mes: p.mes,
-        monto,
-      });
-    }
+    registros.push({
+      rut,
+      nombre_completo: String(row[cols.apellido] ?? "").trim(),
+      mail: String(row[cols.mail] ?? "").trim(),
+      division: String(row[cols.division] ?? "").trim(),
+      unidad: String(row[cols.unidad] ?? "").trim(),
+      anio: 0,
+      mes: 0,
+      cuota_asociacion: cuota,
+      seguro_salud: seguro,
+      monto,
+    });
   }
 
   if (registros.length === 0) {
     throw new Error("No se pudo extraer ningún registro del archivo.");
   }
 
-  // Resumen por periodo
-  const resumen = new Map<string, PeriodoInfo>();
-  for (const r of registros) {
-    const key = `${r.anio}-${r.mes}`;
-    const info = resumen.get(key) ?? {
-      anio: r.anio,
-      mes: r.mes,
-      nombre: MESES[r.mes - 1] ?? String(r.mes),
-      cant: 0,
-      suma: 0,
-    };
-    info.cant += 1;
-    info.suma += r.monto;
-    resumen.set(key, info);
-  }
+  const sumas: SumasDescuento = registros.reduce(
+    (acc, r) => ({
+      cuota: acc.cuota + r.cuota_asociacion,
+      seguro: acc.seguro + r.seguro_salud,
+      total: acc.total + r.monto,
+    }),
+    { cuota: 0, seguro: 0, total: 0 }
+  );
 
   return {
     filename: file.name,
     registros,
-    periodos: Array.from(resumen.values()).sort(
-      (x, y) => x.anio - y.anio || x.mes - y.mes
-    ),
+    sumas,
     totalRegistros: registros.length,
   };
 }
@@ -268,4 +313,20 @@ export async function fetchPeriodosCargados(token: string): Promise<PeriodoCarga
 
   const body = await res.json();
   return body.data ?? [];
+}
+
+export async function fetchEstadoFinanciero(token: string): Promise<EstadoFinanciero> {
+  const res = await fetch(`${STRAPI_URL}/api/descuentos/estado`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) throw new Error("No se pudo obtener el estado financiero.");
+
+  const body = await res.json();
+  return body.data ?? {
+    meses: [],
+    totalesPorAnio: [],
+    totalesGlobales: { anio: 0, cuota: 0, seguro: 0, monto: 0, registros: 0 },
+  };
 }

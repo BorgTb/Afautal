@@ -686,6 +686,7 @@ export interface ApiContactoContacto extends Struct.SingleTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     email: Schema.Attribute.Email;
+    link_grupo_whatsapp: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -757,17 +758,21 @@ export interface ApiDescuentoDescuento extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    cuota_asociacion: Schema.Attribute.Decimal;
+    division: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::descuento.descuento'
     > &
       Schema.Attribute.Private;
+    mail: Schema.Attribute.String;
     mes: Schema.Attribute.Integer & Schema.Attribute.Required;
     monto: Schema.Attribute.Decimal & Schema.Attribute.Required;
     nombre_completo: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     rut: Schema.Attribute.String & Schema.Attribute.Required;
+    seguro_salud: Schema.Attribute.Decimal;
     unidad: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1448,6 +1453,34 @@ export interface ApiVentanaGasVentanaGas extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiWhatsappLinkWhatsappLink extends Struct.SingleTypeSchema {
+  collectionName: 'whatsapp_links';
+  info: {
+    displayName: 'Configuraci\u00F3n de WhatsApp';
+    pluralName: 'whatsapp-links';
+    singularName: 'whatsapp-link';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    link: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::whatsapp-link.whatsapp-link'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -2010,6 +2043,7 @@ declare module '@strapi/strapi' {
       'api::tipo-contrato.tipo-contrato': ApiTipoContratoTipoContrato;
       'api::tipo-cuenta.tipo-cuenta': ApiTipoCuentaTipoCuenta;
       'api::ventana-gas.ventana-gas': ApiVentanaGasVentanaGas;
+      'api::whatsapp-link.whatsapp-link': ApiWhatsappLinkWhatsappLink;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

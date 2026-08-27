@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import "@/lib/gsap-setup";
 import gsap from "gsap";
 import { fetchRegistroOptions, submitSolicitudRegistro, fetchExternalClientData } from "@/lib/auth";
 import { fetchRegiones, fetchCiudadesByRegion, fetchComunasByRegion, fetchCiudadByNombre, type Region, type Ciudad, type Comuna } from "@/lib/geography";
@@ -72,6 +73,9 @@ export default function RegisterPage() {
           setTipoCuentaOptions(options.tipo_cuenta);
           setTipoCuenta(options.tipo_cuenta[0].documentId);
         }
+        if (options.banco && options.banco.length > 0) {
+          setBancoOptions(options.banco);
+        }
         setRegiones(regs);
       } catch { /* Fallback */ }
     };
@@ -98,6 +102,7 @@ export default function RegisterPage() {
   }, [region, regiones]);
 
   useEffect(() => {
+    let innerTimer: ReturnType<typeof setTimeout> | null = null;
     const timer = setTimeout(async () => {
       if (isValidRut(rut)) {
         setIsFetchingClient(true);
@@ -144,7 +149,7 @@ export default function RegisterPage() {
             }
             setLockedFields(newLocked);
 
-            setTimeout(() => {
+            innerTimer = setTimeout(() => {
               isAutoPopulating.current = false;
             }, 500);
           } else {
@@ -162,7 +167,10 @@ export default function RegisterPage() {
         setLockedFields([]);
       }
     }, 500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (innerTimer) clearTimeout(innerTimer);
+    };
   }, [rut]);
 
   useEffect(() => {

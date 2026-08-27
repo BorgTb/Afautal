@@ -87,13 +87,22 @@ export default factories.createCoreController('api::descuento.descuento', ({ str
         const rut = normalizeRutBody(reg.rut);
         const anio = Number(reg.anio);
         const mes = Number(reg.mes);
+        const cuota = Number(reg.cuota_asociacion ?? 0);
+        const seguro = Number(reg.seguro_salud ?? 0);
         const monto = Number(reg.monto);
 
         if (!rut || !Number.isInteger(anio) || !Number.isInteger(mes) || mes < 1 || mes > 12) {
           return ctx.badRequest('Registros con datos inválidos (rut, año o mes).');
         }
 
-        if (!Number.isFinite(monto) || monto < 0) {
+        if (
+          !Number.isFinite(cuota) ||
+          cuota < 0 ||
+          !Number.isFinite(seguro) ||
+          seguro < 0 ||
+          !Number.isFinite(monto) ||
+          monto < 0
+        ) {
           return ctx.badRequest('Monto inválido en un registro.');
         }
 
@@ -105,9 +114,13 @@ export default factories.createCoreController('api::descuento.descuento', ({ str
         clean.push({
           rut,
           nombre_completo: typeof reg.nombre_completo === 'string' ? reg.nombre_completo : '',
+          mail: typeof reg.mail === 'string' ? reg.mail : '',
+          division: typeof reg.division === 'string' ? reg.division : '',
           unidad: typeof reg.unidad === 'string' ? reg.unidad : '',
           anio,
           mes,
+          cuota_asociacion: cuota,
+          seguro_salud: seguro,
           monto,
         });
       }
@@ -249,6 +262,69 @@ export default factories.createCoreController('api::descuento.descuento', ({ str
     } catch (err) {
       strapi.log.error('Error al consultar periodos de descuentos:', err);
       ctx.throw(500, 'Hubo un error al consultar los periodos.');
+    }
+  },
+
+  async estado(ctx) {
+    try {
+      const authUserId = await resolveAuthUserId(ctx, strapi);
+
+      if (!authUserId) {
+        return ctx.unauthorized('No autenticado.');
+      }
+
+      const results = await strapi.db.connection('descuentos')
+        .select('anio', 'mes')
+        .sum({ cuota: 'cuota_asociacion' })
+        .sum({ seguro: 'seguro_salud' })
+        .sum({ monto: 'monto' })
+        .count({ registros: '*' })
+        .groupBy('anio', 'mes')
+        .orderBy('anio', 'asc')
+        .orderBy('mes', 'asc');
+
+      const meses = (results as any[]).map((row) => ({
+        anio: Number(row.anio),
+        mes: Number(row.mes),
+        cuota: Number(row.cuota ?? 0),
+        seguro: Number(row.seguro ?? 0),
+        monto: Number(row.monto ?? 0),
+        registros: Number(row.registros ?? 0),
+      }));
+
+      const totalesPorAnio = new Map<number, { anio: number; cuota: number; seguro: number; monto: number; registros: number }>();
+      const totalesGlobales = { cuota: 0, seguro: 0, monto: 0, registros: 0 };
+
+      for (const m of meses) {
+        const anio = totalesPorAnio.get(m.anio) ?? {
+          anio: m.anio,
+          cuota: 0,
+          seguro: 0,
+          monto: 0,
+          registros: 0,
+        };
+        anio.cuota += m.cuota;
+        anio.seguro += m.seguro;
+        anio.monto += m.monto;
+        anio.registros += m.registros;
+        totalesPorAnio.set(m.anio, anio);
+
+        totalesGlobales.cuota += m.cuota;
+        totalesGlobales.seguro += m.seguro;
+        totalesGlobales.monto += m.monto;
+        totalesGlobales.registros += m.registros;
+      }
+
+      return ctx.send({
+        data: {
+          meses,
+          totalesPorAnio: Array.from(totalesPorAnio.values()),
+          totalesGlobales,
+        },
+      });
+    } catch (err) {
+      strapi.log.error('Error al consultar el estado financiero de descuentos:', err);
+      ctx.throw(500, 'Hubo un error al consultar el estado financiero.');
     }
   },
 }));

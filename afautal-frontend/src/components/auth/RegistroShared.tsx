@@ -376,7 +376,7 @@ export function Step3Password({
         <input id="aceptaTerminosPw" type="checkbox" required checked={aceptaTerminos}
           onChange={(e) => setAceptaTerminos(e.target.checked)}
           className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F] mt-1" />
-        <span className="ml-3 text-sm font-bold text-gray-800 leading-tight">He leído y acepto los estatutos y términos de privacidad de AFAUTAL.</span>
+        <span className="ml-3 text-sm font-bold text-gray-800 leading-tight">Acepto que el Departamento de Remuneraciones de la Universidad descuente el valor de la cuota social de mis remuneraciones mensuales para entregar dicha cuota a la Asociación de Funcionarios Académicos de la Universidad de Talca.</span>
       </label>
     </>
   );
@@ -431,7 +431,7 @@ export function Step3Acceso({
         <input id="aceptaTerminos" type="checkbox" required checked={aceptaTerminos}
           onChange={(e) => setAceptaTerminos(e.target.checked)}
           className="h-5 w-5 text-[#BF0F0F] border-gray-400 rounded focus:ring-[#BF0F0F] mt-1" />
-        <span className="ml-3 text-sm font-bold text-gray-800 leading-tight">He leído y acepto los estatutos y términos de privacidad de AFAUTAL.</span>
+        <span className="ml-3 text-sm font-bold text-gray-800 leading-tight">Acepto que el Departamento de Remuneraciones de la Universidad descuente el valor de la cuota social de mis remuneraciones mensuales para entregar dicha cuota a la Asociación de Funcionarios Académicos de la Universidad de Talca.</span>
       </label>
     </>
   );
